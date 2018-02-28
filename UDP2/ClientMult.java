@@ -36,6 +36,8 @@ public class ClientMult {
 
         s.leaveGroup(group);
 
+        s.close();
+
     }
 
     public String createMessage(String[] args) {
