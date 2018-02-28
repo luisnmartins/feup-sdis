@@ -12,15 +12,15 @@ import javax.smartcardio.Card;
 
 public class ServerMult {
 
-    private InetAddress mcadrres;
-    private MulticastSocket mcsocket;
+    private InetAddress multicastAddress;
+    private MulticastSocket multSocket;
     private int port;
-    private int mcport;
+    private int multicastPort;
     private Hashtable<String, String> table;
     private DatagramSocket socket;
     private MyThread thread;
 
-    public static void main(String[] args) throws UnknownHostException, InterruptedException {
+    public static void main(String[] args) throws UnknownHostException, InterruptedException,IOException {
         if (args.length != 3) {
             System.out.println("Error calling method");
             return;
@@ -33,12 +33,12 @@ public class ServerMult {
 
     public void createSockets(String[] args) throws IOException {
         port = Integer.parseInt(args[0]);
-        mcport = Integer.parseInt(args[2]);
+        multicastPort = Integer.parseInt(args[2]);
 
         //Multicast Socket
-        mcadrres = InetAddress.getByName(args[1]);
-        mcsocket = new MulticastSocket(mcport);
-        mcsocket.setSoTimeout(1);
+        multicastAddress = InetAddress.getByName(args[1]);
+        multSocket = new MulticastSocket(multicastPort);
+        multSocket.setSoTimeout(1);
 
         //Datagram Socket
         socket = new DatagramSocket(port);
@@ -135,11 +135,12 @@ public class ServerMult {
         public void run() {
             while (true) {
                 String portStr = Integer.toString(port);
-                DatagramPacket packet = new DatagramPacket(portStr.getBytes(), portStr.getBytes().length, mcadrres,
-                        mcport);
+                DatagramPacket packet = new DatagramPacket(portStr.getBytes(), portStr.getBytes().length, multicastAddress,
+                        multicastPort);
 
                 try {
-                    mcsocket.send(packet);
+                    multSocket.send(packet);
+                    System.out.println("PortSend");
                     Thread.sleep(1000);
 
                 } catch (IOException | InterruptedException e) {

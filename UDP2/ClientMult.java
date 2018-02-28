@@ -7,6 +7,12 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 
 public class ClientMult {
+
+    private InetAddress multicastAddress;
+    private int multicastPort;
+    private int port;
+    private MulticastSocket ms;
+    private DatagramSocket socket;
     
     public static void main(String[] args) throws IOException {
         if (args.length != 4) {
@@ -14,29 +20,33 @@ public class ClientMult {
             return;
         }
 
+        
         new ClientMult().StartClient(args);
         
     }
     public void StartClient(String[] args) throws IOException {
+        multicastPort = Integer.parseInt(args[1]);
+        
         String msg = createMessage(args);
-        InetAddress group = InetAddress.getByName(args[0]);
-        int port = Integer.parseInt(args[1]);
-        MulticastSocket s = new MulticastSocket(port);
-        s.joinGroup(group);
 
-        DatagramPacket operation = new DatagramPacket(msg.getBytes(), msg.length(), group, port);
-        s.send(operation);
-
-        //get response
+        multicastAddress = InetAddress.getByName(args[0]);
+        ms = new MulticastSocket(multicastPort);
+        ms.joinGroup(multicastAddress);
+         //get response
+       
         byte[] buf = new byte[256];
-        DatagramPacket recv = new DatagramPacket(buf, buf.length);
-        s.receive(recv);
+        DatagramPacket recv = new DatagramPacket(buf, buf.length,multicastAddress,multicastPort);
+        ms.receive(recv);
+        System.out.println("Received port");
         String received = new String(recv.getData());
         System.out.println(received);
+        port = Integer.parseInt(received);
 
-        s.leaveGroup(group);
 
-        s.close();
+
+        ms.leaveGroup(multicastAddress);
+
+        ms.close();
 
     }
 
