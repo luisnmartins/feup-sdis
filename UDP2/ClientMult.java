@@ -20,11 +20,12 @@ public class ClientMult {
             return;
         }
 
-        
+        System.setProperty("java.net.preferIPv4Stack", "true");
         new ClientMult().StartClient(args);
         
     }
     public void StartClient(String[] args) throws IOException {
+        
         multicastPort = Integer.parseInt(args[1]);
         
         String msg = createMessage(args);
@@ -32,17 +33,15 @@ public class ClientMult {
         multicastAddress = InetAddress.getByName(args[0]);
         ms = new MulticastSocket(multicastPort);
         ms.joinGroup(multicastAddress);
+                        System.out.println("JOIN");
          //get response
-       
         byte[] buf = new byte[256];
-        DatagramPacket recv = new DatagramPacket(buf, buf.length,multicastAddress,multicastPort);
+        DatagramPacket recv = new DatagramPacket(buf, buf.length, multicastAddress,multicastPort);
         ms.receive(recv);
         System.out.println("Received port");
-        String received = new String(recv.getData());
+        String received = new String(recv.getData()).trim();
         System.out.println(received);
         port = Integer.parseInt(received);
-
-
 
         ms.leaveGroup(multicastAddress);
 
