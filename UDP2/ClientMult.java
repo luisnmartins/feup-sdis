@@ -9,13 +9,14 @@ import java.net.UnknownHostException;
 public class ClientMult {
 
     private InetAddress multicastAddress;
+    private InetAddress address;
     private int multicastPort;
     private int port;
     private MulticastSocket ms;
     private DatagramSocket socket;
     
     public static void main(String[] args) throws IOException {
-        if (args.length != 4) {
+        if (args.length == 0 || (args[2].equals("register") && args.length != 5) || (args[2].equals("lookup") && args.length != 4)) {
             System.out.println("Error on arguments!");
             return;
         }
@@ -25,11 +26,8 @@ public class ClientMult {
         
     }
     public void StartClient(String[] args) throws IOException {
-        
-        multicastPort = Integer.parseInt(args[1]);
-        
         String msg = createMessage(args);
-
+        multicastPort = Integer.parseInt(args[1]);
         multicastAddress = InetAddress.getByName(args[0]);
         ms = new MulticastSocket(multicastPort);
         ms.joinGroup(multicastAddress);
@@ -42,11 +40,30 @@ public class ClientMult {
         String received = new String(recv.getData()).trim();
         System.out.println(received);
         port = Integer.parseInt(received);
-
+        address = recv.getAddress();
         ms.leaveGroup(multicastAddress);
-
         ms.close();
 
+        sendRequest(msg);
+
+    }
+
+    public void sendRequest(String msg) throws IOException{
+        
+        socket = new DatagramSocket();
+        byte buf[] = msg.getBytes();
+        DatagramPacket packet = new DatagramPacket(buf, buf.length,address,port);
+        socket.send(packet);
+       
+
+        byte newBuf[] = new byte[256];
+        DatagramPacket newPacket = new DatagramPacket(newBuf, newBuf.length);
+        socket.receive(newPacket);
+        System.out.println("Passou");
+        String received = new String(newPacket.getData());
+        System.out.println(received);
+
+        socket.close();
     }
 
     public String createMessage(String[] args) {

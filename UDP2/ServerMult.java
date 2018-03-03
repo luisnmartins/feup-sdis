@@ -28,6 +28,7 @@ public class ServerMult {
 
         ServerMult server = new ServerMult();
         server.createSockets(args);
+        server.run();
 
     }
 
@@ -44,17 +45,18 @@ public class ServerMult {
         socket = new DatagramSocket(port);
         thread = new MyThread();
         thread.start();
-
+        
     }
 
     public void run() throws IOException {
         boolean running = true;
+        
         table = new Hashtable<String, String>();
         while (running) {
             byte[] buf = new byte[256];
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             socket.receive(packet);
-
+            
             processRequest(packet);
         }
 
@@ -63,7 +65,9 @@ public class ServerMult {
     public void processRequest(DatagramPacket packet) throws IOException {
 
         InetAddress address = packet.getAddress();
-        int port = packet.getPort();
+        int portA = packet.getPort();
+
+        System.out.println("RECEBEU!!" + packet.getData());
 
         String receivedMessage = new String(packet.getData());
 
@@ -83,7 +87,7 @@ public class ServerMult {
 
         //send response
         byte buf[] = response.getBytes();
-        DatagramPacket newPacket = new DatagramPacket(buf, buf.length, address, port);
+        DatagramPacket newPacket = new DatagramPacket(buf, buf.length, address, portA);
         socket.send(newPacket);
 
     }
@@ -140,7 +144,8 @@ public class ServerMult {
 
                 try {
                     multSocket.send(packet);
-                    System.out.println("PortSend");
+                    String multicastPrint = "multicast: " + packet.getAddress().toString() + " "  + packet.getPort() + ":" + socket.getLocalAddress() + " " + socket.getLocalPort();
+                    System.out.println(multicastPrint);
                     Thread.sleep(1000);
 
                 } catch (IOException | InterruptedException e) {
