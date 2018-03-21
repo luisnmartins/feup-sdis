@@ -1,11 +1,13 @@
-import remoteInterface.java;
+import java.io.*;
+import java.nio.file.Files;
+import java.util.List;
 
 public class manageFiles implements remoteInterface{
    
    
     public manageFiles() {}
 
-    void splitFile(File f) throws RemoteException,IOException{
+    public void splitFile(File f) throws IOException{
         int partCounter = 1;
         byte[] buffer = new byte[64000];
 
@@ -26,7 +28,7 @@ public class manageFiles implements remoteInterface{
         }
     }
 
-    void mergeFile(List<File> files, File into) throws RemoteException,IOException{
+    public void mergeFile(List<File> files, File into) throws IOException{
         try (FileOutputStream fos = new FileOutputStream(into); BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
             for (File f : files) {
                 Files.copy(f.toPath(), mergingStream);
