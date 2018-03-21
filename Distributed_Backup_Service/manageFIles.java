@@ -1,14 +1,11 @@
-import java.util.*;
-import java.io.*;
-import java.nio.file.*;
+import remoteInterface.java;
 
-/**
- * peer
- */
-public class peer {
+public class manageFiles implements remoteInterface{
+   
+   
+    public manageFiles() {}
 
-    public static void splitFile(File f) throws IOException {
-        
+    void splitFile(File f) throws RemoteException,IOException{
         int partCounter = 1;
         byte[] buffer = new byte[64000];
 
@@ -29,17 +26,14 @@ public class peer {
         }
     }
 
-    public static void mergeFiles(List<File> files, File into) throws IOException {
+    void mergeFile(List<File> files, File into) throws RemoteException,IOException{
         try (FileOutputStream fos = new FileOutputStream(into); BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
             for (File f : files) {
                 Files.copy(f.toPath(), mergingStream);
              }   
         }
-}
+    }
+    
+    
 
-    public static void main(String[] args) throws IOException {
-        splitFile(new File("/home/carlosfr/Documents/GitKraken/feup-sdis/Distributed_Backup_Service/Spring-Lamb.-Image-shot-2-011.jpg"));
-      
-
-      }
 }
