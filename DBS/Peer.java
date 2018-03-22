@@ -29,7 +29,9 @@ public class Peer {
         peer.port = Integer.parseInt(args[0]);
         LocateRegistry.createRegistry(peer.port);
         manageFiles manager = new manageFiles();
-        peer.sendToRegistry(manager,"test");
+        Protocols prot = new Protocols();
+        peer.sendToRegistry(prot,"hello");
+
         
 
 

@@ -5,7 +5,7 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.List;
 
-public class manageFiles implements remoteInterface{
+public class manageFiles{
 
     public manageFiles() {}
 
