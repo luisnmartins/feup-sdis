@@ -52,10 +52,13 @@ public class Peer {
           try {
               Registry reg = LocateRegistry.getRegistry(this.port);
               remoteInterface stub = (remoteInterface) reg.lookup(Tag);
+              return (T) stub;
           } catch (Exception e) {
               System.err.println("Client exception: " + e.toString());
               e.printStackTrace();
           }
+
+          return null;
       }
 
 }
