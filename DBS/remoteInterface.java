@@ -10,7 +10,14 @@ import java.util.List;
 public interface remoteInterface extends Remote {
 
     void backup() throws RemoteException;
-    void restores() throws RemoteException;
+
+    void restore() throws RemoteException;
+
+    void state() throws RemoteException;
+
+    void reclaim() throws RemoteException;
+
+    void delete() throws RemoteException;
 
     void sayHello() throws RemoteException;
 }
