@@ -93,6 +93,7 @@ public class Peer implements remoteInterface{
         System.out.println("Sent packet");
     }
 
+    //Inicia as threads para os 3 canais necessarios
     public void initiateThreads(){
 
         ExecutorService executor = Executors.newFixedThreadPool(5);

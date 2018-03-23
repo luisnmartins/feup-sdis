@@ -18,6 +18,7 @@ public class MCListener implements Runnable {
             DatagramPacket packet = new DatagramPacket(buf,buf.length);
             try {
                 this.socket.receive(packet);
+                //CHAMA AQUI UMA THREAD QUE INTERPRETA O PACKET
                 System.out.println(packet.getData().toString());
             } catch (IOException e) {
                 e.printStackTrace();
