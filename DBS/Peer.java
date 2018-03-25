@@ -48,6 +48,7 @@ public class Peer implements remoteInterface{
             peer.putchunk();
         }
         //FIM de teste
+
         RMIHandler handler = new RMIHandler();
         handler.sendToRegistry(peer,peer.peerID);
 
@@ -55,6 +56,8 @@ public class Peer implements remoteInterface{
 
     @Override
     public void backup() throws RemoteException {
+
+
 
     }
 
@@ -98,15 +101,15 @@ public class Peer implements remoteInterface{
 
         ExecutorService executor = Executors.newFixedThreadPool(5);
         //Thread para o canal principal MC;
-        Runnable mcThread = new MCListener(this.multicasts.MC);
+        Runnable mcThread = new ChannelListener(this.multicasts.MC);
         executor.execute(mcThread);
 
         //Thread para o canal MDB
-        Runnable mdbThread = new MCListener(this.multicasts.MDB);
+        Runnable mdbThread = new ChannelListener(this.multicasts.MDB);
         executor.execute(mdbThread);
 
         //Thread para o canal MDR
-        Runnable mdrThread = new MCListener(this.multicasts.MDR);
+        Runnable mdrThread = new ChannelListener(this.multicasts.MDR);
         executor.execute(mdrThread);
 
     }

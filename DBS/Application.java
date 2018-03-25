@@ -14,9 +14,10 @@ public class Application {
             return;
         }
 
+
+
         RMIHandler handler = new RMIHandler();
         remoteInterface peer = handler.getFromRegistry(peerApp);
-        peer.sayHello();
     }
 
     public static Boolean verifyArgs(String[] args){
@@ -36,6 +37,8 @@ public class Application {
         }else if(args.length == 3){
             if(args[1] == "BACKUP"){
                 return false;
+            }else{
+                pathname = args[2];
             }
             return true;
         }

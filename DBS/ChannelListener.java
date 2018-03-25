@@ -2,12 +2,13 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.nio.channels.Channel;
 
-public class MCListener implements Runnable {
+public class ChannelListener implements Runnable {
 
     private MulticastSocket socket;
 
-    MCListener(MulticastSocket sc){
+    ChannelListener(MulticastSocket sc){
         this.socket = sc;
     }
     @Override
