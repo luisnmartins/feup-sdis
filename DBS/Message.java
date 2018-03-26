@@ -1,12 +1,25 @@
 public class Message {
 
-    private Header header;
-    private byte[] body;
+    private static final String CRLF = "\r\n";
 
-    public Message(Header header,byte[] body){
-        this.header = header;
-        this.body = body;
+    private String fileId;
+    private String version;
+    private String senderId;
+
+
+    public Message(String fileId, String version, String senderId){
+        this.fileId = fileId;
+        this.version = version;
+        this.senderId = senderId;
     }
+
+    public String getPutChunk(Chunk info, int replicationDegree) {
+        return "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + replicationDegree +
+                " " + CRLF +CRLF+info.getData();
+
+    }
+
+
 
 
 }
