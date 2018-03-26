@@ -20,7 +20,8 @@ public class ChannelListener implements Runnable {
             try {
                 this.socket.receive(packet);
                 //CHAMA AQUI UMA THREAD QUE INTERPRETA O PACKET
-                System.out.println(packet.getData().toString());
+                String s = new String(packet.getData());
+                System.out.println("Ola " + s);
             } catch (IOException e) {
                 e.printStackTrace();
             }

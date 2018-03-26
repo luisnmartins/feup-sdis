@@ -14,18 +14,21 @@ public class MulticastSockets {
     MulticastSockets() throws IOException {
 
         this.ports = new int[]{8000, 8001, 8002};
-        MC = new MulticastSocket(this.ports[0]);
-        MDB = new MulticastSocket(this.ports[1]);
-        MDR = new MulticastSocket(this.ports[2]);
-
-
         this.addresses[0] = InetAddress.getByName("224.0.0.1");
         this.addresses[1] = InetAddress.getByName("224.0.0.2");
         this.addresses[2] = InetAddress.getByName("224.0.0.3");
 
+        MC = new MulticastSocket(this.ports[0]);
+        MDB = new MulticastSocket(this.ports[1]);
+        MDR = new MulticastSocket(this.ports[2]);
+
         MC.joinGroup(this.addresses[0]);
         MDB.joinGroup(this.addresses[1]);
         MDR.joinGroup(this.addresses[2]);
+
+       // MC.connect(this.addresses[0],this.ports[0]);
+        //MDB.connect(this.addresses[1],this.ports[1]);
+        //MDR.connect(this.addresses[2],this.ports[2]);
     }
 
     MulticastSockets(int[] ports,String[] hostsNames) throws IOException {

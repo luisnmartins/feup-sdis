@@ -1,4 +1,5 @@
 
+import javax.xml.crypto.Data;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -45,7 +46,7 @@ public class Peer implements remoteInterface{
         //So para testar
         if(peer.peerID.equals(new String("3")) ){
             System.out.println("ENTROU");
-            peer.putchunk();
+          //  peer.putchunk();
         }
         //FIM de teste
 
@@ -56,7 +57,6 @@ public class Peer implements remoteInterface{
 
     @Override
     public void backup(String pathname, int replicationDegree) throws RemoteException {
-
 
 
     }
@@ -86,14 +86,25 @@ public class Peer implements remoteInterface{
         System.out.println("HELLO WORLD");
     }
 
-    //Manda mensagem para o canal MC, so para razoes de teste
-    void putchunk() throws IOException {
-        String msg = "PUTCHUNK FROM PEER" + this.peerID;
+    //Manda mensagem para o canal especificado
+    void sendMessage(int type,String message) throws IOException {
+        DatagramPacket packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.multicasts.getAddress(type),this.multicasts.getPort(type));
 
-        //DatagramPacket(byte[] buf, int length, InetAddress address, int port)
-        DatagramPacket packet = new DatagramPacket(msg.getBytes(),msg.getBytes().length,this.multicasts.getAddress(0),this.multicasts.getPort(0));
-        this.multicasts.MC.send(packet);
-        System.out.println("Sent packet");
+        switch (type){
+            case 0: {
+                this.multicasts.MC.send(packet);
+                break;
+            }
+            case 1: {
+                this.multicasts.MDB.send(packet);
+                break;
+            }
+            case 2: {
+                this.multicasts.MDR.send(packet);
+                break;
+            }
+        }
+
     }
 
     //Inicia as threads para os 3 canais necessarios
