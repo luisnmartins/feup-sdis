@@ -55,14 +55,14 @@ public class Peer implements remoteInterface{
       }
 
     @Override
-    public void backup() throws RemoteException {
+    public void backup(String pathname, int replicationDegree) throws RemoteException {
 
 
 
     }
 
     @Override
-    public void restore() throws RemoteException {
+    public void restore(String pathname) throws RemoteException {
 
     }
 
@@ -72,12 +72,12 @@ public class Peer implements remoteInterface{
     }
 
     @Override
-    public void reclaim() throws RemoteException {
+    public void reclaim(Integer memory) throws RemoteException {
 
     }
 
     @Override
-    public void delete() throws RemoteException {
+    public void delete(String pathname) throws RemoteException {
 
     }
 

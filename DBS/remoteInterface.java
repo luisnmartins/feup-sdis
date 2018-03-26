@@ -9,15 +9,15 @@ import java.util.List;
 
 public interface remoteInterface extends Remote {
 
-    void backup() throws RemoteException;
+    void backup(String pathname, int replicationDegree) throws RemoteException;
 
-    void restore() throws RemoteException;
+    void restore(String pathname) throws RemoteException;
 
     void state() throws RemoteException;
 
-    void reclaim() throws RemoteException;
+    void reclaim(Integer memory) throws RemoteException;
 
-    void delete() throws RemoteException;
+    void delete(String pathname) throws RemoteException;
 
     void sayHello() throws RemoteException;
 }
