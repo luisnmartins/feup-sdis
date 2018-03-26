@@ -1,44 +1,21 @@
 import java.io.File;
 
-public class Chunk extends File{
+public class Chunk{
 
-    protected String fileID;
-    protected int chunkNo;
-    protected int replicationDegree;
-
-    public Chunk(String pathname){
-        super(pathname);
-    }
-
-    public Chunk(File parent, String child){
-        super(parent,child);
-    }
-
-    public Chunk(String parent, String child){
-        super(parent,child);
-    }
-
-    String getFileID(){
-        return fileID;
-    }
+    private int chunkNo;
+    private byte[] data;
 
     int getChunkNo(){
         return chunkNo;
     }
 
-    int getReplicationDegree(){
-        return this.replicationDegree;
-    }
-
-    void setFileID(String id){
-        this.fileID = id;
-    }
+    byte[] getData() { return data; }
 
     void setChunkNo(int chunkNo){
         this.chunkNo = chunkNo;
     }
 
-    void setReplicationDegree(int replicationDegree){
-        this.replicationDegree = replicationDegree;
-    }
+    void setData(byte[] data) { this.data = data; }
+
+
 }
