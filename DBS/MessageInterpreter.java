@@ -1,4 +1,6 @@
-import java.util.Arrays;
+
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class MessageInterpreter implements Runnable {
 
@@ -41,7 +43,10 @@ public class MessageInterpreter implements Runnable {
         Message receivedMessage;
         switch (messageType){
             case "PUTCHUNK": {
-                receivedMessage = new PutChunkMessage(header, body);
+                Runnable putchunk = new PutChunkMessage(header, body);
+                Random rand = new Random();
+                int randTime = rand.nextInt(399);
+                Peer.getExec().schedule(putchunk, randTime, TimeUnit.MILLISECONDS);
                 break;
             }
         }

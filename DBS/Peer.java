@@ -13,10 +13,7 @@ import java.rmi.registry.Registry;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 
 /**
@@ -29,7 +26,7 @@ public class Peer implements remoteInterface{
     private static MDBSocket MDB;
     private static MDRSocket MDR;
 
-    private static ExecutorService exec;
+    private static ScheduledThreadPoolExecutor exec;
 
     private static Hashtable<String,String> filesTables;
     private static Hashtable<String, ChunkInfo> chunkTable;
@@ -121,7 +118,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = Executors.newFixedThreadPool(50);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(50);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;
@@ -139,7 +136,7 @@ public class Peer implements remoteInterface{
 
     }
 
-    public static ExecutorService getExec() {
+    public static ScheduledExecutorService getExec() {
         return exec;
     }
 

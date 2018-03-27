@@ -6,12 +6,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-public class PutChunkMessage extends Message {
+public class PutChunkMessage extends Message implements Runnable {
 
     private Chunk info;
     private int replicationDegree;
 
     public PutChunkMessage(String header, byte[] body) {
+
 
         super(header);
         String[] headerWords = header.split(" ");
@@ -21,16 +22,21 @@ public class PutChunkMessage extends Message {
         this.info = info;
         this.replicationDegree = Integer.parseInt(headerWords[5]);
 
-        try {
-            action();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
+
+    public PutChunkMessage(String fileId, String version, String senderId, Chunk info, int replicationDegree) {
+        super(fileId, version, senderId);
+        this.info = info;
+        this.replicationDegree = replicationDegree;
+    }
+
 
     public void action() throws IOException {
 
+        //SLEEP
+        //SEND STORED MESSAGE
+
+        //STORE FILE
         String filename = "CHUNKS/"+fileId+"."+info.getChunkNo();
 
         try (FileOutputStream fos = new FileOutputStream(filename)) {
@@ -61,12 +67,6 @@ public class PutChunkMessage extends Message {
 
     }
 
-    public PutChunkMessage(String fileId, String version, String senderId, Chunk info, int replicationDegree) {
-        super(fileId, version, senderId);
-        this.info = info;
-        this.replicationDegree = replicationDegree;
-    }
-
     public byte[] getFullMessage() {
         String header = "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + replicationDegree +
                 " " + CRLF +CRLF;
@@ -84,11 +84,16 @@ public class PutChunkMessage extends Message {
         }
 
         byte[] finalByteArray = finalOutputStream.toByteArray();
-        System.out.println(finalByteArray.length);
         return finalByteArray;
     }
 
 
-
-
+    @Override
+    public void run() {
+        try {
+            action();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
