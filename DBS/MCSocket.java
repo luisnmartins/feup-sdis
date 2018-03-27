@@ -30,6 +30,15 @@ public class MCSocket implements Runnable{
         return port;
     }
 
+    public void sendMessage(String msg){
+        DatagramPacket packet = new DatagramPacket(msg.getBytes(),msg.getBytes().length,this.address,this.port);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void run() {
         while(true){
@@ -39,7 +48,6 @@ public class MCSocket implements Runnable{
                 this.socket.receive(packet);
                 //CHAMA AQUI UMA THREAD QUE INTERPRETA O PACKET
                 String s = new String(packet.getData());
-                System.out.println("Ola " + s);
             } catch (IOException e) {
                 e.printStackTrace();
             }

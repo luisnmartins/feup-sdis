@@ -29,6 +29,15 @@ public class MDRSocket implements Runnable {
         return port;
     }
 
+    public void sendMessage(String msg){
+        DatagramPacket packet = new DatagramPacket(msg.getBytes(),msg.getBytes().length,this.address,this.port);
+        try {
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public void run() {
         while(true){

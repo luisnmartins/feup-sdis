@@ -1,4 +1,6 @@
 
+import ChunkInfo.ChunkInfo;
+
 import javax.xml.crypto.Data;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -27,8 +29,14 @@ public class Peer implements remoteInterface{
     private static MDBSocket MDB;
     private static MDRSocket MDR;
 
+    private static ExecutorService exec;
+
+    private static Hashtable<String,String> filesTables;
+    private static Hashtable<String, ChunkInfo> chunkTable;
+
     public Peer(String id) throws IOException {
         peerID = id ;
+        filesTables = new Hashtable<>();
         this.initiateSocketThreads();
 
     }
@@ -107,50 +115,29 @@ public class Peer implements remoteInterface{
         System.out.println("HELLO WORLD");
     }
 
-    //Manda mensagem para o canal especificado
-    void sendMessage(int type,String message) throws IOException {
-        DatagramPacket packet;
-
-        switch (type){
-            case 0: {
-                packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.MC.getAddress(),this.MC.getPort());
-                this.MC.getSocket().send(packet);
-                break;
-            }
-            case 1: {
-                packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.MDB.getAddress(),this.MDB.getPort());
-                this.MDB.getSocket().send(packet);
-                break;
-            }
-            case 2: {
-                packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.MDR.getAddress(),this.MDR.getPort());
-                this.MDR.getSocket().send(packet);
-                break;
-            }
-        }
-
-    }
-
     //Inicia as threads para os 3 canais necessarios
     public void initiateSocketThreads() throws IOException {
 
 
-        ExecutorService executor = Executors.newFixedThreadPool(5);
+        this.exec = Executors.newFixedThreadPool(15);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;
-        executor.execute(mcThread);
+        this.exec.execute(mcThread);
 
         //Thread para o canal MDB
         MDB = new MDBSocket();
         Runnable mdbThread = MDB;
-        executor.execute(mdbThread);
+        this.exec.execute(mdbThread);
 
         //Thread para o canal MDR
         MDR = new MDRSocket();
         Runnable mdrThread = MDR;
-        executor.execute(mdrThread);
+        this.exec.execute(mdrThread);
 
     }
 
+    public static ExecutorService getExec() {
+        return exec;
+    }
 }
