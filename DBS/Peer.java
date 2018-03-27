@@ -140,4 +140,16 @@ public class Peer implements remoteInterface{
     public static ExecutorService getExec() {
         return exec;
     }
+
+    public static MCSocket getMC() {
+        return MC;
+    }
+
+    public static MDBSocket getMDB() {
+        return MDB;
+    }
+
+    public static MDRSocket getMDR() {
+        return MDR;
+    }
 }
