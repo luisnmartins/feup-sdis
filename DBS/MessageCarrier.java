@@ -1,9 +1,9 @@
 public class MessageCarrier implements  Runnable{
 
-    private String message;
+    private Message message;
     private String channelToSend;
 
-    MessageCarrier(String message,String type){
+    MessageCarrier(Message message,String type){
         this.message = message;
         this.channelToSend = type;
     }
@@ -12,15 +12,15 @@ public class MessageCarrier implements  Runnable{
     public void run() {
         switch (channelToSend){
             case "MC":{
-                Peer.getMC().sendMessage(this.message);
+                Peer.getMC().sendMessage(this.message.getFullMessage());
                 break;
             }
             case "MDB":{
-                Peer.getMDB().sendMessage(this.message);
+                Peer.getMDB().sendMessage(this.message.getFullMessage());
                 break;
             }
             case "MDR":{
-                Peer.getMDR().sendMessage(this.message);
+                Peer.getMDR().sendMessage(this.message.getFullMessage());
                 break;
             }
 

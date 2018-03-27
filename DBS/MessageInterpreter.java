@@ -10,8 +10,11 @@ public class MessageInterpreter implements Runnable {
     public void run() {
         String type = this.message.trim();
         type = type.substring(0,type.indexOf(" "));
+        Message receivedMessage;
         switch (type){
-            case "BACKUP": {
+            case "PUTCHUNK": {
+                receivedMessage = new PutChunkMessage(this.message);
+                receivedMessage.action();
                 break;
             }
         }

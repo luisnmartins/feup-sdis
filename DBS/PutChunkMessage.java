@@ -1,7 +1,9 @@
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -14,9 +16,10 @@ public class PutChunkMessage extends Message {
     public PutChunkMessage(String message) {
 
         super(message);
-
-        String messageHeader =  message.substring(0, message.lastIndexOf("\r\n"));
-        String[] headerWords = messageHeader.split(" ");
+        System.out.println("TESTE: " +message);
+        String messageHeader =  message.substring(0, message.lastIndexOf(CRLF));
+        System.out.println("HEADER FINAL: "+messageHeader);
+        /*String[] headerWords = messageHeader.split(" ");
         String version = headerWords[1];
         String senderId = headerWords[2];
         String fileId = headerWords[3];
@@ -28,17 +31,11 @@ public class PutChunkMessage extends Message {
         byte[] data = message.substring(message.lastIndexOf("\r\n"), message.length()-1).getBytes();
         info.setData(data);
         this.info = info;
-        this.replicationDegree = Integer.parseInt(headerWords[5]);
-
-        try {
-            action();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        this.replicationDegree = Integer.parseInt(headerWords[5]);*/
 
     }
 
-    public void action() throws IOException {
+    public void action(){
 
         System.out.println("action called");
         /*ByteBuffer buffer = ByteBuffer.wrap(info.getData());
@@ -72,13 +69,26 @@ public class PutChunkMessage extends Message {
         this.replicationDegree = replicationDegree;
     }
 
-    public String getMessage() {
-        return "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + replicationDegree +
-                " " + CRLF +CRLF+info.getData();
+    public byte[] getFullMessage() {
+        String header = "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + replicationDegree +
+                " " + CRLF +CRLF;
+
+        ByteArrayOutputStream finalOutputStream = new ByteArrayOutputStream( );
+        byte[] headerBytes = header.getBytes();
+        byte[] data = info.getData();
+
+        try {
+            finalOutputStream.write(headerBytes);
+            finalOutputStream.write(data);
+        } catch (IOException e) {
+            System.err.println("Error create PutChunk Message");
+            e.printStackTrace();
+        }
+
+        byte[] finalByteArray = finalOutputStream.toByteArray();
+        System.out.println(finalByteArray.length);
+        return finalByteArray;
     }
-
-
-
 
 
 

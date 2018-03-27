@@ -30,8 +30,8 @@ public class MCSocket implements Runnable{
         return port;
     }
 
-    public void sendMessage(String msg){
-        DatagramPacket packet = new DatagramPacket(msg.getBytes(),msg.getBytes().length,this.address,this.port);
+    public void sendMessage(byte[] msg){
+        DatagramPacket packet = new DatagramPacket(msg,msg.length,this.address,this.port);
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -42,12 +42,14 @@ public class MCSocket implements Runnable{
     @Override
     public void run() {
         while(true){
-            byte[] buf = new byte[64];
+            byte[] buf = new byte[65536];
             DatagramPacket packet = new DatagramPacket(buf,buf.length);
             try {
                 this.socket.receive(packet);
                 //CHAMA AQUI UMA THREAD QUE INTERPRETA O PACKET
                 String s = new String(packet.getData());
+                Runnable receiver = new MessageInterpreter(s);
+                Peer.getExec().execute(receiver);
             } catch (IOException e) {
                 e.printStackTrace();
             }

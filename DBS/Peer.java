@@ -67,10 +67,9 @@ public class Peer implements remoteInterface{
     public void backup(String pathname, int replicationDegree) throws RemoteException {
 
         FileManager chunks = new FileManager(pathname); //create a FileManager to get file in chunks
-        List<String> messages = new ArrayList<String>(); //array to keep backup messages to send
         
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
-        Message messageToSend = new Message(fileId, "1.0", peerID); //initialize message
+
 
         try {
 
@@ -78,8 +77,10 @@ public class Peer implements remoteInterface{
 
             for(int i=0; i<chunksArray.size(); i++) {
 
-                messages.add(messageToSend.getPutChunk(chunksArray.get(i), replicationDegree));
-                System.out.println(messages.get(i));
+                Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
+                System.out.println("MESSAGE TO SEND: " +messageToSend.getFullMessage().length);
+                Runnable thread = new MessageCarrier(messageToSend, "MDB");
+                this.exec.execute(thread);
 
             }
 
@@ -119,7 +120,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = Executors.newFixedThreadPool(15);
+        this.exec = Executors.newFixedThreadPool(50);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;

@@ -1,3 +1,5 @@
+import java.io.IOException;
+
 public abstract class Message {
 
     protected static final String CRLF = "\r\n";
@@ -15,10 +17,12 @@ public abstract class Message {
         this.senderId = senderId;
     }
 
-    public String getMessage() {
-        return "Teste";
+    public byte[] getFullMessage() {
+        return new byte[5];
 
     }
+
+    public void action() {}
 
 
 
