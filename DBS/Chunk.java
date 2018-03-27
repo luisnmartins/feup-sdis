@@ -5,6 +5,10 @@ public class Chunk{
     private int chunkNo;
     private byte[] data;
 
+    public Chunk(int chunkNo) {
+        this.chunkNo = chunkNo;
+    }
+
     int getChunkNo(){
         return chunkNo;
     }

@@ -38,8 +38,7 @@ public class FileManager{
             Chunk chunk;
             while (bis.read(buffer) > 0) {
 
-                chunk = new Chunk();
-                chunk.setChunkNo(chunkNmb);
+                chunk = new Chunk(chunkNmb);
                 chunk.setData(buffer);
                 chunkNmb += 1;
                 chunksArray.add(chunk);
@@ -47,8 +46,7 @@ public class FileManager{
 
             File file = new File(pathname);
             if(file.length()%CHUNKSSIZE == 0) {
-                chunk = new Chunk();
-                chunk.setChunkNo(chunkNmb);
+                chunk = new Chunk(chunkNmb);
                 chunksArray.add(chunk);
             }
         }

@@ -1,11 +1,13 @@
-public class Message {
+public abstract class Message {
 
-    private static final String CRLF = "\r\n";
+    protected static final String CRLF = "\r\n";
 
-    private String fileId;
-    private String version;
-    private String senderId;
+    protected String fileId;
+    protected String version;
+    protected String senderId;
 
+
+    public Message(String message) {}
 
     public Message(String fileId, String version, String senderId){
         this.fileId = fileId;
@@ -13,9 +15,8 @@ public class Message {
         this.senderId = senderId;
     }
 
-    public String getPutChunk(Chunk info, int replicationDegree) {
-        return "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + replicationDegree +
-                " " + CRLF +CRLF+info.getData();
+    public String getMessage() {
+        return "Teste";
 
     }
 
