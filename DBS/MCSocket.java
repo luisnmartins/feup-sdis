@@ -46,9 +46,7 @@ public class MCSocket implements Runnable{
             DatagramPacket packet = new DatagramPacket(buf,buf.length);
             try {
                 this.socket.receive(packet);
-                //CHAMA AQUI UMA THREAD QUE INTERPRETA O PACKET
-                String s = new String(packet.getData());
-                Runnable receiver = new MessageInterpreter(s);
+                Runnable receiver = new MessageInterpreter(packet.getLength(),packet.getData());
                 Peer.getExec().execute(receiver);
             } catch (IOException e) {
                 e.printStackTrace();

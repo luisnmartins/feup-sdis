@@ -66,6 +66,7 @@ public class Peer implements remoteInterface{
     @Override
     public void backup(String pathname, int replicationDegree) throws RemoteException {
 
+
         FileManager chunks = new FileManager(pathname); //create a FileManager to get file in chunks
         
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
@@ -75,10 +76,10 @@ public class Peer implements remoteInterface{
 
             List<Chunk> chunksArray = chunks.splitFile(); //get an array with all the chunks
 
+
             for(int i=0; i<chunksArray.size(); i++) {
 
                 Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
-                System.out.println("MESSAGE TO SEND: " +messageToSend.getFullMessage().length);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB");
                 this.exec.execute(thread);
 

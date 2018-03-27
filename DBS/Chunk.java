@@ -1,4 +1,3 @@
-import java.io.File;
 
 public class Chunk{
 
@@ -19,7 +18,8 @@ public class Chunk{
         this.chunkNo = chunkNo;
     }
 
-    void setData(byte[] data) { this.data = data; }
+    void setData(int size, byte[] data) { this.data = new byte[size];
+                                        System.arraycopy(data, 0, this.data, 0, size); }
 
 
 }

@@ -35,12 +35,14 @@ public class FileManager{
         {
 
             int chunkNmb = 0;
-            while (bis.read(buffer) > 0) {
+            int size;
+            while ((size = bis.read(buffer)) > 0) {
 
                 Chunk chunk = new Chunk(chunkNmb);
-                chunk.setData(buffer);
+                chunk.setData(size, buffer);
                 chunkNmb += 1;
                 chunksArray.add(chunk);
+                buffer = new byte[CHUNKSSIZE];
             }
 
             File file = new File(pathname);

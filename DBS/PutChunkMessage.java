@@ -1,9 +1,7 @@
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -13,51 +11,51 @@ public class PutChunkMessage extends Message {
     private Chunk info;
     private int replicationDegree;
 
-    public PutChunkMessage(String message) {
+    public PutChunkMessage(String header, byte[] body) {
 
-        super(message);
-        System.out.println("TESTE: " +message);
-        String messageHeader =  message.substring(0, message.lastIndexOf(CRLF));
-        System.out.println("HEADER FINAL: "+messageHeader);
-        /*String[] headerWords = messageHeader.split(" ");
-        String version = headerWords[1];
-        String senderId = headerWords[2];
-        String fileId = headerWords[3];
-        this.fileId = fileId;
-        this.version = version;
-        this.senderId = senderId;
+        super(header);
+        String[] headerWords = header.split(" ");
 
         Chunk info = new Chunk(Integer.parseInt(headerWords[4]));
-        byte[] data = message.substring(message.lastIndexOf("\r\n"), message.length()-1).getBytes();
-        info.setData(data);
+        info.setData(body.length, body);
         this.info = info;
-        this.replicationDegree = Integer.parseInt(headerWords[5]);*/
+        this.replicationDegree = Integer.parseInt(headerWords[5]);
+
+        try {
+            action();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 
-    public void action(){
+    public void action() throws IOException {
 
-        System.out.println("action called");
-        /*ByteBuffer buffer = ByteBuffer.wrap(info.getData());
-        Path path = Paths.get(this.fileId+"_"+this.info.getChunkNo());
+        String filename = "CHUNKS/"+fileId+"."+info.getChunkNo();
+
+        try (FileOutputStream fos = new FileOutputStream(filename)) {
+            fos.write(info.getData());
+        }
+
+        /*Path path = Paths.get(filename);
         AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
 
-        CompletionHandler handler = new CompletionHandler<Integer,Object>() {
+        CompletionHandler handler = new CompletionHandler<Integer,ByteBuffer>() {
 
             @Override
-            public void completed(Integer result, Object attachment) {
+            public void completed(Integer result, ByteBuffer attachment) {
 
                 System.out.println(attachment + " completed and " + result + " bytes are written.");
             }
             @Override
-            public void failed(Throwable e, Object attachment) {
+            public void failed(Throwable e, ByteBuffer attachment) {
 
                 System.out.println(attachment + " failed with exception:");
                 e.printStackTrace();
             }
         };
 
-        channel.write(buffer, 0, "Write operation ALFA", handler);
+        channel.write(buffer,0,buffer,handler);
 
         channel.close();*/
 
@@ -73,7 +71,7 @@ public class PutChunkMessage extends Message {
         String header = "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + replicationDegree +
                 " " + CRLF +CRLF;
 
-        ByteArrayOutputStream finalOutputStream = new ByteArrayOutputStream( );
+        ByteArrayOutputStream finalOutputStream = new ByteArrayOutputStream();
         byte[] headerBytes = header.getBytes();
         byte[] data = info.getData();
 
