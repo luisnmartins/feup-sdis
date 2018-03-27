@@ -2,15 +2,33 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.nio.channels.Channel;
 
-public class ChannelListener implements Runnable {
+public class MDRSocket implements Runnable {
 
+    private static final String MDR_ADDR = "224.0.0.3";
     private MulticastSocket socket;
+    private int port;
+    private InetAddress address;
 
-    ChannelListener(MulticastSocket sc){
-        this.socket = sc;
+    MDRSocket() throws IOException {
+        this.port= 8002;
+        this.socket = new MulticastSocket(port);
+        this.address = InetAddress.getByName(MDR_ADDR);
+        this.socket.joinGroup(address);
     }
+
+    public MulticastSocket getSocket() {
+        return socket;
+    }
+
+    public InetAddress getAddress() {
+        return address;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
     @Override
     public void run() {
         while(true){

@@ -23,11 +23,13 @@ import java.util.concurrent.Executors;
 public class Peer implements remoteInterface{
 
     private String peerID;
-    private MulticastSockets multicasts;
+    private static MCSocket MC;
+    private static MDBSocket MDB;
+    private static MDRSocket MDR;
 
     public Peer(String id) throws IOException {
         peerID = id ;
-        this.multicasts = new MulticastSockets();
+        this.initiateSocketThreads();
 
     }
 
@@ -40,9 +42,6 @@ public class Peer implements remoteInterface{
 
         System.setProperty("java.net.preferIPv4Stack", "true");
         Peer peer = new Peer(args[0]);
-
-        peer.initiateThreads();
-
 
         //So para testar
         if(peer.peerID.equals(new String("3")) ){
@@ -80,6 +79,7 @@ public class Peer implements remoteInterface{
             e.printStackTrace();
         }
 
+
     }
 
     @Override
@@ -109,19 +109,22 @@ public class Peer implements remoteInterface{
 
     //Manda mensagem para o canal especificado
     void sendMessage(int type,String message) throws IOException {
-        DatagramPacket packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.multicasts.getAddress(type),this.multicasts.getPort(type));
+        DatagramPacket packet;
 
         switch (type){
             case 0: {
-                this.multicasts.MC.send(packet);
+                packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.MC.getAddress(),this.MC.getPort());
+                this.MC.getSocket().send(packet);
                 break;
             }
             case 1: {
-                this.multicasts.MDB.send(packet);
+                packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.MDB.getAddress(),this.MDB.getPort());
+                this.MDB.getSocket().send(packet);
                 break;
             }
             case 2: {
-                this.multicasts.MDR.send(packet);
+                packet = new DatagramPacket(message.getBytes(),message.getBytes().length,this.MDR.getAddress(),this.MDR.getPort());
+                this.MDR.getSocket().send(packet);
                 break;
             }
         }
@@ -129,19 +132,23 @@ public class Peer implements remoteInterface{
     }
 
     //Inicia as threads para os 3 canais necessarios
-    public void initiateThreads(){
+    public void initiateSocketThreads() throws IOException {
+
 
         ExecutorService executor = Executors.newFixedThreadPool(5);
         //Thread para o canal principal MC;
-        Runnable mcThread = new ChannelListener(this.multicasts.MC);
+        MC = new MCSocket();
+        Runnable mcThread = MC;
         executor.execute(mcThread);
 
         //Thread para o canal MDB
-        Runnable mdbThread = new ChannelListener(this.multicasts.MDB);
+        MDB = new MDBSocket();
+        Runnable mdbThread = MDB;
         executor.execute(mdbThread);
 
         //Thread para o canal MDR
-        Runnable mdrThread = new ChannelListener(this.multicasts.MDR);
+        MDR = new MDRSocket();
+        Runnable mdrThread = MDR;
         executor.execute(mdrThread);
 
     }
