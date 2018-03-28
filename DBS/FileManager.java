@@ -14,11 +14,11 @@ public class FileManager{
 
     public FileManager(String pathname) {
         this.pathname = pathname;
-        this.chunks = new ArrayList<Chunk>();
+        this.chunks = new ArrayList<>();
     }
 
     public FileManager() {
-        this.chunks = new ArrayList<Chunk>();
+        this.chunks = new ArrayList<>();
     }
 
     public List<Chunk> splitFile() throws IOException{
