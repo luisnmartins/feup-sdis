@@ -1,5 +1,4 @@
 
-import ChunkInfo.ChunkInfo;
 import java.util.*;
 import java.io.*;
 import java.rmi.RemoteException;
@@ -18,12 +17,10 @@ public class Peer implements remoteInterface{
 
     private static ScheduledThreadPoolExecutor exec;
 
-    private static Hashtable<String,String> filesTables;
-    private static Hashtable<String, ChunkInfo> chunkTable;
+
 
     public Peer(String id) throws IOException {
         peerID = id ;
-        filesTables = new Hashtable<>();
         this.initiateSocketThreads();
 
     }
