@@ -1,18 +1,8 @@
 
 import ChunkInfo.ChunkInfo;
-
-import javax.xml.crypto.Data;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.rmi.NotBoundException;
 import java.util.*;
 import java.io.*;
-import java.nio.file.*;
-import java.rmi.registry.Registry;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.concurrent.*;
 
 
@@ -21,7 +11,7 @@ import java.util.concurrent.*;
  */
 public class Peer implements remoteInterface{
 
-    private String peerID;
+    private static String peerID;
     private static MCSocket MC;
     private static MDBSocket MDB;
     private static MDRSocket MDR;
@@ -49,10 +39,10 @@ public class Peer implements remoteInterface{
         Peer peer = new Peer(args[0]);
 
         //So para testar
-        if(peer.peerID.equals(new String("3")) ){
+       /* if(peer.peerID.equals(new String("3")) ){
             System.out.println("ENTROU");
           //  peer.putchunk();
-        }
+        }*/
         //FIM de teste
 
         RMIHandler handler = new RMIHandler();
@@ -150,5 +140,9 @@ public class Peer implements remoteInterface{
 
     public static MDRSocket getMDR() {
         return MDR;
+    }
+
+    public static String getPeerID() {
+        return peerID;
     }
 }

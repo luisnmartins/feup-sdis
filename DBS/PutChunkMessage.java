@@ -31,18 +31,31 @@ public class PutChunkMessage extends Message implements Runnable {
     }
 
 
-    public void action() throws IOException {
+    public synchronized void action() throws IOException {
 
         //SLEEP
         //SEND STORED MESSAGE
 
+        if(this.senderId.equals(Peer.getPeerID())){
+            return;
+        }
+
+        //CHECK IF REPLICATION DEGREE IS STILL LOWER THAN DESIRED
+
         //STORE FILE
-        String filename = "CHUNKS/"+fileId+"."+info.getChunkNo();
+        String filename = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
+
+
+        File file = new File(filename);
+        file.getParentFile().mkdirs();
 
         try (FileOutputStream fos = new FileOutputStream(filename)) {
             fos.write(info.getData());
         }
 
+        Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+        Runnable thread = new MessageCarrier(messageToSend, "MDB");
+        Peer.getExec().execute(thread);
         /*Path path = Paths.get(filename);
         AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
 
