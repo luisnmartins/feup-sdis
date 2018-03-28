@@ -7,7 +7,7 @@ import java.nio.file.StandardOpenOption;
 
 public class PutChunkMessage extends Message implements Runnable {
 
-    private Chunk info;
+    private ChunkData info;
 
     public PutChunkMessage(String header, byte[] body) {
 
@@ -15,14 +15,14 @@ public class PutChunkMessage extends Message implements Runnable {
         super(header);
         String[] headerWords = header.split(" ");
 
-        Chunk info = new Chunk(Integer.parseInt(headerWords[4]));
+        ChunkData info = new ChunkData(Integer.parseInt(headerWords[4]));
         info.setReplicationDegree(Integer.parseInt(headerWords[5]));
         info.setData(body.length, body);
         this.info = info;
 
     }
 
-    public PutChunkMessage(String fileId, String version, String senderId, Chunk info, int replicationDegree) {
+    public PutChunkMessage(String fileId, String version, String senderId, ChunkData info, int replicationDegree) {
         super(fileId, version, senderId);
         this.info = info;
         info.setReplicationDegree(replicationDegree);

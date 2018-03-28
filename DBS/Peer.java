@@ -61,7 +61,7 @@ public class Peer implements remoteInterface{
 
         try {
 
-            List<Chunk> chunksArray = chunks.splitFile(); //get an array with all the chunks
+            List<ChunkData> chunksArray = chunks.splitFile(); //get an array with all the chunks
 
 
             for(int i=0; i<chunksArray.size(); i++) {

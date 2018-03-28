@@ -10,7 +10,7 @@ public class FileManager{
     private static final int CHUNKSSIZE = 64000;
 
     private String pathname;
-    private List<Chunk> chunks;
+    private List<ChunkData> chunks;
 
     public FileManager(String pathname) {
         this.pathname = pathname;
@@ -21,10 +21,10 @@ public class FileManager{
         this.chunks = new ArrayList<>();
     }
 
-    public List<Chunk> splitFile() throws IOException{
+    public List<ChunkData> splitFile() throws IOException{
 
         byte[] buffer = new byte[CHUNKSSIZE];
-        List<Chunk> chunksArray = new ArrayList<Chunk>();
+        List<ChunkData> chunksArray = new ArrayList<ChunkData>();
 
 
         //try-with-resources to ensure closing stream
@@ -38,7 +38,7 @@ public class FileManager{
             int size;
             while ((size = bis.read(buffer)) > 0) {
 
-                Chunk chunk = new Chunk(chunkNmb);
+                ChunkData chunk = new ChunkData(chunkNmb);
                 chunk.setData(size, buffer);
                 chunkNmb += 1;
                 chunksArray.add(chunk);
@@ -47,7 +47,7 @@ public class FileManager{
 
             File file = new File(pathname);
             if(file.length()%CHUNKSSIZE == 0) {
-                Chunk chunk = new Chunk(chunkNmb);
+                ChunkData chunk = new ChunkData(chunkNmb);
                 chunksArray.add(chunk);
             }
         }
