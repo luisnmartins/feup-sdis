@@ -1,9 +1,17 @@
 
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
+import java.nio.channels.CompletionHandler;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class FileManager{
 
@@ -38,6 +46,7 @@ public class FileManager{
             int size;
             while ((size = bis.read(buffer)) > 0) {
 
+                System.out.println(chunkNmb);
                 ChunkData chunk = new ChunkData(chunkNmb);
                 chunk.setData(size, buffer);
                 chunkNmb += 1;
@@ -88,6 +97,88 @@ public class FileManager{
             throw new RuntimeException(ex);
         }
     }
+
+    public void saveChunk(ChunkData info) throws IOException {
+
+        File file = new File(pathname);
+        if(!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        }
+
+        Path path = file.toPath();
+        ByteBuffer buffer = ByteBuffer.wrap(info.getData());
+
+        AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
+
+        CompletionHandler handler = new CompletionHandler<Integer, Object>() {
+
+            @Override
+            public void completed(Integer result, Object attachment) {
+
+                System.out.println(attachment + " completed and " + result + " bytes were written.");
+                try {
+                    channel.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void failed(Throwable e, Object attachment) {
+
+                System.out.println(attachment + " failed with exception:");
+                try {
+                    channel.close();
+                } catch (IOException exc) {
+                    exc.printStackTrace();
+                }
+                e.printStackTrace();
+            }
+        };
+
+        channel.write(buffer,0, "Chunk saving", handler);
+    }
+
+    public byte[] readEntireFileData() throws IOException{
+        Path path = Paths.get(pathname);
+
+        AsynchronousFileChannel channel =  AsynchronousFileChannel.open(path, StandardOpenOption.READ);
+
+        ByteBuffer buffer = ByteBuffer.allocate(CHUNKSSIZE);
+        byte[] resultBuffer;
+
+        CompletionHandler handler = new CompletionHandler<Integer, Object>() {
+
+            @Override
+            public void completed(Integer result, Object attachment) {
+
+                System.out.println(attachment + " completed and " + result + " bytes were read.");
+
+                try {
+                    channel.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void failed(Throwable e, Object attachment) {
+
+                System.out.println(attachment + " failed with exception:");
+                try {
+                    channel.close();
+                } catch (IOException exc) {
+                    exc.printStackTrace();
+                }
+                e.printStackTrace();
+            }
+        };
+
+        channel.read(buffer,0, "Chunk read", handler);
+        resultBuffer = new byte[buffer.position()];
+        buffer.get(resultBuffer);
+        return resultBuffer;
+    }
+
     
     
 

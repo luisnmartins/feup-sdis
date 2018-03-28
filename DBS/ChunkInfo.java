@@ -1,20 +1,19 @@
-package ChunkInfo;
 
 public class ChunkInfo {
 
-    private String fileID;
+    private int chunkNo;
     private int currentReplicationDegree;
     private Integer desiredReplicationDegree = null;
 
-    public ChunkInfo(String fileID, int rdd, int rda){
-        this.fileID = fileID;
+    public ChunkInfo(int chunkNo, int rdd, int rda){
+        this.chunkNo = chunkNo;
         this.currentReplicationDegree=rdd;
         this.desiredReplicationDegree = rda;
 
     }
 
-    public ChunkInfo(String fileID){
-        this.fileID = fileID;
+    public ChunkInfo(int chunkNo){
+        this.chunkNo = chunkNo;
         this.currentReplicationDegree = 1;
 
     }
@@ -34,8 +33,8 @@ public class ChunkInfo {
         return desiredReplicationDegree;
     }
 
-    public String getFileID() {
-        return fileID;
+    public int getChunkNo() {
+        return chunkNo;
     }
 
     public void addReplicationDegree(){

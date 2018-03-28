@@ -1,4 +1,3 @@
-import ChunkInfo.ChunkInfo;
 
 public class StoredMessage extends Message{
 
@@ -17,12 +16,18 @@ public class StoredMessage extends Message{
 
     }
 
-    public void interpretStore(){
-        if(Peer.getStateManager().chunkExists(this.chunkNo)){
-            Peer.getStateManager().updateChunk(this.chunkNo);
+    public void InterpretStore(){
+
+        if(this.senderId.equals(Peer.getPeerID())){
+            return;
+        }
+        String fileIdKey = this.fileId.trim()+"."+this.chunkNo;
+        if(Peer.getStateManager().chunkExists(fileIdKey)){
+            Peer.getStateManager().updateChunk(fileIdKey);
+
         }else{
-            ChunkInfo chunkInfo = new ChunkInfo(this.fileId);
-            Peer.getStateManager().addChunk(this.chunkNo,chunkInfo);
+            ChunkInfo chunkInfo = new ChunkInfo(this.chunkNo);
+            Peer.getStateManager().addChunk(fileIdKey,chunkInfo);
         }
     }
 

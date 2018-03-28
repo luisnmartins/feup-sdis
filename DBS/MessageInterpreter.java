@@ -1,5 +1,9 @@
-import ChunkInfo.ChunkInfo;
+import javafx.util.Pair;
+
+import java.net.Inet4Address;
 import java.util.Random;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class MessageInterpreter implements Runnable {
@@ -9,9 +13,11 @@ public class MessageInterpreter implements Runnable {
 
     private String header;
     private byte[] body;
+    private BlockingQueue<Pair<Integer,byte[]>> bQueue;
 
-    public MessageInterpreter(int size, byte[] data){
+    public MessageInterpreter(){bQueue = new LinkedBlockingQueue<>();}
 
+    public void separateMessage(int size,byte[] data){
         int i=0;
         for(; i<size; i++) {
             if(i <= size-5) {
@@ -34,28 +40,53 @@ public class MessageInterpreter implements Runnable {
         } else {
             this.body = null;
         }
-
-
     }
 
     @Override
     public void run() {
-        String messageType = this.header.substring(0,this.header.indexOf(" "));
-        Message receivedMessage;
-        switch (messageType){
-            case "PUTCHUNK": {
-                Runnable putchunk = new PutChunkMessage(header, body);
-                Random rand = new Random();
-                int randomTime = rand.nextInt(399);
-                Peer.getExec().schedule(putchunk,randomTime,TimeUnit.MILLISECONDS);
-                break;
+        while(true){
+
+            try {
+                Pair<Integer,byte[]> pair  = bQueue.take();
+                this.separateMessage(pair.getKey(),pair.getValue());
+                String messageType = this.header.substring(0,this.header.indexOf(" "));
+                switch (messageType){
+                    case "PUTCHUNK": {
+                        Runnable putchunk = new PutChunkMessage(header, body);
+                        Random rand = new Random();
+                        int randomTime = rand.nextInt(399);
+                        Peer.getExec().schedule(putchunk,randomTime,TimeUnit.MILLISECONDS);
+                        break;
+                    }
+                    case "STORED":{
+                        StoredMessage stored = new StoredMessage(header);
+                        stored.InterpretStore();
+                        break;
+                    }
+                    case "GETCHUNK": {
+                        GetChunkMessage getChunkMessage = new GetChunkMessage(header);
+                        getChunkMessage.interpreter();
+                        break;
+                    }
+                    case "CHUNK":{
+
+                    }
+                }
+            } catch (InterruptedException e) {
+                continue;
             }
-            case "STORED":{
-                StoredMessage stored = new StoredMessage(header);
-            }
+
+
+
         }
 
     }
 
-
+    public void putInQueue(Pair<Integer,byte[]> pair){
+        try {
+            this.bQueue.put(pair);
+        } catch (InterruptedException e) {
+            return;
+        }
+    }
 }

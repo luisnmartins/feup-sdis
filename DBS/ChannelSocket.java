@@ -1,7 +1,12 @@
+import javafx.util.Pair;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public abstract class ChannelSocket implements Runnable {
 
@@ -45,8 +50,8 @@ public abstract class ChannelSocket implements Runnable {
             DatagramPacket packet = new DatagramPacket(buf,buf.length);
             try {
                 this.socket.receive(packet);
-                Runnable receiver = new MessageInterpreter(packet.getLength(), packet.getData());
-                Peer.getExec().execute(receiver);
+                Pair<Integer,byte[]> pair = new Pair<>(packet.getLength(),packet.getData());
+                Peer.getMessageInterpreter().putInQueue(pair);
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -14,6 +14,7 @@ public class Peer implements remoteInterface{
     private static MCSocket MC;
     private static MDBSocket MDB;
     private static MDRSocket MDR;
+    private static MessageInterpreter messageInterpreter;
 
     private static ScheduledThreadPoolExecutor exec;
     private static StatusManager stateManager;
@@ -57,10 +58,12 @@ public class Peer implements remoteInterface{
         
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
-        if(this.stateManager.fileExists(pathname)){
-            this.stateManager.deleteFile(pathname);
+
+        if(this.stateManager.deleteFile(pathname)){
+
             //TODO
             //REMOVE TODAS AS CHUNKS QUE EXISTEM DESSE FICHEIRO EM TODOS OS PEER PARA FAZER UPDATE
+
         }
         this.stateManager.addFile(pathname,fileId);
         try {
@@ -72,7 +75,9 @@ public class Peer implements remoteInterface{
 
                 Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB");
-                this.exec.execute(thread);
+                Random rand = new Random();
+                int randomTime = rand.nextInt(1000);
+                Peer.getExec().schedule(thread,randomTime,TimeUnit.MILLISECONDS);
 
             }
 
@@ -128,6 +133,10 @@ public class Peer implements remoteInterface{
         Runnable mdrThread = MDR;
         this.exec.execute(mdrThread);
 
+        messageInterpreter = new MessageInterpreter();
+        Runnable interpreterThread = messageInterpreter;
+        this.exec.execute(interpreterThread);
+
     }
 
     public static ScheduledExecutorService getExec() {
@@ -152,5 +161,9 @@ public class Peer implements remoteInterface{
 
     public static StatusManager getStateManager() {
         return stateManager;
+    }
+
+    public static MessageInterpreter getMessageInterpreter() {
+        return messageInterpreter;
     }
 }

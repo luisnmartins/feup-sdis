@@ -1,69 +1,109 @@
-import ChunkInfo.ChunkInfo;
-import javafx.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
 
 public class StatusManager {
 
-    private static Hashtable<String,String> filesTables;
-    private static Hashtable<Integer, ChunkInfo> chunkTable;
-    private static Hashtable<String,Pair<Integer,Integer>> chunkStorages;
+    private static Hashtable<String,String> filesTables; //pathname fileId;
+    private static Hashtable<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
+    private static List<String> backupedUpFiles;
+    private static List<ChunkData> chunksToRestore;
 
     StatusManager(){
         this.filesTables = new Hashtable<>();
         this.chunkTable = new Hashtable<>();
+        this.backupedUpFiles = new ArrayList<>();
     }
 
-    public  synchronized void addFile(String pathname,String fileID){
-        filesTables.put(pathname,fileID);
-
-    }
-    public synchronized void addChunk(int chunkNo,ChunkInfo chunkInfo){
-        chunkTable.put(chunkNo,chunkInfo);
+    public synchronized void addBackupedUpFile(String fileId, int chunkNo) {
+        String file = fileId+"."+String.valueOf(chunkNo);
+        backupedUpFiles.add(file);
+        System.out.println("BACKEDUP: " +backupedUpFiles);
     }
 
-    public synchronized void updateChunk(int chunkId){
-        ChunkInfo info = chunkTable.get(chunkId);
+    public synchronized String hasBackupUp(String fileId, int chunkNo) {
+        String file = fileId+"."+String.valueOf(chunkNo);
+        if(backupedUpFiles.contains(file))
+            return file;
+        else return null;
+    }
+
+
+    public  synchronized void addFile(String pathname,String fileId){
+        filesTables.put(pathname,fileId);
+
+    }
+    public synchronized void addChunk(String fileIdKey,ChunkInfo chunkInfo){
+        chunkTable.put(fileIdKey,chunkInfo);
+    }
+
+    public synchronized void updateChunk(String fileIdKey){
+        ChunkInfo info = chunkTable.get(fileIdKey);
         info.addReplicationDegree();
     }
 
-    public synchronized void updateChunkRep(int chunkId,int rep){
-        ChunkInfo info = chunkTable.get(chunkId);
+    public synchronized void updateChunkRep(String fileIdKey,int rep){
+        ChunkInfo info = chunkTable.get(fileIdKey);
         info.setDesiredReplicationDegree(rep);
     }
 
-    public synchronized void deleteFile(String pathname){
-        String fileId = new String(filesTables.get(pathname));
+
+    public synchronized boolean deleteFile(String pathname){
+
+        String fileId = filesTables.get(pathname);
+        if(fileId == null)
+            return false;
+        fileId = new String(fileId);
         filesTables.remove(pathname);
-        Set<Integer> keys = chunkTable.keySet();
-        for(Integer key:keys){
-            if(chunkTable.get(key).getFileID().equals(fileId)){
+        Set<String> keys = chunkTable.keySet();
+        for(String key:keys){
+            if(key.contains(fileId)){
                 chunkTable.remove(key);
             }
         }
+        return true;
+
+
 
     }
 
-    public synchronized boolean chunkExists(int chunkId){
-        if(chunkTable.get(chunkId) == null){
+    public synchronized int getChunkNumber(String fileIdKey){
+       return chunkTable.get(fileIdKey).getChunkNo();
+    }
+
+    public synchronized boolean checkHasAllChunks(){
+        boolean checkFlag = false;
+        for(ChunkData chunk : chunksToRestore){
+            if(chunk.getData() == null  || chunk.getData().length < 64000 ){
+                checkFlag = true;
+            }
+        }
+
+        if(checkFlag == true){
+            int i = 0;
+            for(ChunkData chunkData : chunksToRestore){
+
+            }
+        }else return false;
+       return false;
+    }
+
+
+    public synchronized boolean chunkExists(String fileIdKey){
+        if(chunkTable.get(fileIdKey) == null){
             return false;
         }else return true;
 
 
     }
 
-    public synchronized boolean fileExists(String pathname){
-        if(filesTables.get(pathname) == null)
-            return false;
-        else return true;
+    public synchronized boolean checkChunkStatus(String fileIdKey){
+        return chunkTable.get(fileIdKey).isDesired();
     }
 
-    public synchronized boolean checkChunkStatus(int chunkId){
-        return chunkTable.get(chunkId).isDesired();
-    }
-
-    public static Hashtable<Integer, ChunkInfo> getChunkTable() {
+    public static Hashtable<String, ChunkInfo> getChunkTable() {
         return chunkTable;
     }
 

@@ -1,4 +1,3 @@
-import ChunkInfo.ChunkInfo;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -6,6 +5,8 @@ import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Hashtable;
+import java.util.Set;
 
 public class PutChunkMessage extends Message implements Runnable {
 
@@ -39,11 +40,12 @@ public class PutChunkMessage extends Message implements Runnable {
             return;
         }
 
+        String fileIdKey = fileId.trim()+"."+info.getChunkNo();
 
-        if(Peer.getStateManager().chunkExists(info.getChunkNo()) ){
+        if(Peer.getStateManager().chunkExists(fileIdKey) ){
 
-            Peer.getStateManager().updateChunkRep(info.getChunkNo(),info.getReplicationDegree());
-            if(Peer.getStateManager().checkChunkStatus(info.getChunkNo()))
+            Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree());
+            if(Peer.getStateManager().checkChunkStatus(fileIdKey))
                 return;
         }
 
@@ -53,55 +55,30 @@ public class PutChunkMessage extends Message implements Runnable {
         Peer.getExec().execute(thread);
 
         //Store chunk data
-        String filename = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
+        String pathname = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
 
-
-        File file = new File(filename);
-        if(!file.exists()) {
-            file.getParentFile().mkdirs();
-            file.createNewFile();
+        FileManager file = new FileManager(pathname);
+        try {
+            file.saveChunk(info);
+        }catch(IOException e){
+            e.printStackTrace();
         }
 
-        Path path = file.toPath();
-        ByteBuffer buffer = ByteBuffer.wrap(info.getData());
-
-        AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
-
-        CompletionHandler handler = new CompletionHandler<Integer, Object>() {
-
-            @Override
-            public void completed(Integer result, Object attachment) {
-
-                System.out.println(attachment + " completed and " + result + " bytes are written.");
-                try {
-                    channel.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            @Override
-            public void failed(Throwable e, Object attachment) {
-
-                System.out.println(attachment + " failed with exception:");
-                try {
-                    channel.close();
-                } catch (IOException exc) {
-                    exc.printStackTrace();
-                }
-                e.printStackTrace();
-            }
-        };
-
-        channel.write(buffer,0, "Chunk saving", handler);
-
-        if(Peer.getStateManager().chunkExists(info.getChunkNo())){
-            Peer.getStateManager().updateChunk(info.getChunkNo());
+        //updates the hashtable incrementing the chunk replicationdegree
+        if(Peer.getStateManager().chunkExists(fileIdKey)){
+            Peer.getStateManager().updateChunk(fileIdKey);
         }else{
-            ChunkInfo chunkInfo = new ChunkInfo(this.fileId,1,info.getReplicationDegree());
-            Peer.getStateManager().addChunk(info.getChunkNo(),chunkInfo);
+            ChunkInfo chunkInfo = new ChunkInfo(info.getChunkNo(),1,info.getReplicationDegree());
+            Peer.getStateManager().addChunk(fileIdKey,chunkInfo);
 
         }
+        Peer.getStateManager().addBackupedUpFile(this.fileId, this.info.getChunkNo());
 
+        Hashtable<String,ChunkInfo> HASH = Peer.getStateManager().getChunkTable();
+        Set<String> keys = HASH.keySet();
+        for(String key:keys){
+            System.out.println("Chunk table key: " + key + " value "+ HASH.get(key).getChunkNo());
+        }
 
 
     }
