@@ -16,12 +16,14 @@ public class Peer implements remoteInterface{
     private static MDRSocket MDR;
 
     private static ScheduledThreadPoolExecutor exec;
+    private static StatusManager stateManager;
 
 
 
     public Peer(String id) throws IOException {
         peerID = id ;
         this.initiateSocketThreads();
+        this.stateManager = new StatusManager();
 
     }
 
@@ -55,7 +57,12 @@ public class Peer implements remoteInterface{
         
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
-
+        if(this.stateManager.fileExists(pathname)){
+            this.stateManager.deleteFile(pathname);
+            //TODO
+            //REMOVE TODAS AS CHUNKS QUE EXISTEM DESSE FICHEIRO EM TODOS OS PEER PARA FAZER UPDATE
+        }
+        this.stateManager.addFile(pathname,fileId);
         try {
 
             List<ChunkData> chunksArray = chunks.splitFile(); //get an array with all the chunks
@@ -105,7 +112,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(50);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1000);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;
@@ -141,5 +148,9 @@ public class Peer implements remoteInterface{
 
     public static String getPeerID() {
         return peerID;
+    }
+
+    public static StatusManager getStateManager() {
+        return stateManager;
     }
 }

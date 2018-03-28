@@ -1,3 +1,5 @@
+import ChunkInfo.ChunkInfo;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -29,7 +31,7 @@ public class PutChunkMessage extends Message implements Runnable {
     }
 
 
-    public synchronized void action() throws IOException {
+    public void action() throws IOException {
 
         //SEND STORED MESSAGE
 
@@ -38,6 +40,9 @@ public class PutChunkMessage extends Message implements Runnable {
         }
 
         //CHECK IF REPLICATION DEGREE IS STILL LOWER THAN DESIRED
+        if(Peer.getStateManager().checkChunkStatus(info.getChunkNo())){
+            return;
+        }
 
 
         //Send Stored message
@@ -86,6 +91,15 @@ public class PutChunkMessage extends Message implements Runnable {
         };
 
         channel.write(buffer,0, "Chunk saving", handler);
+
+        if(Peer.getStateManager().chunkExists(info.getChunkNo())){
+            Peer.getStateManager().updateChunk(info.getChunkNo());
+        }else{
+            ChunkInfo chunkInfo = new ChunkInfo(this.fileId,1,info.getReplicationDegree());
+            Peer.getStateManager().addChunk(info.getChunkNo(),chunkInfo);
+
+        }
+
 
 
     }
