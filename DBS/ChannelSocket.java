@@ -30,6 +30,7 @@ public abstract class ChannelSocket implements Runnable {
 
         DatagramPacket packet = new DatagramPacket(textMessage,textMessage.length,this.address,this.port);
         try {
+            System.out.println("TAMANHO: " + packet.getData().length);
             socket.send(packet);
         } catch (IOException e) {
             e.printStackTrace();

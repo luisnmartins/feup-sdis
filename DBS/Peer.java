@@ -112,7 +112,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(1000);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;

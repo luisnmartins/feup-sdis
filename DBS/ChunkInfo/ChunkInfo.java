@@ -4,7 +4,7 @@ public class ChunkInfo {
 
     private String fileID;
     private int currentReplicationDegree;
-    private final int desiredReplicationDegree;
+    private Integer desiredReplicationDegree = null;
 
     public ChunkInfo(String fileID, int rdd, int rda){
         this.fileID = fileID;
@@ -13,9 +13,15 @@ public class ChunkInfo {
 
     }
 
+    public ChunkInfo(String fileID){
+        this.fileID = fileID;
+        this.currentReplicationDegree = 1;
+
+    }
+
 
     public boolean isDesired(){
-        if(currentReplicationDegree == desiredReplicationDegree)
+        if(currentReplicationDegree >= desiredReplicationDegree)
             return true;
         else return false;
     }
@@ -38,5 +44,13 @@ public class ChunkInfo {
 
     public void decReplicationDegree(){
         this.currentReplicationDegree--;
+    }
+
+    public void setCurrentReplicationDegree(int currentReplicationDegree) {
+        this.currentReplicationDegree = currentReplicationDegree;
+    }
+
+    public void setDesiredReplicationDegree(int desiredReplicationDegree) {
+        this.desiredReplicationDegree = desiredReplicationDegree;
     }
 }

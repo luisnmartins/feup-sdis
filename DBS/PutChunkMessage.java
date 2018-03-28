@@ -39,11 +39,13 @@ public class PutChunkMessage extends Message implements Runnable {
             return;
         }
 
-        //CHECK IF REPLICATION DEGREE IS STILL LOWER THAN DESIRED
-        if(Peer.getStateManager().checkChunkStatus(info.getChunkNo())){
-            return;
-        }
 
+        if(Peer.getStateManager().chunkExists(info.getChunkNo()) ){
+
+            Peer.getStateManager().updateChunkRep(info.getChunkNo(),info.getReplicationDegree());
+            if(Peer.getStateManager().checkChunkStatus(info.getChunkNo()))
+                return;
+        }
 
         //Send Stored message
         Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());

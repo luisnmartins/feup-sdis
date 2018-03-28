@@ -1,4 +1,5 @@
 import ChunkInfo.ChunkInfo;
+import javafx.util.Pair;
 
 import java.util.Hashtable;
 import java.util.Set;
@@ -7,6 +8,7 @@ public class StatusManager {
 
     private static Hashtable<String,String> filesTables;
     private static Hashtable<Integer, ChunkInfo> chunkTable;
+    private static Hashtable<String,Pair<Integer,Integer>> chunkStorages;
 
     StatusManager(){
         this.filesTables = new Hashtable<>();
@@ -24,6 +26,11 @@ public class StatusManager {
     public synchronized void updateChunk(int chunkId){
         ChunkInfo info = chunkTable.get(chunkId);
         info.addReplicationDegree();
+    }
+
+    public synchronized void updateChunkRep(int chunkId,int rep){
+        ChunkInfo info = chunkTable.get(chunkId);
+        info.setDesiredReplicationDegree(rep);
     }
 
     public synchronized void deleteFile(String pathname){
@@ -48,8 +55,8 @@ public class StatusManager {
 
     public synchronized boolean fileExists(String pathname){
         if(filesTables.get(pathname) == null)
-            return true;
-        else return false;
+            return false;
+        else return true;
     }
 
     public synchronized boolean checkChunkStatus(int chunkId){

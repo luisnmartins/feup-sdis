@@ -1,4 +1,4 @@
-
+import ChunkInfo.ChunkInfo;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -46,9 +46,12 @@ public class MessageInterpreter implements Runnable {
             case "PUTCHUNK": {
                 Runnable putchunk = new PutChunkMessage(header, body);
                 Random rand = new Random();
-                int randTime = rand.nextInt(399);
-                Peer.getExec().schedule(putchunk, randTime, TimeUnit.MILLISECONDS);
+                int randomTime = rand.nextInt(399);
+                Peer.getExec().schedule(putchunk,randomTime,TimeUnit.MILLISECONDS);
                 break;
+            }
+            case "STORED":{
+                StoredMessage stored = new StoredMessage(header);
             }
         }
 
