@@ -3,7 +3,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 public class PutChunkMessage extends Message implements Runnable {
@@ -33,7 +32,6 @@ public class PutChunkMessage extends Message implements Runnable {
 
     public synchronized void action() throws IOException {
 
-        //SLEEP
         //SEND STORED MESSAGE
 
         if(this.senderId.equals(Peer.getPeerID())){
@@ -42,61 +40,70 @@ public class PutChunkMessage extends Message implements Runnable {
 
         //CHECK IF REPLICATION DEGREE IS STILL LOWER THAN DESIRED
 
-        //STORE FILE
+
+        //Send Stored message
+        Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+        Runnable thread = new MessageCarrier(messageToSend, "MDB");
+        Peer.getExec().execute(thread);
+
+        //Store chunk data
         String filename = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
 
 
         File file = new File(filename);
-        file.getParentFile().mkdirs();
-
-        try (FileOutputStream fos = new FileOutputStream(filename)) {
-            fos.write(info.getData());
+        if(!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
         }
 
-        Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
-        Runnable thread = new MessageCarrier(messageToSend, "MDB");
-        Peer.getExec().execute(thread);
-        /*Path path = Paths.get(filename);
+        Path path = file.toPath();
+        ByteBuffer buffer = ByteBuffer.wrap(info.getData());
+
         AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
 
-        CompletionHandler handler = new CompletionHandler<Integer,ByteBuffer>() {
+        CompletionHandler handler = new CompletionHandler<Integer, Object>() {
 
             @Override
-            public void completed(Integer result, ByteBuffer attachment) {
+            public void completed(Integer result, Object attachment) {
 
                 System.out.println(attachment + " completed and " + result + " bytes are written.");
+                try {
+                    channel.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             @Override
-            public void failed(Throwable e, ByteBuffer attachment) {
+            public void failed(Throwable e, Object attachment) {
 
                 System.out.println(attachment + " failed with exception:");
+                try {
+                    channel.close();
+                } catch (IOException exc) {
+                    exc.printStackTrace();
+                }
                 e.printStackTrace();
             }
         };
 
-        channel.write(buffer,0,buffer,handler);
+        channel.write(buffer,0, "Chunk saving", handler);
 
-        channel.close();*/
 
     }
 
     public byte[] getFullMessage() {
+
         String header = "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + replicationDegree +
                 " " + CRLF +CRLF;
 
-        ByteArrayOutputStream finalOutputStream = new ByteArrayOutputStream();
+
         byte[] headerBytes = header.getBytes();
         byte[] data = info.getData();
+        byte[] finalByteArray = new byte[headerBytes.length+data.length];
 
-        try {
-            finalOutputStream.write(headerBytes);
-            finalOutputStream.write(data);
-        } catch (IOException e) {
-            System.err.println("Error create PutChunk Message");
-            e.printStackTrace();
-        }
+        System.arraycopy( headerBytes, 0, finalByteArray, 0, headerBytes.length);
+        System.arraycopy( data, 0, finalByteArray, headerBytes.length, data.length );
 
-        byte[] finalByteArray = finalOutputStream.toByteArray();
         return finalByteArray;
     }
 

@@ -24,8 +24,11 @@ public abstract class ChannelSocket implements Runnable {
         return port;
     }
 
-    public void sendMessage(byte[] msg){
-        DatagramPacket packet = new DatagramPacket(msg,msg.length,this.address,this.port);
+    public void sendMessage(Message msg){
+
+        byte[] textMessage = msg.getFullMessage();
+
+        DatagramPacket packet = new DatagramPacket(textMessage,textMessage.length,this.address,this.port);
         try {
             socket.send(packet);
         } catch (IOException e) {
@@ -41,7 +44,6 @@ public abstract class ChannelSocket implements Runnable {
             DatagramPacket packet = new DatagramPacket(buf,buf.length);
             try {
                 this.socket.receive(packet);
-                System.out.println(new String(packet.getData()));
                 Runnable receiver = new MessageInterpreter(packet.getLength(), packet.getData());
                 Peer.getExec().execute(receiver);
             } catch (IOException e) {

@@ -12,15 +12,15 @@ public class MessageCarrier implements  Runnable{
     public void run() {
         switch (channelToSend){
             case "MC":{
-                Peer.getMC().sendMessage(this.message.getFullMessage());
+                Peer.getMC().sendMessage(this.message);
                 break;
             }
             case "MDB":{
-                Peer.getMDB().sendMessage(this.message.getFullMessage());
+                Peer.getMDB().sendMessage(this.message);
                 break;
             }
             case "MDR":{
-                Peer.getMDR().sendMessage(this.message.getFullMessage());
+                Peer.getMDR().sendMessage(this.message);
                 break;
             }
 

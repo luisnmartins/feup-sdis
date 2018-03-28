@@ -25,6 +25,7 @@ public class MessageInterpreter implements Runnable {
         this.header = new String(headerByte);
         this.header = this.header.trim();
 
+        System.out.println(this.header);
 
         if(size > i+3) {
             this.body = new byte[size - i - 4];

@@ -46,7 +46,7 @@ public class Peer implements remoteInterface{
         //FIM de teste
 
         RMIHandler handler = new RMIHandler();
-        handler.sendToRegistry(peer,peer.peerID);
+        handler.sendToRegistry(peer,peerID);
 
       }
 
