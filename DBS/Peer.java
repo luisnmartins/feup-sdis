@@ -60,6 +60,7 @@ public class Peer implements remoteInterface{
             //TODO
             //REMOVE TODAS AS CHUNKS QUE EXISTEM DESSE FICHEIRO EM TODOS OS PEER PARA FAZER UPDATE
 
+            this.delete(pathname);
         }
         this.stateManager.addFile(pathname,fileId);
         try {
@@ -139,9 +140,6 @@ public class Peer implements remoteInterface{
             Message deleteMessage = new DeleteMessage(fileId, "1.0", peerID);
             Runnable thread = new MessageCarrier(deleteMessage, "MC");
             Peer.getExec().execute(thread);
-
-            stateManager.removeChunks(fileId);
-            stateManager.getFilesTables().remove(pathname);
         }
 
     }
