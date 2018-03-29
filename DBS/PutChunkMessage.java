@@ -68,7 +68,8 @@ public class PutChunkMessage extends Message implements Runnable {
         if(Peer.getStateManager().chunkExists(fileIdKey)){
             Peer.getStateManager().updateChunk(fileIdKey);
         }else{
-            ChunkInfo chunkInfo = new ChunkInfo(info.getChunkNo(),1,info.getReplicationDegree());
+
+            ChunkInfo chunkInfo = new ChunkInfo(info.getChunkNo(),1,info.getReplicationDegree(),info.getData().length);
             Peer.getStateManager().addChunk(fileIdKey,chunkInfo);
 
         }

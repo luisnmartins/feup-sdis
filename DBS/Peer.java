@@ -109,6 +109,7 @@ public class Peer implements remoteInterface{
             String string_aux = stateManager.getBackupedUpFiles().get(i);
             System.out.println("Chunk:  " + stateManager.getBackupedUpFiles().get(i));
             System.out.println("   CurrentReplicationDegree: " + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
+            System.out.println("   Chunk size: " + stateManager.getChunkTable().get(string_aux).getSize() + " Bytes");
         }
 
 

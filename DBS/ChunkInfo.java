@@ -8,12 +8,14 @@ public class ChunkInfo {
     private int chunkNo;
     private int currentReplicationDegree;
     private Integer desiredReplicationDegree = null;
+    private int size;
     private Set<String> peers;
 
-    public ChunkInfo(int chunkNo, int rdd, int rda){
+    public ChunkInfo(int chunkNo, int rdd, int rda,int size){
         this.chunkNo = chunkNo;
         this.currentReplicationDegree=rdd;
         this.desiredReplicationDegree = rda;
+        this.size = size;
         peers = new HashSet<>();
 
     }
@@ -21,6 +23,7 @@ public class ChunkInfo {
     public ChunkInfo(int chunkNo){
         this.chunkNo = chunkNo;
         this.currentReplicationDegree = 1;
+        this.size = -1;
         peers = new HashSet<>();
 
     }
@@ -71,5 +74,9 @@ public class ChunkInfo {
 
     public void setDesiredReplicationDegree(int desiredReplicationDegree) {
         this.desiredReplicationDegree = desiredReplicationDegree;
+    }
+
+    public int getSize() {
+        return size;
     }
 }
