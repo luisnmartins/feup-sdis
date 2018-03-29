@@ -46,7 +46,6 @@ public class FileManager{
             int size;
             while ((size = bis.read(buffer)) > 0) {
 
-                System.out.println(chunkNmb);
                 ChunkData chunk = new ChunkData(chunkNmb);
                 chunk.setData(size, buffer);
                 chunkNmb += 1;
@@ -108,6 +107,7 @@ public class FileManager{
 
         Path path = file.toPath();
         ByteBuffer buffer = ByteBuffer.wrap(info.getData());
+
 
         AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
 

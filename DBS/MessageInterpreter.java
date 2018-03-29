@@ -31,7 +31,6 @@ public class MessageInterpreter implements Runnable {
         this.header = new String(headerByte);
         this.header = this.header.trim();
 
-        System.out.println(this.header);
 
         if(size > i+3) {
             this.body = new byte[size - i - 4];
@@ -50,6 +49,7 @@ public class MessageInterpreter implements Runnable {
                 Pair<Integer,byte[]> pair  = bQueue.take();
                 this.separateMessage(pair.getKey(),pair.getValue());
                 String messageType = this.header.substring(0,this.header.indexOf(" "));
+
                 switch (messageType){
                     case "PUTCHUNK": {
                         Runnable putchunk = new PutChunkMessage(header, body);

@@ -28,7 +28,5 @@ public class DeleteMessage extends Message {
         if(peerID == this.senderId){
             return;
         }
-
-        String pathname = "Peer "+peerID+"/"+this.fileId+"."+this.
     }
 }

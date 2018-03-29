@@ -29,17 +29,8 @@ public class MessageCarrier implements  Runnable{
             }
             case "MDB":{
                 Peer.getMDB().sendMessage(this.message);
-                Callable call = new StoreHandler(this.message,chunkNo);
-                Future<Boolean> future = Peer.getExec().schedule(call,1,TimeUnit.SECONDS);
-                try {
-                    if(!future.get()){
-                        Peer.getMDB().sendMessage(this.message);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (ExecutionException e) {
-                    e.printStackTrace();
-                }
+                Runnable handler = new StoreHandler(this.message,chunkNo);
+                Peer.getExec().schedule(handler,1,TimeUnit.SECONDS);
                 break;
             }
             case "MDR":{

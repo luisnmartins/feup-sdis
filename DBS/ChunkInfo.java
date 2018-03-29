@@ -27,14 +27,14 @@ public class ChunkInfo {
         peers = new HashSet<>();
 
     }
-    public synchronized boolean addStorePeer(String peerID){
+    public synchronized void addStorePeer(String peerID){
 
-        if(peers.contains(peerID))
-            return false;
-         else{
-             this.peers.add(peerID);
-             return  true;
-        }
+        this.peers.add(peerID);
+
+    }
+
+    public synchronized boolean isStored(String peerID){
+        return peers.contains(peerID);
     }
 
 

@@ -42,10 +42,17 @@ public class PutChunkMessage extends Message implements Runnable {
 
         String fileIdKey = fileId.trim()+"."+info.getChunkNo();
 
-        if(Peer.getStateManager().chunkExists(fileIdKey) ){
+        if(Peer.getStateManager().chunkExists(fileIdKey)){
 
             Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree());
-            if(Peer.getStateManager().checkChunkStatus(fileIdKey) || Peer.getStateManager().storedChunk(fileIdKey))
+            if(Peer.getStateManager().storedChunk(fileIdKey)) {
+                //Send Stored message
+                Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+                Runnable thread = new MessageCarrier(messageToSend, "MDB");
+                Peer.getExec().execute(thread);
+                return;
+            }
+            else if(Peer.getStateManager().checkChunkStatus(fileIdKey))
                 return;
         }
 
@@ -78,8 +85,10 @@ public class PutChunkMessage extends Message implements Runnable {
         Hashtable<String,ChunkInfo> HASH = Peer.getStateManager().getChunkTable();
         Set<String> keys = HASH.keySet();
         for(String key:keys){
-            System.out.println("Chunk table key: " + key + " value "+ HASH.get(key).getChunkNo());
+            //System.out.println("Chunk table key: " + key + " value "+ HASH.get(key).getChunkNo());
         }
+
+
 
 
     }

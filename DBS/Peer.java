@@ -1,4 +1,7 @@
 
+import javafx.util.Pair;
+import org.omg.CORBA.TIMEOUT;
+
 import java.util.*;
 import java.io.*;
 import java.rmi.RemoteException;
@@ -66,9 +69,12 @@ public class Peer implements remoteInterface{
 
             for(int i=0; i<chunksArray.size(); i++) {
 
+                System.out.println("CHUNK SEND: "+chunksArray.get(i).getChunkNo());
                 Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
-                Peer.getExec().execute(thread);
+                Random rand = new Random();
+                int randint = rand.nextInt(1000);
+                Peer.getExec().schedule(thread, randint, TimeUnit.MILLISECONDS);
 
             }
 

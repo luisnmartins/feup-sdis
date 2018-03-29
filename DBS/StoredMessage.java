@@ -24,7 +24,7 @@ public class StoredMessage extends Message{
 
         String fileIdKey = this.fileId.trim()+"."+this.chunkNo;
         if(Peer.getStateManager().chunkExists(fileIdKey)){
-            if(!Peer.getStateManager().getChunkInfo(fileIdKey).addStorePeer(this.fileId))
+            if(!Peer.getStateManager().getChunkInfo(fileIdKey).isStored(fileId))
                 Peer.getStateManager().updateChunk(fileIdKey);
 
         }else{
