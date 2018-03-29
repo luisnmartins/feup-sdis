@@ -52,7 +52,7 @@ public class Peer implements remoteInterface{
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
 
-        if(this.stateManager.deleteFile(pathname)){
+        if(this.stateManager.deleteFile(pathname) != null){
 
             //TODO
             //REMOVE TODAS AS CHUNKS QUE EXISTEM DESSE FICHEIRO EM TODOS OS PEER PARA FAZER UPDATE
@@ -97,6 +97,17 @@ public class Peer implements remoteInterface{
     @Override
     public void delete(String pathname) throws RemoteException {
 
+        String fileId;
+        if((fileId = Peer.getStateManager().deleteFile(pathname)) == null) {
+            System.err.println("You didn't backup up this file so you can't delete it");
+            return;
+
+        } else {
+            Message deleteMessage = new DeleteMessage(fileId, "1.0", peerID);
+            Runnable thread = new MessageCarrier(deleteMessage, "MC");
+            Peer.getExec().execute(thread);
+        }
+
     }
 
     @Override
@@ -108,7 +119,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(20);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;

@@ -6,9 +6,9 @@ import java.util.Set;
 
 public class StatusManager {
 
-    private static Hashtable<String,String> filesTables; //pathname fileId;
+    private static Hashtable<String,String> filesTables; //pathname fileId; files that the current peer sent to be backuped
     private static Hashtable<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
-    private static List<String> backupedUpFiles;
+    private static List<String> backupedUpFiles;  //files stored by the current peer
     private static List<ChunkData> chunksToRestore;
 
     StatusManager(){
@@ -50,11 +50,11 @@ public class StatusManager {
     }
 
 
-    public synchronized boolean deleteFile(String pathname){
+    public synchronized String deleteFile(String pathname){
 
         String fileId = filesTables.get(pathname);
         if(fileId == null)
-            return false;
+            return null;
         fileId = new String(fileId);
         filesTables.remove(pathname);
         Set<String> keys = chunkTable.keySet();
@@ -63,7 +63,7 @@ public class StatusManager {
                 chunkTable.remove(key);
             }
         }
-        return true;
+        return fileId;
 
 
 
