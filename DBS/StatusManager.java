@@ -69,6 +69,12 @@ public class StatusManager {
 
     }
 
+    public synchronized boolean storedChunk(String fileIdKey){
+        if(backupedUpFiles.indexOf(fileIdKey) != -1){
+            return true;
+        }else return false;
+    }
+
     public synchronized int getChunkNumber(String fileIdKey){
        return chunkTable.get(fileIdKey).getChunkNo();
     }
@@ -109,5 +115,9 @@ public class StatusManager {
 
     public static Hashtable<String, String> getFilesTables() {
         return filesTables;
+    }
+
+    public synchronized ChunkInfo getChunkInfo(String fileIdKey){
+        return chunkTable.get(fileIdKey);
     }
 }

@@ -38,13 +38,6 @@ public class Peer implements remoteInterface{
         System.setProperty("java.net.preferIPv4Stack", "true");
         Peer peer = new Peer(args[0]);
 
-        //So para testar
-       /* if(peer.peerID.equals(new String("3")) ){
-            System.out.println("ENTROU");
-          //  peer.putchunk();
-        }*/
-        //FIM de teste
-
         RMIHandler handler = new RMIHandler();
         handler.sendToRegistry(peer,peerID);
 
@@ -74,10 +67,8 @@ public class Peer implements remoteInterface{
             for(int i=0; i<chunksArray.size(); i++) {
 
                 Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
-                Runnable thread = new MessageCarrier(messageToSend, "MDB");
-                Random rand = new Random();
-                int randomTime = rand.nextInt(1000);
-                Peer.getExec().schedule(thread,randomTime,TimeUnit.MILLISECONDS);
+                Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
+                Peer.getExec().execute(thread);
 
             }
 

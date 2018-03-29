@@ -17,7 +17,7 @@ public class GetChunkMessage extends Message{
         return header.getBytes();
     }
 
-    public void interpreter(){
+    public void action(){
         if(this.senderId.equals(Peer.getPeerID())){
             return;
         }

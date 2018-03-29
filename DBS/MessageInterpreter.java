@@ -60,12 +60,12 @@ public class MessageInterpreter implements Runnable {
                     }
                     case "STORED":{
                         StoredMessage stored = new StoredMessage(header);
-                        stored.InterpretStore();
+                        stored.action();
                         break;
                     }
                     case "GETCHUNK": {
                         GetChunkMessage getChunkMessage = new GetChunkMessage(header);
-                        getChunkMessage.interpreter();
+                        getChunkMessage.action();
                         break;
                     }
                     case "CHUNK":{

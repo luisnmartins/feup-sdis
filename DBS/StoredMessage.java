@@ -16,17 +16,20 @@ public class StoredMessage extends Message{
 
     }
 
-    public void InterpretStore(){
+    public void action(){
 
         if(this.senderId.equals(Peer.getPeerID())){
             return;
         }
+
         String fileIdKey = this.fileId.trim()+"."+this.chunkNo;
         if(Peer.getStateManager().chunkExists(fileIdKey)){
-            Peer.getStateManager().updateChunk(fileIdKey);
+            if(!Peer.getStateManager().getChunkInfo(fileIdKey).addStorePeer(this.fileId))
+                Peer.getStateManager().updateChunk(fileIdKey);
 
         }else{
             ChunkInfo chunkInfo = new ChunkInfo(this.chunkNo);
+            chunkInfo.addStorePeer(this.fileId);
             Peer.getStateManager().addChunk(fileIdKey,chunkInfo);
         }
     }
