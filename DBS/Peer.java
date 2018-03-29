@@ -70,12 +70,10 @@ public class Peer implements remoteInterface{
 
             for(int i=0; i<chunksArray.size(); i++) {
 
-                System.out.println("CHUNK SEND: "+chunksArray.get(i).getChunkNo());
+
                 Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
-                Random rand = new Random();
-                int randint = rand.nextInt(1000);
-                Peer.getExec().schedule(thread, randint, TimeUnit.MILLISECONDS);
+                Peer.getExec().execute(thread);
 
             }
 
@@ -95,7 +93,7 @@ public class Peer implements remoteInterface{
     public void state() throws RemoteException {
 
         System.out.println("PEER FILES:   ");
-        Hashtable<String, String> peerFiles = stateManager.getFilesTables();
+        ConcurrentHashMap<String, String> peerFiles = stateManager.getFilesTables();
         Set<String> s = peerFiles.keySet();
         Set<String> chunksKeys = stateManager.getChunkTable().keySet();
         for(String pathname: s){
@@ -105,7 +103,8 @@ public class Peer implements remoteInterface{
             System.out.println("   File Id: "+fileId);
             for(String fileIdKey: chunksKeys){
                 if(fileIdKey.contains(fileId)){
-                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo() + " ReplicationDegree: " + stateManager.getChunkTable().get(fileIdKey).getCurrentReplicationDegree());
+                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo() + " ReplicationDegree: " + stateManager.getChunkTable().get(fileIdKey).getDesiredReplicationDegree());
+
 
                 }
             }
@@ -117,6 +116,13 @@ public class Peer implements remoteInterface{
             System.out.println("Chunk:  " + stateManager.getBackupedUpFiles().get(i));
             System.out.println("   CurrentReplicationDegree: " + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
             System.out.println("   Chunk size: " + stateManager.getChunkTable().get(string_aux).getSize() + " Bytes");
+        }
+
+        for(String ajuda : chunksKeys){
+            System.out.println("Chunk: " + ajuda);
+            for(String string: stateManager.getChunkTable().get(ajuda).getPeers()){
+                System.out.println("Peerid:  " + string);
+            }
         }
 
 
@@ -153,7 +159,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(20);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;

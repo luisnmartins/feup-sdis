@@ -8,7 +8,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Hashtable;
 import java.util.Set;
 
-public class PutChunkMessage extends Message implements Runnable {
+public class PutChunkMessage extends Message implements Runnable{
 
     private ChunkData info;
 
@@ -34,61 +34,79 @@ public class PutChunkMessage extends Message implements Runnable {
 
     public void action() throws IOException {
 
-        //SEND STORED MESSAGE
-
-        if(this.senderId.equals(Peer.getPeerID())){
-            return;
-        }
-
         String fileIdKey = fileId.trim()+"."+info.getChunkNo();
 
-        if(Peer.getStateManager().chunkExists(fileIdKey)){
+        //check if the current chunk already exists in the peer table
+        if(Peer.getStateManager().chunkExists(fileIdKey)) {
 
-            Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree());
+            Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree()); //update desired replication degree
+
+            if(this.senderId.equals(Peer.getPeerID()))
+                return;
+
+            //check if peer has a copy of the current chunk data
             if(Peer.getStateManager().storedChunk(fileIdKey)) {
                 //Send Stored message
                 Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
-                Runnable thread = new MessageCarrier(messageToSend, "MDB");
+                Runnable thread = new MessageCarrier(messageToSend, "MC");
                 Peer.getExec().execute(thread);
                 return;
-            }
-            else if(Peer.getStateManager().checkChunkStatus(fileIdKey))
+
+            }  //check if current replication degree >= desired replication degree
+            else if(Peer.getStateManager().checkChunkStatus(fileIdKey)) {
                 return;
-        }
 
-        //Send Stored message
-        Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
-        Runnable thread = new MessageCarrier(messageToSend, "MDB");
-        Peer.getExec().execute(thread);
+            } else{ //if there's not data stores and sends message
 
-        //Store chunk data
-        String pathname = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
+                //Send Stored message
+                Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+                Runnable thread = new MessageCarrier(messageToSend, "MC");
+                Peer.getExec().execute(thread);
 
-        FileManager file = new FileManager(pathname);
-        try {
-            file.saveChunk(info);
-        }catch(IOException e){
-            e.printStackTrace();
-        }
+                //Store chunk data
+                String pathname = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
+                // System.out.println("NEW SAVE CHUNK: "+info.getChunkNo());
 
-        //updates the hashtable incrementing the chunk replicationdegree
-        if(Peer.getStateManager().chunkExists(fileIdKey)){
-            Peer.getStateManager().updateChunk(fileIdKey);
-        }else{
+                FileManager file = new FileManager(pathname);
+                try {
+                    file.saveChunk(info);
+                }catch(IOException e){
+                    e.printStackTrace();
+                }
 
-            ChunkInfo chunkInfo = new ChunkInfo(info.getChunkNo(),1,info.getReplicationDegree(),info.getData().length);
+                Peer.getStateManager().addBackupedUpFile(fileIdKey);
+
+            }
+
+
+        } else {
+
+            ChunkInfo chunkInfo = new ChunkInfo(info.getChunkNo(),0,info.getReplicationDegree(),info.getData().length);
             Peer.getStateManager().addChunk(fileIdKey,chunkInfo);
 
+            if(this.senderId.equals(Peer.getPeerID()))
+                return;
+
+            //Send Stored message
+            Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+            Runnable thread = new MessageCarrier(messageToSend, "MC");
+            Peer.getExec().execute(thread);
+
+            //Store chunk data
+            String pathname = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
+            // System.out.println("NEW SAVE CHUNK: "+info.getChunkNo());
+
+            FileManager file = new FileManager(pathname);
+            try {
+                file.saveChunk(info);
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+
+            Peer.getStateManager().addBackupedUpFile(fileIdKey);
+
+
         }
-        Peer.getStateManager().addBackupedUpFile(this.fileId, this.info.getChunkNo());
-
-        Hashtable<String,ChunkInfo> HASH = Peer.getStateManager().getChunkTable();
-        Set<String> keys = HASH.keySet();
-        for(String key:keys){
-            //System.out.println("Chunk table key: " + key + " value "+ HASH.get(key).getChunkNo());
-        }
-
-
 
 
     }
@@ -109,6 +127,9 @@ public class PutChunkMessage extends Message implements Runnable {
         return finalByteArray;
     }
 
+    public ChunkData getInfo() {
+        return info;
+    }
 
     @Override
     public void run() {
@@ -118,4 +139,6 @@ public class PutChunkMessage extends Message implements Runnable {
             e.printStackTrace();
         }
     }
+
+
 }

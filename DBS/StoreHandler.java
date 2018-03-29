@@ -11,20 +11,23 @@ public class StoreHandler implements Runnable {
     StoreHandler(Message messageToSend,int chunkNo){
         this.messageToSend = messageToSend;
         this.chunkNo = chunkNo;
-        this.tryCounter = 0;
+        this.tryCounter = 2;
         this.time = 1;
     }
     @Override
     public void run(){
-
-        String fileIdKey = messageToSend.fileId+"."+chunkNo;
-        if(tryCounter >4)
+        String fileIdKey = messageToSend.fileId.trim()+"."+chunkNo;
+        if(tryCounter > 5) {
             return;
-        if(!Peer.getStateManager().checkChunkStatus(fileIdKey)){
-            Peer.getMDB().sendMessage(messageToSend);
-            tryCounter++;
-            time = time*2;
-            Peer.getExec().schedule(this,time, TimeUnit.SECONDS);
         }
+
+        if(Peer.getStateManager().getChunkTable().get(fileIdKey) == null || Peer.getStateManager().checkChunkStatus(fileIdKey) == false) {
+            Peer.getMDB().sendMessage(this.messageToSend);
+            time = time * 2;
+            Peer.getExec().schedule(this, time, TimeUnit.SECONDS);
+        }
+        tryCounter++;
+
     }
+
 }

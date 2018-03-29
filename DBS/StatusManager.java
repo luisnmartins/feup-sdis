@@ -1,26 +1,22 @@
 
-import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StatusManager {
 
-    private static Hashtable<String,String> filesTables; //pathname fileId; files that the current peer sent to be backuped
-    private static Hashtable<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
+    private volatile static ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backuped
+    private volatile static ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private static List<String> backupedUpFiles;  //files stored by the current peer
     private static List<ChunkData> chunksToRestore;
 
     StatusManager(){
-        this.filesTables = new Hashtable<>();
-        this.chunkTable = new Hashtable<>();
+        this.filesTables = new ConcurrentHashMap<>();
+        this.chunkTable = new ConcurrentHashMap<>();
         this.backupedUpFiles = new ArrayList<>();
     }
 
-    public synchronized void addBackupedUpFile(String fileId, int chunkNo) {
-        String file = fileId+"."+String.valueOf(chunkNo);
-        backupedUpFiles.add(file);
-        System.out.println("BACKEDUP: " +backupedUpFiles);
+    public synchronized void addBackupedUpFile(String fileIdKey) {
+        backupedUpFiles.add(fileIdKey);
     }
 
     public synchronized String hasBackupUp(String fileId, int chunkNo) {
@@ -42,6 +38,10 @@ public class StatusManager {
     public synchronized void updateChunk(String fileIdKey){
         ChunkInfo info = chunkTable.get(fileIdKey);
         info.addReplicationDegree();
+    }
+
+    public synchronized void updateChunkInfoPeer(String fileIdKey, String peerID) {
+        chunkTable.get(fileIdKey).addStorePeer(peerID);
     }
 
     public synchronized void updateChunkRep(String fileIdKey,int rep){
@@ -115,18 +115,26 @@ public class StatusManager {
     }
 
     public synchronized boolean checkChunkStatus(String fileIdKey){
-        return chunkTable.get(fileIdKey).isDesired();
+
+        if(chunkTable.get(fileIdKey).isDesired() == false) {
+            return false;
+        }
+        else {
+            return true;
+        }
+
     }
 
-    public  Hashtable<String, ChunkInfo> getChunkTable() {
+
+    public synchronized ConcurrentHashMap<String, ChunkInfo> getChunkTable() {
         return chunkTable;
     }
 
-    public  Hashtable<String, String> getFilesTables() {
+    public synchronized ConcurrentHashMap<String, String> getFilesTables() {
         return filesTables;
     }
 
-    public  List<String> getBackupedUpFiles() {
+    public synchronized List<String> getBackupedUpFiles() {
         return backupedUpFiles;
     }
 

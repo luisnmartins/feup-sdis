@@ -18,18 +18,19 @@ public class StoredMessage extends Message{
 
     public void action(){
 
-        if(this.senderId.equals(Peer.getPeerID())){
-            return;
-        }
-
         String fileIdKey = this.fileId.trim()+"."+this.chunkNo;
+
+
         if(Peer.getStateManager().chunkExists(fileIdKey)){
-            if(!Peer.getStateManager().getChunkInfo(fileIdKey).isStored(fileId))
+
+            if(!Peer.getStateManager().getChunkInfo(fileIdKey).isStored(this.senderId)) {
                 Peer.getStateManager().updateChunk(fileIdKey);
+                Peer.getStateManager().updateChunkInfoPeer(fileIdKey, this.senderId);
+            }
 
         }else{
             ChunkInfo chunkInfo = new ChunkInfo(this.chunkNo);
-            chunkInfo.addStorePeer(this.fileId);
+            chunkInfo.addStorePeer(this.senderId);
             Peer.getStateManager().addChunk(fileIdKey,chunkInfo);
         }
     }

@@ -6,8 +6,8 @@ import java.util.Set;
 public class ChunkInfo {
 
     private int chunkNo;
-    private int currentReplicationDegree;
-    private Integer desiredReplicationDegree = null;
+    private Integer currentReplicationDegree;
+    private Integer desiredReplicationDegree = -1;
     private int size;
     private Set<String> peers;
 
@@ -40,43 +40,48 @@ public class ChunkInfo {
 
 
 
-    public boolean isDesired(){
-        if(desiredReplicationDegree == null)
+    public synchronized boolean isDesired(){
+        if(desiredReplicationDegree.equals(-1))
             return false;
-        if(currentReplicationDegree >= desiredReplicationDegree)
+        if(currentReplicationDegree.compareTo(desiredReplicationDegree) >= 0 && desiredReplicationDegree.equals(-1) == false) {
             return true;
+        }
         else return false;
     }
 
-    public int getCurrentReplicationDegree() {
+    public synchronized int getCurrentReplicationDegree() {
         return currentReplicationDegree;
     }
 
-    public int getDesiredReplicationDegree() {
+    public synchronized int getDesiredReplicationDegree() {
         return desiredReplicationDegree;
     }
 
-    public int getChunkNo() {
+    public synchronized int getChunkNo() {
         return chunkNo;
     }
 
-    public void addReplicationDegree(){
+    public synchronized void addReplicationDegree(){
         this.currentReplicationDegree++;
     }
 
-    public void decReplicationDegree(){
+    public synchronized void decReplicationDegree(){
         this.currentReplicationDegree--;
     }
 
-    public void setCurrentReplicationDegree(int currentReplicationDegree) {
+    public synchronized void setCurrentReplicationDegree(int currentReplicationDegree) {
         this.currentReplicationDegree = currentReplicationDegree;
     }
 
-    public void setDesiredReplicationDegree(int desiredReplicationDegree) {
+    public synchronized void setDesiredReplicationDegree(int desiredReplicationDegree) {
         this.desiredReplicationDegree = desiredReplicationDegree;
     }
 
-    public int getSize() {
+    public synchronized Set<String> getPeers() {
+        return peers;
+    }
+
+    public synchronized int getSize() {
         return size;
     }
 }
