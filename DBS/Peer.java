@@ -87,6 +87,31 @@ public class Peer implements remoteInterface{
     @Override
     public void state() throws RemoteException {
 
+        System.out.println("PEER FILES:   ");
+        Hashtable<String, String> peerFiles = stateManager.getFilesTables();
+        Set<String> s = peerFiles.keySet();
+        Set<String> chunksKeys = stateManager.getChunkTable().keySet();
+        for(String pathname: s){
+            String fileId = peerFiles.get(pathname);
+            System.out.println("FILE: ");
+            System.out.println("   Pathname: "+pathname);
+            System.out.println("   File Id: "+fileId);
+            for(String fileIdKey: chunksKeys){
+                if(fileIdKey.contains(fileId)){
+                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo() + " ReplicationDegree: " + stateManager.getChunkTable().get(fileIdKey).getCurrentReplicationDegree());
+
+                }
+            }
+
+        }
+
+        for(int i = 0; i< stateManager.getBackupedUpFiles().size(); i++){
+            String string_aux = stateManager.getBackupedUpFiles().get(i);
+            System.out.println("Chunk:  " + stateManager.getBackupedUpFiles().get(i));
+            System.out.println("   CurrentReplicationDegree: " + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
+        }
+
+
     }
 
     @Override

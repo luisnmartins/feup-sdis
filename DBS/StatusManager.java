@@ -109,12 +109,16 @@ public class StatusManager {
         return chunkTable.get(fileIdKey).isDesired();
     }
 
-    public static Hashtable<String, ChunkInfo> getChunkTable() {
+    public  Hashtable<String, ChunkInfo> getChunkTable() {
         return chunkTable;
     }
 
-    public static Hashtable<String, String> getFilesTables() {
+    public  Hashtable<String, String> getFilesTables() {
         return filesTables;
+    }
+
+    public  List<String> getBackupedUpFiles() {
+        return backupedUpFiles;
     }
 
     public synchronized ChunkInfo getChunkInfo(String fileIdKey){
