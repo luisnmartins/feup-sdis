@@ -69,7 +69,12 @@ public class MessageInterpreter implements Runnable {
                         break;
                     }
                     case "CHUNK":{
-
+                        break;
+                    }
+                    case "DELETE":{
+                       DeleteMessage delete = new DeleteMessage(header);
+                       Peer.getExec().execute(delete);
+                       break;
                     }
                 }
             } catch (InterruptedException e) {

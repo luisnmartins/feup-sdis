@@ -105,6 +105,15 @@ public class StatusManager {
 
     }
 
+    public synchronized void removeChunks(String fileId){
+        Set<String> set = chunkTable.keySet();
+        for(String key: set){
+            if(key.contains(fileId)){
+                chunkTable.remove(key);
+            }
+        }
+    }
+
     public synchronized boolean checkChunkStatus(String fileIdKey){
         return chunkTable.get(fileIdKey).isDesired();
     }

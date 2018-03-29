@@ -1,6 +1,3 @@
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 public class MessageCarrier implements  Runnable{
@@ -31,6 +28,7 @@ public class MessageCarrier implements  Runnable{
                 Peer.getMDB().sendMessage(this.message);
                 Runnable handler = new StoreHandler(this.message,chunkNo);
                 Peer.getExec().schedule(handler,1,TimeUnit.SECONDS);
+
                 break;
             }
             case "MDR":{

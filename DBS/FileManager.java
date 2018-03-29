@@ -179,6 +179,15 @@ public class FileManager{
         return resultBuffer;
     }
 
+    public void deleteFile(String pathname){
+        Path path = Paths.get(pathname);
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     
     
 

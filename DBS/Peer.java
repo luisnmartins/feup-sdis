@@ -135,9 +135,13 @@ public class Peer implements remoteInterface{
             return;
 
         } else {
+            //stateManager.getFilesTables().remove(pathname);
             Message deleteMessage = new DeleteMessage(fileId, "1.0", peerID);
             Runnable thread = new MessageCarrier(deleteMessage, "MC");
             Peer.getExec().execute(thread);
+
+            stateManager.removeChunks(fileId);
+            stateManager.getFilesTables().remove(pathname);
         }
 
     }
