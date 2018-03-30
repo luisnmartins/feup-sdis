@@ -1,4 +1,5 @@
 
+import java.awt.*;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -8,7 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -63,8 +64,46 @@ public class FileManager{
 
     }
 
-    public void mergeFile(List<File> files, File into) throws IOException{
-        try (FileOutputStream fos = new FileOutputStream(into); BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
+
+    public void mergeChunks(String fileId) throws IOException {
+
+        //File dir = new File("Peer "+ Peer.getPeerID());
+        File dir = new File("Peer "+Peer.getPeerID());
+        File[] foundFiles = dir.listFiles(new FilenameFilter() {
+            public boolean accept(File dir, String name) {
+                return name.startsWith(fileId);
+            }
+        });
+        // Sort files by name
+        Arrays.sort(foundFiles, new Comparator()
+        {
+            @Override
+            public int compare(Object o1, Object o2){
+                File f1 = (File) o1;
+                File f2 = (File) o2;
+                Integer f1N = Integer.parseInt(f1.getName().substring(65, f1.getName().length()));
+                Integer f2N = Integer.parseInt(f2.getName().substring(65, f2.getName().length()));
+                return f1N.compareTo(f2N);
+            }
+        });
+
+
+        for (int i=0; i<foundFiles.length; i++) {
+            System.out.println("FILENAME: "+foundFiles[i].getName());
+        }
+        mergeFile(foundFiles);
+
+    }
+
+    public void mergeFile(File[] files) throws IOException{
+
+        File file = new File(pathname);
+        if(!file.exists()) {
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(file); BufferedOutputStream mergingStream = new BufferedOutputStream(fos)) {
             for (File f : files) {
                 Files.copy(f.toPath(), mergingStream);
              }   
@@ -140,43 +179,24 @@ public class FileManager{
     }
 
     public byte[] readEntireFileData() throws IOException{
+
         Path path = Paths.get(pathname);
 
         AsynchronousFileChannel channel =  AsynchronousFileChannel.open(path, StandardOpenOption.READ);
 
         ByteBuffer buffer = ByteBuffer.allocate(CHUNKSSIZE);
-        byte[] resultBuffer;
+        long position = 0;
 
-        CompletionHandler handler = new CompletionHandler<Integer, Object>() {
+        Future<Integer> operation = channel.read(buffer, position);
 
-            @Override
-            public void completed(Integer result, Object attachment) {
+        while(!operation.isDone());
 
-                System.out.println(attachment + " completed and " + result + " bytes were read.");
+        buffer.flip();
+        byte[] data = new byte[buffer.limit()];
+        buffer.get(data);
+        buffer.clear();
 
-                try {
-                    channel.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            @Override
-            public void failed(Throwable e, Object attachment) {
-
-                System.out.println(attachment + " failed with exception:");
-                try {
-                    channel.close();
-                } catch (IOException exc) {
-                    exc.printStackTrace();
-                }
-                e.printStackTrace();
-            }
-        };
-
-        channel.read(buffer,0, "Chunk read", handler);
-        resultBuffer = new byte[buffer.position()];
-        buffer.get(resultBuffer);
-        return resultBuffer;
+        return data;
     }
 
     public void deleteFile(String pathname){
