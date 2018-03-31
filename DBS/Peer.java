@@ -44,6 +44,7 @@ public class Peer implements remoteInterface{
 
     public static void main(String[] args) throws IOException {
         if(args.length != 1 && args.length != 9){
+
             System.out.println("Error retrieving function arguments");
             return;
         }
@@ -62,7 +63,7 @@ public class Peer implements remoteInterface{
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
 
-        if(this.stateManager.deleteFile(pathname) != null){
+        if(this.stateManager.isBackedUp(pathname) != null){
 
             //TODO
             //REMOVE TODAS AS CHUNKS QUE EXISTEM DESSE FICHEIRO EM TODOS OS PEER PARA FAZER UPDATE
@@ -93,14 +94,24 @@ public class Peer implements remoteInterface{
 
     @Override
     public void restore(String pathname) throws RemoteException {
-        //TODO verifica se o ficheiro existe na tabela
-        String fileid = stateManager.getFilesTables().get(pathname);
+        String fileId;
+        int currentChunkNo;
+        if((fileId = stateManager.isBackedUp(pathname)) == null) {
+            System.err.println("This file doesn't exist or your not the owner of it");
+            return;
+        }
         Set<String> set = stateManager.getChunkTable().keySet();
-        for(String key: set){
-            if(key.contains(fileid)){
-                //SEND MESSAGE PUTCHUNK
+        for(String key: set) {
+            if(key.contains(fileId)) {
+                currentChunkNo = Integer.parseInt(key.substring(key.indexOf(".")+1,key.length()));
+                stateManager.addChunkToRestore(currentChunkNo);
+
+                Message getChunkMessage = new GetChunkMessage("1.0", peerID, fileId, currentChunkNo);
+                Runnable thread = new MessageCarrier(getChunkMessage, "MC");
+                exec.execute(thread);
             }
         }
+
 
     }
 
@@ -126,9 +137,10 @@ public class Peer implements remoteInterface{
 
         }
 
-        for(int i = 0; i< stateManager.getBackupedUpFiles().size(); i++){
-            String string_aux = stateManager.getBackupedUpFiles().get(i);
-            System.out.println("Chunk:  " + stateManager.getBackupedUpFiles().get(i));
+        List<String> backedUpFiles = stateManager.getBackedUpFiles();
+        for(int i = 0; i< backedUpFiles.size(); i++){
+            String string_aux = backedUpFiles.get(i);
+            System.out.println("Chunk:  " + backedUpFiles.get(i));
             System.out.println("   CurrentReplicationDegree: " + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
             System.out.println("   Chunk size: " + stateManager.getChunkTable().get(string_aux).getSize() + " Bytes");
         }
@@ -157,6 +169,7 @@ public class Peer implements remoteInterface{
             return;
 
         } else {
+            System.out.println("Files will be deleted");
             //stateManager.getFilesTables().remove(pathname);
             Message deleteMessage = new DeleteMessage(fileId, "1.0", peerID);
             Runnable thread = new MessageCarrier(deleteMessage, "MC");
@@ -223,7 +236,6 @@ public class Peer implements remoteInterface{
         Peer peer;
         RMIHandler handler = new RMIHandler();
         if(args.length == 1){
-            System.out.println("Entrou aqui");
              peer = new Peer(args[0]);
             handler.sendToRegistry(peer,peerID);
 

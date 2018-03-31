@@ -49,7 +49,7 @@ public class Application {
                         return false;
                     }
                 }
-            case "RECOVERY":
+            case "RESTORE":
                 if(args.length != 3) {
                     System.err.println("RECOVERY call is incorrect. It must be: java <PEER_ID> RECOVERY <FILENAME>");
                     return false;

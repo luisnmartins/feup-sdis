@@ -69,6 +69,14 @@ public class MessageInterpreter implements Runnable {
                         break;
                     }
                     case "CHUNK":{
+                        try {
+                            System.out.println(header);
+                            System.out.println(body.length);
+                            Message chunkMessage = new ChunkMessage(header, body);
+                            chunkMessage.action();
+                        }catch (Throwable e) {
+                            e.printStackTrace();
+                        }
                         break;
                     }
                     case "DELETE":{

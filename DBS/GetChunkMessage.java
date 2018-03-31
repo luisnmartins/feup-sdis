@@ -9,6 +9,12 @@ public class GetChunkMessage extends Message{
         super(header);
         String[] headerWords = header.split(" ");
         this.chunkNo = Integer.parseInt(headerWords[4]);
+        System.out.println("GETCHUNK "+ this.chunkNo);
+    }
+
+    public GetChunkMessage(String version, String senderId, String fileId, int chunkNo) {
+        super(fileId, version, senderId);
+        this.chunkNo = chunkNo;
     }
 
     public byte[] getFullMessage(){
@@ -18,12 +24,14 @@ public class GetChunkMessage extends Message{
     }
 
     public void action(){
+
         if(this.senderId.equals(Peer.getPeerID())){
             return;
         }
 
-        String chunkName;
-        if((Peer.getStateManager().hasBackupUp(this.fileId,this.chunkNo)) != null){
+        Peer.getStateManager().addChunkToRestore(chunkNo);
+
+        if(Peer.getStateManager().hasBackedUpChunk(this.fileId,this.chunkNo) != null){
 
             Runnable chunkMessage = new ChunkMessage(this.fileId,"1.0",Peer.getPeerID(),new ChunkData(this.chunkNo));
             Random rand = new Random();

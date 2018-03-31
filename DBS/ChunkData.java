@@ -9,7 +9,11 @@ public class ChunkData extends Chunk{
 
     byte[] getData() { return data; }
 
-    void setData(int size, byte[] data) { this.data = new byte[size];
-        System.arraycopy(data, 0, this.data, 0, size); }
+    void setData(int size, byte[] data) {
+        this.data = new byte[size];
+        System.arraycopy(data, 0, this.data, 0, size);
+    }
+
+
 
 }

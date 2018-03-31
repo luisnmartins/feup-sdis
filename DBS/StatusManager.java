@@ -4,25 +4,28 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class StatusManager {
 
-    private volatile static ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backuped
+    private volatile static ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
     private volatile static ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
-    private static List<String> backupedUpFiles;  //files stored by the current peer
-    private static List<ChunkData> chunksToRestore;
+    private static List<String> backedUpFiles;  //files stored by the current peer
+    private static List<Integer> chunksToRestore;
 
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
         this.chunkTable = new ConcurrentHashMap<>();
-        this.backupedUpFiles = new ArrayList<>();
+        this.backedUpFiles = Collections.synchronizedList(new ArrayList<>());
+        this.chunksToRestore = Collections.synchronizedList(new ArrayList<>());
     }
 
-    public synchronized void addBackupedUpFile(String fileIdKey) {
-        backupedUpFiles.add(fileIdKey);
+    public synchronized void addBackedUpFile(String fileIdKey) {
+        backedUpFiles.add(fileIdKey);
     }
 
-    public synchronized String hasBackupUp(String fileId, int chunkNo) {
+    public synchronized String hasBackedUpChunk(String fileId, int chunkNo) {
         String file = fileId+"."+String.valueOf(chunkNo);
-        if(backupedUpFiles.contains(file))
+
+        if(backedUpFiles.contains(file)) {
             return file;
+        }
         else return null;
     }
 
@@ -49,11 +52,20 @@ public class StatusManager {
         info.setDesiredReplicationDegree(rep);
     }
 
+    public synchronized String isBackedUp(String pathname) {
+        System.out.println(pathname);
+        String fileId = filesTables.get(pathname);
+        if(fileId == null)
+            return null;
+
+        return fileId;
+    }
+
 
     public synchronized String deleteFile(String pathname){
 
-        String fileId = filesTables.get(pathname);
-        if(fileId == null)
+        String fileId;
+        if((fileId = isBackedUp(pathname)) == null)
             return null;
         fileId = new String(fileId);
         filesTables.remove(pathname);
@@ -70,7 +82,7 @@ public class StatusManager {
     }
 
     public synchronized boolean storedChunk(String fileIdKey){
-        if(backupedUpFiles.indexOf(fileIdKey) != -1){
+        if(backedUpFiles.indexOf(fileIdKey) != -1){
             return true;
         }else return false;
     }
@@ -80,7 +92,7 @@ public class StatusManager {
     }
 
     public synchronized boolean checkHasAllChunks(){
-        boolean checkFlag = false;
+        /*boolean checkFlag = false;
         for(ChunkData chunk : chunksToRestore){
             if(chunk.getData() == null  || chunk.getData().length < 64000 ){
                 checkFlag = true;
@@ -93,7 +105,8 @@ public class StatusManager {
 
             }
         }else return false;
-       return false;
+       return false;*/
+        return false;
     }
 
 
@@ -134,11 +147,36 @@ public class StatusManager {
         return filesTables;
     }
 
-    public synchronized List<String> getBackupedUpFiles() {
-        return backupedUpFiles;
+    public synchronized List<String> getBackedUpFiles() {
+        return backedUpFiles;
     }
 
     public synchronized ChunkInfo getChunkInfo(String fileIdKey){
         return chunkTable.get(fileIdKey);
     }
+
+    public synchronized void addChunkToRestore(Integer chunkNo) {
+        chunksToRestore.add(chunkNo);
+    }
+
+
+    public synchronized boolean isChunkToRestore(Integer chunkNo) {
+        return chunksToRestore.contains(chunkNo);
+
+    }
+
+    public synchronized boolean chunkReallyToRestore(Integer chunkNo) {
+        if(isChunkToRestore(chunkNo)) {
+            chunksToRestore.remove(chunkNo);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public synchronized boolean isChunkToRestoreEmpty(){
+        return  chunksToRestore.isEmpty();
+    }
+
+
 }

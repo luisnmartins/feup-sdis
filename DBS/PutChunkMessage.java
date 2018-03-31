@@ -74,7 +74,7 @@ public class PutChunkMessage extends Message implements Runnable{
                     e.printStackTrace();
                 }
 
-                Peer.getStateManager().addBackupedUpFile(fileIdKey);
+                Peer.getStateManager().addBackedUpFile(fileIdKey);
 
             }
 
@@ -103,7 +103,7 @@ public class PutChunkMessage extends Message implements Runnable{
                 e.printStackTrace();
             }
 
-            Peer.getStateManager().addBackupedUpFile(fileIdKey);
+            Peer.getStateManager().addBackedUpFile(fileIdKey);
 
 
         }
