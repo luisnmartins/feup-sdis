@@ -17,10 +17,16 @@ public class RMIHandler {
         }
     }
 
-    public <T extends Remote> T getFromRegistry(String Tag){
+    public <T extends Remote> T getFromRegistry(String Tag,String host){
 
         try {
-            Registry reg = LocateRegistry.getRegistry();
+            Registry reg;
+            if(host == null){
+                reg = LocateRegistry.getRegistry();
+            }else{
+                reg = LocateRegistry.getRegistry(host);
+            }
+            
             T stub = (T) reg.lookup(Tag);
             return stub;
         } catch (Exception e) {

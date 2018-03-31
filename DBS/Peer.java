@@ -1,6 +1,4 @@
-
 import javafx.util.Pair;
-import org.omg.CORBA.TIMEOUT;
 
 import java.util.*;
 import java.io.*;
@@ -14,6 +12,8 @@ import java.util.concurrent.*;
 public class Peer implements remoteInterface{
 
     private static String peerID;
+    private static String version;
+    private static String accessPoint;
     private static MCSocket MC;
     private static MDBSocket MDB;
     private static MDRSocket MDR;
@@ -23,26 +23,33 @@ public class Peer implements remoteInterface{
     private static StatusManager stateManager;
 
 
+    public Peer(){}
 
     public Peer(String id) throws IOException {
+        version = "1.0";
         peerID = id ;
         this.initiateSocketThreads();
+        this.stateManager = new StatusManager();
+    }
+
+    public Peer(String version, String id, String accessPoint, Pair<Integer,String> MC,Pair<Integer,String> MDB, Pair<Integer,String> MDR) throws IOException {
+        this.version = version;
+        peerID = id;
+        this.accessPoint = accessPoint;
+        this.initiateSocketThreads(MC,MDB,MDR);
         this.stateManager = new StatusManager();
 
     }
 
 
     public static void main(String[] args) throws IOException {
-        if(args.length != 1){
+        if(args.length != 1 && args.length != 9){
             System.out.println("Error retrieving function arguments");
             return;
         }
-
         System.setProperty("java.net.preferIPv4Stack", "true");
-        Peer peer = new Peer(args[0]);
+        verifyArgs(args);
 
-        RMIHandler handler = new RMIHandler();
-        handler.sendToRegistry(peer,peerID);
 
       }
 
@@ -86,6 +93,14 @@ public class Peer implements remoteInterface{
 
     @Override
     public void restore(String pathname) throws RemoteException {
+        //TODO verifica se o ficheiro existe na tabela
+        String fileid = stateManager.getFilesTables().get(pathname);
+        Set<String> set = stateManager.getChunkTable().keySet();
+        for(String key: set){
+            if(key.contains(fileid)){
+                //SEND MESSAGE PUTCHUNK
+            }
+        }
 
     }
 
@@ -181,6 +196,52 @@ public class Peer implements remoteInterface{
 
     }
 
+    public void initiateSocketThreads(Pair<Integer,String> MC,Pair<Integer,String> MDB,Pair<Integer,String> MDR) throws IOException {
+
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
+        //Thread para o canal principal MC;
+        this.MC = new MCSocket(MC.getKey(),MC.getValue());
+        Runnable mcThread = this.MC;
+        this.exec.execute(mcThread);
+
+        //Thread para o canal MDB
+        this.MDB = new MDBSocket(MDB.getKey(),MDB.getValue());
+        Runnable mdbThread = this.MDB;
+        this.exec.execute(mdbThread);
+
+        //Thread para o canal MDR
+        this.MDR = new MDRSocket(MDR.getKey(),MDR.getValue());
+        Runnable mdrThread = this.MDR;
+        this.exec.execute(mdrThread);
+
+        messageInterpreter = new MessageInterpreter();
+        Runnable interpreterThread = messageInterpreter;
+        this.exec.execute(interpreterThread);
+    }
+
+    public static void verifyArgs(String args[]) throws IOException {
+        Peer peer;
+        RMIHandler handler = new RMIHandler();
+        if(args.length == 1){
+            System.out.println("Entrou aqui");
+             peer = new Peer(args[0]);
+            handler.sendToRegistry(peer,peerID);
+
+
+        }else if (args.length == 9){
+            Pair<Integer,String> mc = new Pair<>(Integer.parseInt(args[3]),args[4]);
+            Pair<Integer,String> mdb = new Pair<>(Integer.parseInt(args[5]),args[6]);
+            Pair<Integer,String> mdr = new Pair<>(Integer.parseInt(args[7]),args[8]);
+            peer = new Peer(args[0],args[1],args[2],mc,mdb,mdr);
+            handler.sendToRegistry(peer,accessPoint);
+        }else{
+            System.out.println("Error retrieving function arguments");
+            return;
+        }
+
+
+    }
+
     public static ScheduledExecutorService getExec() {
         return exec;
     }
@@ -207,5 +268,9 @@ public class Peer implements remoteInterface{
 
     public static MessageInterpreter getMessageInterpreter() {
         return messageInterpreter;
+    }
+
+    public static String getVersion() {
+        return version;
     }
 }

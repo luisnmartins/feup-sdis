@@ -12,4 +12,13 @@ public class MDRSocket extends ChannelSocket {
         this.address = InetAddress.getByName(MDR_ADDR);
         this.socket.joinGroup(address);
     }
+
+    MDRSocket(int port,String address) throws IOException {
+        super();
+        this.port = port;
+        this.socket = new MulticastSocket(this.port);
+        this.address = InetAddress.getByName(address);
+
+        socket.joinGroup(this.address);
+    }
 }

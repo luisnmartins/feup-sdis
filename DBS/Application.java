@@ -23,7 +23,14 @@ public class Application {
             System.err.println("Incorrect number of arguments");
             return false;
         }
-        remoteInterface peer = handler.getFromRegistry(args[0]);
+        String[] host_id = args[0].split("/");
+        remoteInterface peer;
+        if(host_id.length == 2){
+             peer = handler.getFromRegistry(host_id[0],host_id[1]);
+        }else{
+             peer = handler.getFromRegistry(args[0],null);
+        }
+        
 
 
         switch(args[1]) {

@@ -16,6 +16,15 @@ public class MCSocket extends ChannelSocket{
         socket.joinGroup(address);
         }
 
+     MCSocket(int port,String address) throws IOException {
+        super();
+        this.port = port;
+        this.socket = new MulticastSocket(this.port);
+        this.address = InetAddress.getByName(address);
+
+        socket.joinGroup(this.address);
+     }
+
 
 
 
