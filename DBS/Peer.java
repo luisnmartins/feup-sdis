@@ -48,7 +48,7 @@ public class Peer implements remoteInterface{
     public static void main(String[] args) throws IOException {
         if(args.length != 1 && args.length != 9){
 
-            System.out.println("Error retrieving function arguments");
+            System.err.println("Error retrieving function arguments");
             return;
         }
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -65,12 +65,14 @@ public class Peer implements remoteInterface{
         
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
+        String oldFileId;
+        if((oldFileId = this.stateManager.isBackedUp(pathname)) != null){
 
-        if(this.stateManager.isBackedUp(pathname) != null){
-
-            //TODO
-            //REMOVE TODAS AS CHUNKS QUE EXISTEM DESSE FICHEIRO EM TODOS OS PEER PARA FAZER UPDATE
-
+            if(oldFileId.equals(fileId)) {
+                System.out.println("You have already backedUp this file");
+                return;
+            }
+            System.out.print("You have updated this file. Old ");
             this.delete(pathname);
         }
         this.stateManager.addFile(pathname,fileId);
@@ -96,7 +98,7 @@ public class Peer implements remoteInterface{
     }
 
     @Override
-    public void restore(String pathname) throws RemoteException {
+    public void restore(String pathname) {
         String fileId;
         int currentChunkNo;
         if((fileId = stateManager.isBackedUp(pathname)) == null) {
@@ -201,11 +203,6 @@ public class Peer implements remoteInterface{
 
     }
 
-    @Override
-    public void sayHello() throws RemoteException {
-        System.out.println("HELLO WORLD");
-    }
-
     //Inicia as threads para os 3 canais necessarios
     public void initiateSocketThreads() throws IOException {
 
@@ -270,7 +267,7 @@ public class Peer implements remoteInterface{
             peer = new Peer(args[0],args[1],args[2],mc,mdb,mdr);
             handler.sendToRegistry(peer,accessPoint);
         }else{
-            System.out.println("Error retrieving function arguments");
+            System.err.println("Error retrieving function arguments");
             return;
         }
 

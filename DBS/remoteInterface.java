@@ -19,5 +19,4 @@ public interface remoteInterface extends Remote {
 
     void delete(String pathname) throws RemoteException;
 
-    void sayHello() throws RemoteException;
 }

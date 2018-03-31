@@ -22,7 +22,7 @@ public class ChunkMessage extends Message implements Runnable{
         super(fileId, version, senderId);
         this.info = info;
         String pathname = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
-        // System.out.println("NEW SAVE CHUNK: "+info.getChunkNo());
+
         FileManager manager = new FileManager(pathname);
 
         try {
@@ -42,7 +42,6 @@ public class ChunkMessage extends Message implements Runnable{
 
         byte[] headerBytes = header.getBytes();
         byte[] data = info.getData();
-        System.out.println("BODY CHUNK: "+info.getData().length);
         byte[] finalByteArray = new byte[headerBytes.length+data.length];
 
         System.arraycopy( headerBytes, 0, finalByteArray, 0, headerBytes.length);
@@ -53,7 +52,6 @@ public class ChunkMessage extends Message implements Runnable{
 
     @Override
     public void action() {
-        System.out.println("CHUNK RECEIVED");
 
         if(this.senderId.equals(Peer.getPeerID()))
             return;
@@ -62,23 +60,9 @@ public class ChunkMessage extends Message implements Runnable{
         ConcurrentHashMap hashed = Peer.getStateManager().getFilesTables();
         Set<String> set = hashed.keySet();
         for(String key : set){
-            System.out.println("FILE ID: "+ fileId + " "+info.getChunkNo());
-            System.out.println("KEY: "+key);
             if(hashed.get(key).equals(fileId)){
-                System.out.println("IS TO RESTORE: "+ info.getChunkNo());
-                if(Peer.getStateManager().isChunkToRestoreEmpty()){
-                    FileManager manager = new FileManager(key);
-                    try {
-                        manager.mergeChunks(fileId);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return;
-
-                }
                 if(Peer.getStateManager().isChunkToRestore(info.getChunkNo())) {
-
-                    System.out.println("REALLY RESTORE: "+ info.getChunkNo());
+                    System.out.println("Restoring chunk  "+ info.getChunkNo());
                     String pathname = "Peer " + Peer.getPeerID() + "/" + fileId + "." + info.getChunkNo();
                     FileManager manager = new FileManager(pathname);
                     try {
@@ -87,6 +71,19 @@ public class ChunkMessage extends Message implements Runnable{
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
+                }
+                if(Peer.getStateManager().isChunkToRestoreEmpty()){
+                    FileManager manager = new FileManager(key);
+                    try {
+                        manager.mergeChunks(fileId);
+                        //TODO delete temporary files
+                        //DeleteMessage tempFiles = new DeleteMessage(fileId, "1.0",Peer.getPeerID());
+                        //tempFiles.action();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return;
+
                 }
                 break;
 
