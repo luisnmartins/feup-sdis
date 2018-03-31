@@ -86,7 +86,7 @@ public class Peer implements remoteInterface{
 
                 Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
-                Peer.getExec().execute(thread);
+                exec.execute(thread);
 
             }
 
@@ -163,26 +163,39 @@ public class Peer implements remoteInterface{
     @Override
     public void reclaim(Integer memory) throws RemoteException {
         stateManager.setMaxSizeUse(memory);
-        System.out.println("SIZE ANTES DE RECLAIM" + stateManager.getSizeUsed());
         List<String> string_aux = stateManager.getBackedUpFiles();
-        do{
+
+        while(stateManager.isOutOfMemory() && !string_aux.isEmpty()){
+          
           String toRemoveFileIdKey = new String(string_aux.get(0));
           stateManager.deleteBackedUpFile(toRemoveFileIdKey);
           FileManager manager = new FileManager();
           String pathname = "Peer " + peerID + "/" + toRemoveFileIdKey;
-          byte[] data = manager.deleteFile(pathname);
+          byte[] data_removed = manager.deleteFile(pathname);
           stateManager.updateChunkDec(toRemoveFileIdKey);
           stateManager.updateChunkInfoPeerRemove(toRemoveFileIdKey, this.peerID);
+
+        
           int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65,toRemoveFileIdKey.length()));
           String fileId = toRemoveFileIdKey.substring(0,64);
+          int desiredRep = stateManager.getChunkTable().get(toRemoveFileIdKey).getChunkNo();
 
-          System.out.println("CHUNKID: " + chunkId);
-          System.out.println("FILEID: " + fileId);
+          ChunkData chunk = new ChunkData(chunkId);
+          chunk.setData(data_removed.length, data_removed);
+
           Message message = new RemoveMessage(fileId, version, peerID, chunkId);
           Runnable thread = new MessageCarrier(message, "MC",chunkId);
           exec.execute(thread);
 
-      }while(stateManager.isOutOfMemory() && !string_aux.isEmpty());
+      
+          if(desiredRep == 1){
+            
+            Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunk,desiredRep);
+            Runnable putchunkthread = new MessageCarrier(messageToSend, "MDB",chunkId);
+            Peer.getExec().schedule(thread,1,TimeUnit.SECONDS);
+          }
+
+        }
     }
 
     @Override

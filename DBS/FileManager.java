@@ -215,6 +215,15 @@ public class FileManager{
         
     }
 
+    public byte[] getFileData(String pathname){
+        try {
+            return Files.readAllBytes(new File(pathname).toPath());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     
     
 

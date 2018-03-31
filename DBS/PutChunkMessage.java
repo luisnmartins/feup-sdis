@@ -36,6 +36,9 @@ public class PutChunkMessage extends Message implements Runnable{
 
         String fileIdKey = fileId.trim()+"."+info.getChunkNo();
 
+        if(Peer.getStateManager().hasFileById(fileId))
+            return;
+
         //check if the current chunk already exists in the peer table
         if(Peer.getStateManager().chunkExists(fileIdKey)) {
 
@@ -53,7 +56,7 @@ public class PutChunkMessage extends Message implements Runnable{
                 return;
 
             }  //check if current replication degree >= desired replication degree
-            else if(Peer.getStateManager().checkChunkStatus(fileIdKey)) {
+            else if(Peer.getStateManager().checkChunkStatus(fileIdKey) || !Peer.getStateManager().canStore(info.getData().length)) {
                 return;
 
             } else{ //if there's not data stores and sends message
@@ -81,6 +84,10 @@ public class PutChunkMessage extends Message implements Runnable{
 
         } else {
 
+            if(!Peer.getStateManager().canStore(info.getData().length)){
+                System.out.println("CANT STORE" + info.getData().length);
+                return ;
+            }
             ChunkInfo chunkInfo = new ChunkInfo(info.getChunkNo(),0,info.getReplicationDegree(),info.getData().length);
             Peer.getStateManager().addChunk(fileIdKey,chunkInfo);
 

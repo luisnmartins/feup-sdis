@@ -8,26 +8,18 @@ public class StatusManager {
     private volatile static ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
     private volatile static ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private static List<String> backedUpFiles;  //files stored by the current peer
-<<<<<<< HEAD
     private static List<Integer> chunksToRestore;
     private static int sizeUsed;
     private static int maxSizeUse;
-=======
-    private static Set<Integer> chunksToRestore;
->>>>>>> master
 
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
         this.chunkTable = new ConcurrentHashMap<>();
         this.backedUpFiles = Collections.synchronizedList(new ArrayList<>());
-<<<<<<< HEAD
         this.chunksToRestore = Collections.synchronizedList(new ArrayList<>());
         this.sizeUsed = 0;
         this.maxSizeUse = DEFAULT_MAX_SIZE;
         
-=======
-        this.chunksToRestore = Collections.synchronizedSet(new HashSet<>());
->>>>>>> master
     }
 
     public synchronized void addBackedUpFile(String fileIdKey) {
@@ -49,6 +41,12 @@ public class StatusManager {
 
     public synchronized boolean isMaxedOut(){
         return sizeUsed == maxSizeUse;
+    }
+
+    public synchronized boolean canStore(int size){
+        if((size + this.sizeUsed) > this.maxSizeUse){
+            return false;
+        }else return true;
     }
 
     public synchronized String hasBackedUpChunk(String fileId, int chunkNo) {
@@ -222,6 +220,10 @@ public class StatusManager {
      */
     public static void setMaxSizeUse(int maxSizeUse) {
         StatusManager.maxSizeUse = maxSizeUse;
+    }
+
+    public synchronized boolean hasFileById(String fileId){
+        return filesTables.contains(fileId);
     }
 
 
