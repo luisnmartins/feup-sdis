@@ -27,7 +27,7 @@ public class DeleteMessage extends Message implements Runnable {
 
         String peerID = Peer.getPeerID();
 
-        if(peerID == this.senderId){
+        if(peerID.equals(this.senderId)){
             return;
         }
 

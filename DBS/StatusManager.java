@@ -7,13 +7,13 @@ public class StatusManager {
     private volatile static ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
     private volatile static ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private static List<String> backedUpFiles;  //files stored by the current peer
-    private static List<Integer> chunksToRestore;
+    private static Set<Integer> chunksToRestore;
 
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
         this.chunkTable = new ConcurrentHashMap<>();
         this.backedUpFiles = Collections.synchronizedList(new ArrayList<>());
-        this.chunksToRestore = Collections.synchronizedList(new ArrayList<>());
+        this.chunksToRestore = Collections.synchronizedSet(new HashSet<>());
     }
 
     public synchronized void addBackedUpFile(String fileIdKey) {
@@ -53,7 +53,6 @@ public class StatusManager {
     }
 
     public synchronized String isBackedUp(String pathname) {
-        System.out.println(pathname);
         String fileId = filesTables.get(pathname);
         if(fileId == null)
             return null;
@@ -90,25 +89,6 @@ public class StatusManager {
     public synchronized int getChunkNumber(String fileIdKey){
        return chunkTable.get(fileIdKey).getChunkNo();
     }
-
-    public synchronized boolean checkHasAllChunks(){
-        /*boolean checkFlag = false;
-        for(ChunkData chunk : chunksToRestore){
-            if(chunk.getData() == null  || chunk.getData().length < 64000 ){
-                checkFlag = true;
-            }
-        }
-
-        if(checkFlag == true){
-            int i = 0;
-            for(ChunkData chunkData : chunksToRestore){
-
-            }
-        }else return false;
-       return false;*/
-        return false;
-    }
-
 
     public synchronized boolean chunkExists(String fileIdKey){
         if(chunkTable.get(fileIdKey) == null){
