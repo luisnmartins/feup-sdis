@@ -5,6 +5,9 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
+import javax.sound.midi.SysexMessage;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+
 
 /**
  * peer
@@ -157,7 +160,27 @@ public class Peer implements remoteInterface{
 
     @Override
     public void reclaim(Integer memory) throws RemoteException {
+        stateManager.setMaxSizeUse(memory);
+        System.out.println("SIZE ANTES DE RECLAIM" + stateManager.getSizeUsed());
+        List<String> string_aux = stateManager.getBackedUpFiles();
+        do{
+          String toRemoveFileIdKey = new String(string_aux.get(0));
+          stateManager.deleteBackedUpFile(toRemoveFileIdKey);
+          FileManager manager = new FileManager();
+          String pathname = "Peer " + peerID + "/" + toRemoveFileIdKey;
+          byte[] data = manager.deleteFile(pathname);
+          stateManager.updateChunkDec(toRemoveFileIdKey);
+          stateManager.updateChunkInfoPeerRemove(toRemoveFileIdKey, this.peerID);
+          int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65,toRemoveFileIdKey.length()));
+          String fileId = toRemoveFileIdKey.substring(0,64);
 
+          System.out.println("CHUNKID: " + chunkId);
+          System.out.println("FILEID: " + fileId);
+          Message message = new RemoveMessage(fileId, version, peerID, chunkId);
+          Runnable thread = new MessageCarrier(message, "MC",chunkId);
+          exec.execute(thread);
+
+      }while(stateManager.isOutOfMemory() && !string_aux.isEmpty());
     }
 
     @Override
@@ -187,7 +210,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(150);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;

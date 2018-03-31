@@ -199,13 +199,20 @@ public class FileManager{
         return data;
     }
 
-    public void deleteFile(String pathname){
+    public byte[] deleteFile(String pathname){
         Path path = Paths.get(pathname);
+        
         try {
+            byte[] return_data = Files.readAllBytes(new File(pathname).toPath());
             Files.delete(path);
+            return return_data;
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        return null;
+
+        
     }
 
     

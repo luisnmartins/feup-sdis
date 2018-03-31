@@ -4,20 +4,43 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class StatusManager {
 
+    private static final int DEFAULT_MAX_SIZE = 1000000000;
     private volatile static ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
     private volatile static ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private static List<String> backedUpFiles;  //files stored by the current peer
     private static List<Integer> chunksToRestore;
+    private static int sizeUsed;
+    private static int maxSizeUse;
 
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
         this.chunkTable = new ConcurrentHashMap<>();
         this.backedUpFiles = Collections.synchronizedList(new ArrayList<>());
         this.chunksToRestore = Collections.synchronizedList(new ArrayList<>());
+        this.sizeUsed = 0;
+        this.maxSizeUse = DEFAULT_MAX_SIZE;
+        
     }
 
     public synchronized void addBackedUpFile(String fileIdKey) {
         backedUpFiles.add(fileIdKey);
+        
+        sizeUsed += chunkTable.get(fileIdKey).getSize();
+
+    }
+
+    public synchronized void deleteBackedUpFile(String fileIdKey){
+        backedUpFiles.remove(fileIdKey);
+
+        sizeUsed -= chunkTable.get(fileIdKey).getSize();
+    }
+
+    public synchronized boolean isOutOfMemory(){
+        return sizeUsed > maxSizeUse;
+    }
+
+    public synchronized boolean isMaxedOut(){
+        return sizeUsed == maxSizeUse;
     }
 
     public synchronized String hasBackedUpChunk(String fileId, int chunkNo) {
@@ -43,13 +66,27 @@ public class StatusManager {
         info.addReplicationDegree();
     }
 
+    public synchronized void updateChunkDec(String fileIdKey){
+        ChunkInfo info = chunkTable.get(fileIdKey);
+        info.decReplicationDegree();
+    }
+
     public synchronized void updateChunkInfoPeer(String fileIdKey, String peerID) {
         chunkTable.get(fileIdKey).addStorePeer(peerID);
+    }
+
+    public synchronized void updateChunkInfoPeerRemove(String fileIdKey, String peerId){
+        chunkTable.get(fileIdKey).removeStorePeer(peerId);
     }
 
     public synchronized void updateChunkRep(String fileIdKey,int rep){
         ChunkInfo info = chunkTable.get(fileIdKey);
         info.setDesiredReplicationDegree(rep);
+    }
+
+    public synchronized void updateChunkSize(String fileIdKey,int size){
+        ChunkInfo info = chunkTable.get(fileIdKey);
+        info.setSize(size);
     }
 
     public synchronized String isBackedUp(String pathname) {
@@ -176,6 +213,27 @@ public class StatusManager {
 
     public synchronized boolean isChunkToRestoreEmpty(){
         return  chunksToRestore.isEmpty();
+    }
+
+    /**
+     * @return the sizeUsed
+     */
+    public synchronized static int getSizeUsed() {
+        return sizeUsed;
+    }
+
+    /**
+     * @return the maxSizeUse
+     */
+    public static int getMaxSizeUse() {
+        return maxSizeUse;
+    }
+
+    /**
+     * @param maxSizeUse the maxSizeUse to set
+     */
+    public static void setMaxSizeUse(int maxSizeUse) {
+        StatusManager.maxSizeUse = maxSizeUse;
     }
 
 

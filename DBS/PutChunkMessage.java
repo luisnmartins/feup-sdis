@@ -40,7 +40,7 @@ public class PutChunkMessage extends Message implements Runnable{
         if(Peer.getStateManager().chunkExists(fileIdKey)) {
 
             Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree()); //update desired replication degree
-
+            Peer.getStateManager().updateChunkSize(fileIdKey, info.getData().length);
             if(this.senderId.equals(Peer.getPeerID()))
                 return;
 

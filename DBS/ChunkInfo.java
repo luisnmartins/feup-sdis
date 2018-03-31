@@ -33,6 +33,10 @@ public class ChunkInfo {
 
     }
 
+    public synchronized void removeStorePeer(String peerId){
+        this.peers.remove(peerId);
+    }
+
     public synchronized boolean isStored(String peerID){
         return peers.contains(peerID);
     }
@@ -75,6 +79,13 @@ public class ChunkInfo {
 
     public synchronized void setDesiredReplicationDegree(int desiredReplicationDegree) {
         this.desiredReplicationDegree = desiredReplicationDegree;
+    }
+
+    /**
+     * @param size the size to set
+     */
+    public synchronized void setSize(int size) {
+        this.size = size;
     }
 
     public synchronized Set<String> getPeers() {
