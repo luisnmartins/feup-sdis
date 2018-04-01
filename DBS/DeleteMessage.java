@@ -35,7 +35,7 @@ public class DeleteMessage extends Message implements Runnable {
         List<String> filesStored = Peer.getStateManager().getBackedUpFiles();
         for(int i = 0; i< filesStored.size();i++){
             FileManager manager = new FileManager();
-
+            String pathname =  "Peer " + Peer.getPeerID() + "/" +filesStored.get(i);
             Peer.getStateManager().deleteBackedUpFile(filesStored.get(i));
             i--;
 

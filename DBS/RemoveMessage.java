@@ -78,7 +78,7 @@ public class RemoveMessage extends Message{
             }else{
 
                 Message messageToSend = new PutChunkMessage(fileId, Peer.getVersion(), Peer.getPeerID(), chunk,desiredRep);
-                System.out.println("SENT PUTCHUNK");
+                ((PutChunkMessage) messageToSend).setToReclaim();
                 Runnable putchunkthread = new MessageCarrier(messageToSend, "MDB",chunkNo);
                 Peer.getExec().execute(putchunkthread);
             }

@@ -148,13 +148,6 @@ public class Peer implements remoteInterface{
             System.out.println("   Chunk size: " + stateManager.getChunkTable().get(string_aux).getSize() + " Bytes");
         }
 
-        for(String ajuda : chunksKeys){
-            System.out.println("Chunk: " + ajuda);
-            for(String string: stateManager.getChunkTable().get(ajuda).getPeers()){
-                System.out.println("Peerid:  " + string);
-            }
-        }
-
 
     }
 
@@ -189,6 +182,7 @@ public class Peer implements remoteInterface{
           if(desiredRep == 1){
             
             Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunk,desiredRep);
+            ((PutChunkMessage) messageToSend).setToReclaim();
             Runnable putchunkthread = new MessageCarrier(messageToSend, "MDB",chunkId);
             Peer.getExec().schedule(thread,1,TimeUnit.SECONDS);
           }

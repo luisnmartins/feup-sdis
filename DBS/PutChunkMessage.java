@@ -4,6 +4,7 @@ import java.io.*;
 public class PutChunkMessage extends Message implements Runnable{
 
     private ChunkData info;
+    private boolean isFromReclaim = false;
 
     public PutChunkMessage(String header, byte[] body) {
 
@@ -29,8 +30,12 @@ public class PutChunkMessage extends Message implements Runnable{
 
         String fileIdKey = fileId.trim()+"."+info.getChunkNo();
 
-        if(Peer.getStateManager().hasFileById(fileId))
+        if(Peer.getStateManager().hasFileById(fileId) && isFromReclaim){
+            Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree()); //update desired replication degree
+            Peer.getStateManager().updateChunkSize(fileIdKey, info.getData().length);
             return;
+        }
+            
 
         //check if the current chunk already exists in the peer table
         if(Peer.getStateManager().chunkExists(fileIdKey)) {
@@ -129,6 +134,10 @@ public class PutChunkMessage extends Message implements Runnable{
 
     public ChunkData getInfo() {
         return info;
+    }
+
+    public void setToReclaim(){
+        isFromReclaim = true;
     }
 
     @Override
