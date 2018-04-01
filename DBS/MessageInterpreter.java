@@ -84,6 +84,11 @@ public class MessageInterpreter implements Runnable {
                        Peer.getExec().execute(delete);
                        break;
                     }
+                    case "REMOVED": {
+                        RemoveMessage removeMessage = new RemoveMessage(header);
+                        removeMessage.action();
+                        break;
+                    }
                 }
             } catch (InterruptedException e) {
                 continue;

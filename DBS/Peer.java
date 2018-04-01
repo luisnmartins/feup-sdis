@@ -5,6 +5,9 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
+import javax.sound.midi.SysexMessage;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
+
 
 /**
  * peer
@@ -84,7 +87,7 @@ public class Peer implements remoteInterface{
 
                 Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
-                Peer.getExec().execute(thread);
+                exec.execute(thread);
 
             }
 
@@ -160,7 +163,40 @@ public class Peer implements remoteInterface{
 
     @Override
     public void reclaim(Integer memory) throws RemoteException {
+        stateManager.setMaxSizeUse(memory);
+        List<String> string_aux = stateManager.getBackedUpFiles();
 
+        while(stateManager.isOutOfMemory() && !string_aux.isEmpty()){
+          
+          String toRemoveFileIdKey = new String(string_aux.get(0));
+          stateManager.deleteBackedUpFile(toRemoveFileIdKey);
+          FileManager manager = new FileManager();
+          String pathname = "Peer " + peerID + "/" + toRemoveFileIdKey;
+          byte[] data_removed = manager.deleteFile(pathname);
+          stateManager.updateChunkDec(toRemoveFileIdKey);
+          stateManager.updateChunkInfoPeerRemove(toRemoveFileIdKey, this.peerID);
+
+        
+          int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65,toRemoveFileIdKey.length()));
+          String fileId = toRemoveFileIdKey.substring(0,64);
+          int desiredRep = stateManager.getChunkTable().get(toRemoveFileIdKey).getChunkNo();
+
+          ChunkData chunk = new ChunkData(chunkId);
+          chunk.setData(data_removed.length, data_removed);
+
+          Message message = new RemoveMessage(fileId, version, peerID, chunkId);
+          Runnable thread = new MessageCarrier(message, "MC",chunkId);
+          exec.execute(thread);
+
+      
+          if(desiredRep == 1){
+            
+            Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunk,desiredRep);
+            Runnable putchunkthread = new MessageCarrier(messageToSend, "MDB",chunkId);
+            Peer.getExec().schedule(thread,1,TimeUnit.SECONDS);
+          }
+
+        }
     }
 
     @Override
@@ -185,7 +221,7 @@ public class Peer implements remoteInterface{
     public void initiateSocketThreads() throws IOException {
 
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(150);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;

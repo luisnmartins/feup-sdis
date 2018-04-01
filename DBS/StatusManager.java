@@ -5,20 +5,49 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class StatusManager implements java.io.Serializable{
 
+    private static final int DEFAULT_MAX_SIZE = 1000000000;
     private volatile ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
     private volatile ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
-    private List<String> backedUpFiles;  //files stored by the current peer
-    transient private Set<Integer> chunksToRestore;
+    private volatile List<String> backedUpFiles;  //files stored by the current peer
+    transient private volatile Set<Integer> chunksToRestore;
+    private volatile int sizeUsed;
+    private volatile int maxSizeUse;
 
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
         this.chunkTable = new ConcurrentHashMap<>();
         this.backedUpFiles = Collections.synchronizedList(new ArrayList<>());
         this.chunksToRestore = Collections.synchronizedSet(new HashSet<>());
+        this.sizeUsed = 0;
+        this.maxSizeUse = DEFAULT_MAX_SIZE;
+        
     }
 
     public synchronized void addBackedUpFile(String fileIdKey) {
         backedUpFiles.add(fileIdKey);
+        
+        sizeUsed += chunkTable.get(fileIdKey).getSize();
+
+    }
+
+    public synchronized void deleteBackedUpFile(String fileIdKey){
+        backedUpFiles.remove(fileIdKey);
+
+        sizeUsed -= chunkTable.get(fileIdKey).getSize();
+    }
+
+    public synchronized boolean isOutOfMemory(){
+        return sizeUsed > maxSizeUse;
+    }
+
+    public synchronized boolean isMaxedOut(){
+        return sizeUsed == maxSizeUse;
+    }
+
+    public synchronized boolean canStore(int size){
+        if((size + this.sizeUsed) > this.maxSizeUse){
+            return false;
+        }else return true;
     }
 
     public synchronized String hasBackedUpChunk(String fileId, int chunkNo) {
@@ -44,13 +73,27 @@ public class StatusManager implements java.io.Serializable{
         info.addReplicationDegree();
     }
 
+    public synchronized void updateChunkDec(String fileIdKey){
+        ChunkInfo info = chunkTable.get(fileIdKey);
+        info.decReplicationDegree();
+    }
+
     public synchronized void updateChunkInfoPeer(String fileIdKey, String peerID) {
         chunkTable.get(fileIdKey).addStorePeer(peerID);
+    }
+
+    public synchronized void updateChunkInfoPeerRemove(String fileIdKey, String peerId){
+        chunkTable.get(fileIdKey).removeStorePeer(peerId);
     }
 
     public synchronized void updateChunkRep(String fileIdKey,int rep){
         ChunkInfo info = chunkTable.get(fileIdKey);
         info.setDesiredReplicationDegree(rep);
+    }
+
+    public synchronized void updateChunkSize(String fileIdKey,int size){
+        ChunkInfo info = chunkTable.get(fileIdKey);
+        info.setSize(size);
     }
 
     public synchronized String isBackedUp(String pathname) {
@@ -159,21 +202,58 @@ public class StatusManager implements java.io.Serializable{
         return  chunksToRestore.isEmpty();
     }
 
+    /**
+     * @return the sizeUsed
+     */
+    public synchronized int getSizeUsed() {
+        return sizeUsed;
+    }
 
-    private void writeObject(java.io.ObjectOutputStream stream)
-            throws IOException {
+    /**
+     * @return the maxSizeUse
+     */
+    public synchronized int getMaxSizeUse() {
+        return maxSizeUse;
+    }
+
+    /**
+     * @param maxSizeUse the maxSizeUse to set
+     */
+    public synchronized void setMaxSizeUse(int maxSizeUse) { this.maxSizeUse = maxSizeUse; }
+
+    public synchronized boolean hasFileById(String fileId){
+        return filesTables.contains(fileId);
+    }
+
+
+    /**
+     * Write status variables to serializable
+     * @param stream
+     * @throws IOException
+     */
+    private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
+
         stream.writeObject(filesTables);
         stream.writeObject(chunkTable);
         stream.writeObject(backedUpFiles);
+        stream.writeInt(sizeUsed);
+        stream.writeInt(maxSizeUse);
     }
 
-    private void readObject(java.io.ObjectInputStream stream)
-            throws IOException, ClassNotFoundException {
+    /**
+     * Read status variables to serializable
+     * @param stream
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 
         chunksToRestore = Collections.synchronizedSet(new HashSet<>());
         filesTables = (ConcurrentHashMap<String, String>) stream.readObject();
         chunkTable = (ConcurrentHashMap<String, ChunkInfo>)stream.readObject();
         backedUpFiles = (List<String>) stream.readObject();
+        sizeUsed = stream.readInt();
+        maxSizeUse = stream.readInt();
 
     }
 
