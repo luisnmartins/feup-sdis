@@ -5,9 +5,6 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
-import javax.sound.midi.SysexMessage;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.SystemMenuBar;
-
 
 /**
  * peer
@@ -33,7 +30,7 @@ public class Peer implements remoteInterface{
         peerID = id ;
         this.initiateSocketThreads();
         LogsManager statusData = new LogsManager();
-        this.stateManager = statusData.loadData();
+        this.stateManager = statusData.LoadData();
     }
 
     public Peer(String version, String id, String accessPoint, Pair<Integer,String> MC,Pair<Integer,String> MDB, Pair<Integer,String> MDR) throws IOException {
@@ -319,4 +316,5 @@ public class Peer implements remoteInterface{
     public static String getVersion() {
         return version;
     }
+
 }

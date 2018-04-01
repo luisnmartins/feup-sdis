@@ -1,14 +1,23 @@
 import java.io.*;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+import java.rmi.server.UnicastRemoteObject;
 
 public class LogsManager {
 
 
     public LogsManager() {
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> saveData()));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> TerminatePeer()));
+
+    }
+
+    public void TerminatePeer() {
+        SaveData();
     }
 
 
-    public boolean saveData() {
+    public boolean SaveData() {
 
 
         String pathname = "Peer "+Peer.getPeerID()+"/data.out";
@@ -52,7 +61,7 @@ public class LogsManager {
     }
 
 
-    public StatusManager loadData() {
+    public StatusManager LoadData() {
 
         StatusManager state;
 
