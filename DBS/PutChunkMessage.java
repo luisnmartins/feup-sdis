@@ -48,7 +48,7 @@ public class PutChunkMessage extends Message implements Runnable{
             //check if peer has a copy of the current chunk data
             if(Peer.getStateManager().storedChunk(fileIdKey)) {
                 //Send Stored message
-                Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+                Message messageToSend = new StoredMessage(fileId, Peer.getVersion(), Peer.getPeerID(), this.info.getChunkNo());
                 Runnable thread = new MessageCarrier(messageToSend, "MC");
                 Peer.getExec().execute(thread);
                 return;
@@ -60,7 +60,7 @@ public class PutChunkMessage extends Message implements Runnable{
             } else{ //if there's not data stores and sends message
 
                 //Send Stored message
-                Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+                Message messageToSend = new StoredMessage(fileId, Peer.getVersion(), Peer.getPeerID(), this.info.getChunkNo());
                 Runnable thread = new MessageCarrier(messageToSend, "MC");
                 Peer.getExec().execute(thread);
 
@@ -93,7 +93,7 @@ public class PutChunkMessage extends Message implements Runnable{
                 return;
 
             //Send Stored message
-            Message messageToSend = new StoredMessage(fileId, "1.0", Peer.getPeerID(), this.info.getChunkNo());
+            Message messageToSend = new StoredMessage(fileId, Peer.getVersion(), Peer.getPeerID(), this.info.getChunkNo());
             Runnable thread = new MessageCarrier(messageToSend, "MC");
             Peer.getExec().execute(thread);
 

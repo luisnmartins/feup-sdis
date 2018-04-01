@@ -33,7 +33,7 @@ public class GetChunkMessage extends Message{
 
         if(Peer.getStateManager().hasBackedUpChunk(this.fileId,this.chunkNo) != null){
 
-            Runnable chunkMessage = new ChunkMessage(this.fileId,"1.0",Peer.getPeerID(),new ChunkData(this.chunkNo));
+            Runnable chunkMessage = new ChunkMessage(this.fileId,Peer.getVersion(),Peer.getPeerID(),new ChunkData(this.chunkNo));
             Random rand = new Random();
             int randomTime = rand.nextInt(399);
             Peer.getExec().schedule(chunkMessage,randomTime, TimeUnit.MILLISECONDS);

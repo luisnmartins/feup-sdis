@@ -38,7 +38,8 @@ public class Peer implements remoteInterface{
         peerID = id;
         this.accessPoint = accessPoint;
         this.initiateSocketThreads(MC,MDB,MDR);
-        this.stateManager = new StatusManager();
+        LogsManager statusData = new LogsManager();
+        this.stateManager = statusData.LoadData();
 
     }
 
@@ -82,7 +83,7 @@ public class Peer implements remoteInterface{
             for(int i=0; i<chunksArray.size(); i++) {
 
 
-                Message messageToSend = new PutChunkMessage(fileId, "1.0", peerID, chunksArray.get(i), replicationDegree);
+                Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunksArray.get(i), replicationDegree);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
                 exec.execute(thread);
 
@@ -109,7 +110,7 @@ public class Peer implements remoteInterface{
                 currentChunkNo = Integer.parseInt(key.substring(key.indexOf(".")+1,key.length()));
                 stateManager.addChunkToRestore(currentChunkNo);
 
-                Message getChunkMessage = new GetChunkMessage("1.0", peerID, fileId, currentChunkNo);
+                Message getChunkMessage = new GetChunkMessage(version, peerID, fileId, currentChunkNo);
                 Runnable thread = new MessageCarrier(getChunkMessage, "MC");
                 exec.execute(thread);
             }
@@ -201,7 +202,7 @@ public class Peer implements remoteInterface{
         } else {
             System.out.println("Files will be deleted");
             //stateManager.getFilesTables().remove(pathname);
-            Message deleteMessage = new DeleteMessage(fileId, "1.0", peerID);
+            Message deleteMessage = new DeleteMessage(fileId, version, peerID);
             Runnable thread = new MessageCarrier(deleteMessage, "MC");
             Peer.getExec().execute(thread);
         }
