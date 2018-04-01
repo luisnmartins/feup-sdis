@@ -1,3 +1,4 @@
+import java.awt.event.PaintEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -33,13 +34,16 @@ public class DeleteMessage extends Message implements Runnable {
 
         List<String> filesStored = Peer.getStateManager().getBackedUpFiles();
         for(int i = 0; i< filesStored.size();i++){
-            String pathname =  "Peer " + Peer.getPeerID() + "/" +filesStored.get(i);
             FileManager manager = new FileManager();
+
             Peer.getStateManager().deleteBackedUpFile(filesStored.get(i));
-            manager.deleteFile(pathname);
             i--;
-            Peer.getStateManager().removeChunks(fileId);
+
+
+            manager.deleteFile(pathname);
+            
         }
+        Peer.getStateManager().removeChunks(fileId);
     }
 
     @Override

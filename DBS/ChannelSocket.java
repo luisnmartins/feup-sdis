@@ -10,10 +10,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public abstract class ChannelSocket implements Runnable {
 
-    public static final int PACKET_SIZE = 65536;
-    public MulticastSocket socket;
-    public int port;
-    public InetAddress address;
+    protected static final int PACKET_SIZE = 65536;
+    protected MulticastSocket socket;
+    protected int port;
+    protected InetAddress address;
 
     ChannelSocket(){}
 

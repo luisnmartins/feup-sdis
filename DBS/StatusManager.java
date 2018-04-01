@@ -31,9 +31,19 @@ public class StatusManager implements java.io.Serializable{
     }
 
     public synchronized void deleteBackedUpFile(String fileIdKey){
+        sizeUsed -= chunkTable.get(fileIdKey).getSize();
         backedUpFiles.remove(fileIdKey);
 
-        sizeUsed -= chunkTable.get(fileIdKey).getSize();
+
+    }
+
+    public synchronized void decSizeUsed(String fileIdKey){
+        try{
+            sizeUsed -= chunkTable.get(fileIdKey).getSize();
+
+        }catch (Throwable e){
+            e.printStackTrace();
+        }
     }
 
     public synchronized boolean isOutOfMemory(){
