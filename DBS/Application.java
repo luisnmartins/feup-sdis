@@ -27,8 +27,6 @@ public class Application {
         remoteInterface peer;
         
         if(host_id.length > 2){
-            System.out.println("IP: " + host_id[2] + " PEER_ID " + host_id[3]);
-        System.out.println(args[2] + " " + args[3]);
              peer = handler.getFromRegistry(host_id[3],host_id[2]);
         }else{
              peer = handler.getFromRegistry(args[0],null);
@@ -44,7 +42,7 @@ public class Application {
 
                 } else {
                     try {
-                        peer.backup(args[2], Integer.parseInt(args[3]));
+                        peer.backup(args[2], Integer.parseInt(args[3]),false);
                         return true;
 
                     } catch (RemoteException e) {
@@ -59,7 +57,7 @@ public class Application {
 
                 } else {
                     try{
-                        peer.restore(args[2]);
+                        peer.restore(args[2],false);
                         return true;
 
                     } catch(RemoteException e) {
@@ -89,7 +87,7 @@ public class Application {
 
                 } else {
                     try{
-                        peer.delete(args[2]);
+                        peer.delete(args[2],false);
                         return true;
 
                     } catch(RemoteException e) {
@@ -105,6 +103,51 @@ public class Application {
                 } else {
                     try{
                         peer.state();
+                        return true;
+
+                    } catch(RemoteException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }
+            case "ENHBACKUP":
+                if (args.length != 4) {
+                    System.err.println("BACKUP call is incorrect. It must be: java <PEER_ID> BACKUP <FILENAME> <REPLICATION_DEGREE>");
+                    return false;
+
+                } else {
+                    try {
+                        peer.backup(args[2], Integer.parseInt(args[3]),true);
+                        return true;
+
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }
+                case "ENHRESTORE":
+                if(args.length != 3) {
+                    System.err.println("RECOVERY call is incorrect. It must be: java <PEER_ID> RECOVERY <FILENAME>");
+                    return false;
+
+                } else {
+                    try{
+                        peer.restore(args[2],true);
+                        return true;
+
+                    } catch(RemoteException e) {
+                        e.printStackTrace();
+                        return false;
+                    }
+                }
+                case "ENHDELETE":
+                if(args.length != 3) {
+                    System.err.println("DELETE call is incorrect. It must be: java <PEER_ID> DELETE <FILENAME>");
+                    return false;
+
+                } else {
+                    try{
+                        peer.delete(args[2],true);
                         return true;
 
                     } catch(RemoteException e) {

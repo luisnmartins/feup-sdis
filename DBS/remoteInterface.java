@@ -9,14 +9,14 @@ import java.util.List;
 
 public interface remoteInterface extends Remote {
 
-    void backup(String pathname, int replicationDegree) throws RemoteException;
+    void backup(String pathname, int replicationDegree,boolean enhanced) throws RemoteException;
 
-    void restore(String pathname) throws RemoteException;
+    void restore(String pathname,boolean enhanced) throws RemoteException;
 
     void state() throws RemoteException;
 
     void reclaim(Integer memory) throws RemoteException;
 
-    void delete(String pathname) throws RemoteException;
+    void delete(String pathname,boolean enhanced) throws RemoteException;
 
 }

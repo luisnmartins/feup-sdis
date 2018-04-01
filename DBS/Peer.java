@@ -57,8 +57,11 @@ public class Peer implements remoteInterface{
       }
 
     @Override
-    public void backup(String pathname, int replicationDegree) throws RemoteException {
+    public void backup(String pathname, int replicationDegree,boolean enhanced) throws RemoteException {
 
+        //TODO CHANGE
+        if(enhanced)
+            version = "2.0";
 
         FileManager chunks = new FileManager(pathname); //create a FileManager to get file in chunks
         
@@ -72,7 +75,7 @@ public class Peer implements remoteInterface{
                 return;
             }
             System.out.print("You have updated this file. Old ");
-            this.delete(pathname);
+            this.delete(pathname,false);
         }
         this.stateManager.addFile(pathname,fileId);
         try {
@@ -97,7 +100,7 @@ public class Peer implements remoteInterface{
     }
 
     @Override
-    public void restore(String pathname) {
+    public void restore(String pathname,boolean enhanced) {
         String fileId;
         int currentChunkNo;
         if((fileId = stateManager.isBackedUp(pathname)) == null) {
@@ -131,9 +134,10 @@ public class Peer implements remoteInterface{
             System.out.println("FILE: ");
             System.out.println("   Pathname: "+pathname);
             System.out.println("   File Id: "+fileId);
+            System.out.println("   Desired Replication Degree: "+stateManager.getChunkTable().get(fileId+".0").getDesiredReplicationDegree());
             for(String fileIdKey: chunksKeys){
                 if(fileIdKey.contains(fileId)){
-                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo() + " ReplicationDegree: " + stateManager.getChunkTable().get(fileIdKey).getDesiredReplicationDegree());
+                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo() + " ReplicationDegree: " + stateManager.getChunkTable().get(fileIdKey).getCurrentReplicationDegree());
 
 
                 }
@@ -142,12 +146,17 @@ public class Peer implements remoteInterface{
         }
 
         List<String> backedUpFiles = stateManager.getBackedUpFiles();
+        System.out.println("CHUNKS STORED: ");
         for(int i = 0; i< backedUpFiles.size(); i++){
             String string_aux = backedUpFiles.get(i);
             System.out.println("Chunk:  " + backedUpFiles.get(i));
             System.out.println("   CurrentReplicationDegree: " + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
-            System.out.println("   Chunk size: " + stateManager.getChunkTable().get(string_aux).getSize() + " Bytes");
+            double sizeKB = stateManager.getChunkTable().get(string_aux).getSize()/1000;
+            System.out.println("   Chunk size: " + sizeKB + " KBytes");
         }
+
+        System.out.println("Memory used_ " + stateManager.getSizeUsed()/1000.0 + " KBytes");
+        System.out.println("Maximum capacity allowed: " + stateManager.getMaxSizeUse()/1000.0 +  " KBytes");
 
 
     }
@@ -192,7 +201,7 @@ public class Peer implements remoteInterface{
     }
 
     @Override
-    public void delete(String pathname) throws RemoteException {
+    public void delete(String pathname,boolean enhanced) throws RemoteException {
 
         String fileId;
         if((fileId = stateManager.deleteFile(pathname)) == null) {
