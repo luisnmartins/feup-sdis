@@ -35,6 +35,9 @@ public class Peer implements remoteInterface{
 
     public Peer(String version, String id, String accessPoint, Pair<Integer,String> MC,Pair<Integer,String> MDB, Pair<Integer,String> MDR) throws IOException {
         this.version = version;
+        if(this.version.equals("2.0")){
+            this.version = "1.9";
+        }
         peerID = id;
         this.accessPoint = accessPoint;
         this.initiateSocketThreads(MC,MDB,MDR);
@@ -59,9 +62,9 @@ public class Peer implements remoteInterface{
     @Override
     public void backup(String pathname, int replicationDegree,boolean enhanced) throws RemoteException {
 
-        //TODO CHANGE
+        String versionToUse = new String(version);
         if(enhanced)
-            version = "2.0";
+            versionToUse = "2.0";
 
         FileManager chunks = new FileManager(pathname); //create a FileManager to get file in chunks
         
@@ -86,7 +89,7 @@ public class Peer implements remoteInterface{
             for(int i=0; i<chunksArray.size(); i++) {
 
 
-                Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunksArray.get(i), replicationDegree);
+                Message messageToSend = new PutChunkMessage(fileId, versionToUse, peerID, chunksArray.get(i), replicationDegree);
                 Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
                 exec.execute(thread);
 
@@ -102,6 +105,9 @@ public class Peer implements remoteInterface{
     @Override
     public void restore(String pathname,boolean enhanced) {
         String fileId;
+        String versionToUse = new String(version);
+        if(enhanced)
+            versionToUse = "2.0";
         int currentChunkNo;
         if((fileId = stateManager.isBackedUp(pathname)) == null) {
             System.err.println("This file doesn't exist or your not the owner of it");
@@ -113,7 +119,7 @@ public class Peer implements remoteInterface{
                 currentChunkNo = Integer.parseInt(key.substring(key.indexOf(".")+1,key.length()));
                 stateManager.addChunkToRestore(currentChunkNo);
 
-                Message getChunkMessage = new GetChunkMessage(version, peerID, fileId, currentChunkNo);
+                Message getChunkMessage = new GetChunkMessage(versionToUse, peerID, fileId, currentChunkNo);
                 Runnable thread = new MessageCarrier(getChunkMessage, "MC");
                 exec.execute(thread);
             }
@@ -203,6 +209,9 @@ public class Peer implements remoteInterface{
     @Override
     public void delete(String pathname,boolean enhanced) throws RemoteException {
 
+        String versionToUse = new String(version);
+        if(enhanced)
+            versionToUse = "2.0";
         String fileId;
         if((fileId = stateManager.deleteFile(pathname)) == null) {
             System.err.println("You didn't backup up this file so you can't delete it");
@@ -211,7 +220,7 @@ public class Peer implements remoteInterface{
         } else {
             System.out.println("Files will be deleted");
             //stateManager.getFilesTables().remove(pathname);
-            Message deleteMessage = new DeleteMessage(fileId, version, peerID);
+            Message deleteMessage = new DeleteMessage(fileId, versionToUse, peerID);
             Runnable thread = new MessageCarrier(deleteMessage, "MC");
             Peer.getExec().execute(thread);
         }
