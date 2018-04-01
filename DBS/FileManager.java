@@ -113,7 +113,13 @@ public class FileManager{
     public String generateFileID(){
 
         File f = new File(pathname);
-        String bitString = f.getName() + Long.toString(f.lastModified()) + Boolean.toString(f.canWrite()) + Boolean.toString(f.canRead()) + f.getPath();
+        Path path = Paths.get(pathname);
+        String bitString = null;
+        try {
+            bitString = f.getName() + Long.toString(f.lastModified()) + Boolean.toString(f.canWrite()) + Boolean.toString(f.canRead()) + f.getPath() + Files.getOwner(path).getName();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return sha256(bitString);
     }
 
