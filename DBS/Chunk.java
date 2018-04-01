@@ -1,5 +1,5 @@
 
-public abstract class Chunk{
+public abstract class Chunk implements java.io.Serializable{
 
     private int chunkNo;
     private int replicationDegree;

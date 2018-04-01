@@ -1,9 +1,8 @@
-import java.util.ArrayList;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-public class ChunkInfo {
+public class ChunkInfo implements java.io.Serializable{
 
     private int chunkNo;
     private Integer currentReplicationDegree;

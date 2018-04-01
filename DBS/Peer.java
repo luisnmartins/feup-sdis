@@ -29,7 +29,8 @@ public class Peer implements remoteInterface{
         version = "1.0";
         peerID = id ;
         this.initiateSocketThreads();
-        this.stateManager = new StatusManager();
+        LogsManager statusData = new LogsManager();
+        this.stateManager = statusData.loadData();
     }
 
     public Peer(String version, String id, String accessPoint, Pair<Integer,String> MC,Pair<Integer,String> MDB, Pair<Integer,String> MDR) throws IOException {
@@ -166,7 +167,7 @@ public class Peer implements remoteInterface{
     public void delete(String pathname) throws RemoteException {
 
         String fileId;
-        if((fileId = Peer.getStateManager().deleteFile(pathname)) == null) {
+        if((fileId = stateManager.deleteFile(pathname)) == null) {
             System.err.println("You didn't backup up this file so you can't delete it");
             return;
 

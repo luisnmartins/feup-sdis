@@ -1,13 +1,14 @@
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class StatusManager {
+public class StatusManager implements java.io.Serializable{
 
-    private volatile static ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
-    private volatile static ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
-    private static List<String> backedUpFiles;  //files stored by the current peer
-    private static Set<Integer> chunksToRestore;
+    private volatile ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
+    private volatile ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
+    private List<String> backedUpFiles;  //files stored by the current peer
+    transient private Set<Integer> chunksToRestore;
 
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
@@ -30,7 +31,7 @@ public class StatusManager {
     }
 
 
-    public  synchronized void addFile(String pathname,String fileId){
+    public synchronized void addFile(String pathname,String fileId){
         filesTables.put(pathname,fileId);
 
     }
@@ -156,6 +157,24 @@ public class StatusManager {
 
     public synchronized boolean isChunkToRestoreEmpty(){
         return  chunksToRestore.isEmpty();
+    }
+
+
+    private void writeObject(java.io.ObjectOutputStream stream)
+            throws IOException {
+        stream.writeObject(filesTables);
+        stream.writeObject(chunkTable);
+        stream.writeObject(backedUpFiles);
+    }
+
+    private void readObject(java.io.ObjectInputStream stream)
+            throws IOException, ClassNotFoundException {
+
+        chunksToRestore = Collections.synchronizedSet(new HashSet<>());
+        filesTables = (ConcurrentHashMap<String, String>) stream.readObject();
+        chunkTable = (ConcurrentHashMap<String, ChunkInfo>)stream.readObject();
+        backedUpFiles = (List<String>) stream.readObject();
+
     }
 
 
