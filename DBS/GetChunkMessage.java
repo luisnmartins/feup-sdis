@@ -28,8 +28,8 @@ public class GetChunkMessage extends Message{
         if(this.senderId.equals(Peer.getPeerID())){
             return;
         }
-
-        Peer.getStateManager().addChunkToRestore(chunkNo);
+        String fileIdKey = fileId +"." + chunkNo;
+        Peer.getStateManager().addChunkToRestore(fileIdKey);
 
         if(Peer.getStateManager().hasBackedUpChunk(this.fileId,this.chunkNo) != null){
 

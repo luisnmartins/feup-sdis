@@ -9,7 +9,7 @@ public class StatusManager implements java.io.Serializable{
     private volatile ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
     private volatile ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private volatile List<String> backedUpFiles;  //files stored by the current peer
-    transient private volatile Set<Integer> chunksToRestore;
+    transient private volatile Set<String> chunksToRestore;
     private volatile int sizeUsed;
     private volatile int maxSizeUse;
 
@@ -189,19 +189,19 @@ public class StatusManager implements java.io.Serializable{
         return chunkTable.get(fileIdKey);
     }
 
-    public synchronized void addChunkToRestore(Integer chunkNo) {
-        chunksToRestore.add(chunkNo);
+    public synchronized void addChunkToRestore(String fileIdKey) {
+        chunksToRestore.add(fileIdKey);
     }
 
 
-    public synchronized boolean isChunkToRestore(Integer chunkNo) {
-        return chunksToRestore.contains(chunkNo);
+    public synchronized boolean isChunkToRestore(String fileIdKey) {
+        return chunksToRestore.contains(fileIdKey);
 
     }
 
-    public synchronized boolean chunkReallyToRestore(Integer chunkNo) {
-        if(isChunkToRestore(chunkNo)) {
-            chunksToRestore.remove(chunkNo);
+    public synchronized boolean chunkReallyToRestore(String fileIdKey) {
+        if(isChunkToRestore(fileIdKey)) {
+            chunksToRestore.remove(fileIdKey);
             return true;
         } else {
             return false;

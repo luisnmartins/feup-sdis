@@ -117,7 +117,7 @@ public class Peer implements remoteInterface{
         for(String key: set) {
             if(key.contains(fileId)) {
                 currentChunkNo = Integer.parseInt(key.substring(key.indexOf(".")+1,key.length()));
-                stateManager.addChunkToRestore(currentChunkNo);
+                stateManager.addChunkToRestore(key);
 
                 Message getChunkMessage = new GetChunkMessage(versionToUse, peerID, fileId, currentChunkNo);
                 Runnable thread = new MessageCarrier(getChunkMessage, "MC");

@@ -61,13 +61,14 @@ public class ChunkMessage extends Message implements Runnable{
         Set<String> set = hashed.keySet();
         for(String key : set){
             if(hashed.get(key).equals(fileId)){
-                if(Peer.getStateManager().isChunkToRestore(info.getChunkNo())) {
+                String fileIdKey = fileId+"."+info.getChunkNo();
+                if(Peer.getStateManager().isChunkToRestore(fileIdKey)) {
                     System.out.println("Restoring chunk  "+ info.getChunkNo());
                     String pathname = "Peer " + Peer.getPeerID() + "/" + fileId + "." + info.getChunkNo();
                     FileManager manager = new FileManager(pathname);
                     try {
                         manager.saveChunk(info);
-                        Peer.getStateManager().chunkReallyToRestore(info.getChunkNo());
+                        Peer.getStateManager().chunkReallyToRestore(fileIdKey);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -95,7 +96,8 @@ public class ChunkMessage extends Message implements Runnable{
     @Override
     public void run() {
 
-        if(Peer.getStateManager().chunkReallyToRestore(info.getChunkNo())) {
+        String fileIdKey = fileId + "." + info.getChunkNo();
+        if(Peer.getStateManager().chunkReallyToRestore(fileIdKey)) {
             Runnable messageToSend = new MessageCarrier(this,"MDR");
             Peer.getExec().execute(messageToSend);
         }
