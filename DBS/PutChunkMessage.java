@@ -30,7 +30,9 @@ public class PutChunkMessage extends Message implements Runnable{
 
         String fileIdKey = fileId.trim()+"."+info.getChunkNo();
 
-        if(Peer.getStateManager().hasFileById(fileId) && isFromReclaim){
+        //System.out.println("ESTOU AQUI " + version);
+        if(Peer.getStateManager().hasFileById(fileId) && version.equals("2.1")){
+            
             Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree()); //update desired replication degree
             Peer.getStateManager().updateChunkSize(fileIdKey, info.getData().length);
             return;
@@ -53,10 +55,15 @@ public class PutChunkMessage extends Message implements Runnable{
                 Peer.getExec().execute(thread);
                 return;
 
-            }  //check if current replication degree >= desired replication degree
-            else if(Peer.getStateManager().checkChunkStatus(fileIdKey) || !Peer.getStateManager().canStore(info.getData().length)) {
+            }
+            if(version.equals("2.0") || version.equals("2.1")){
+                 //check if current replication degree >= desired replication degree
+                if(Peer.getStateManager().checkChunkStatus(fileIdKey))
+                    return;
+            }
+            System.out.println("INFO: " + info.getChunkNo() + " SIZE " + info.getData().length);
+            if(!Peer.getStateManager().canStore(info.getData().length)){
                 return;
-
             } else{ //if there's not data stores and sends message
 
                 //Send Stored message
@@ -82,6 +89,7 @@ public class PutChunkMessage extends Message implements Runnable{
 
         } else {
 
+            System.out.println("INFO: " + info.getChunkNo() + " SIZE " + info.getData().length);
             if(!Peer.getStateManager().canStore(info.getData().length)){
                 System.out.println("CANT STORE" + info.getData().length);
                 return ;
@@ -120,7 +128,6 @@ public class PutChunkMessage extends Message implements Runnable{
 
         String header = "PUTCHUNK " + version + " " + senderId + " " + fileId + " "+ info.getChunkNo() + " " + info.getReplicationDegree() +
                 " " + CRLF +CRLF;
-
 
         byte[] headerBytes = header.getBytes();
         byte[] data = info.getData();

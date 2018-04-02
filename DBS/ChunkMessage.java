@@ -64,7 +64,7 @@ public class ChunkMessage extends Message implements Runnable{
                 String fileIdKey = fileId+"."+info.getChunkNo();
                 if(Peer.getStateManager().isChunkToRestore(fileIdKey)) {
                     System.out.println("Restoring chunk  "+ info.getChunkNo());
-                    String pathname = "Peer " + Peer.getPeerID() + "/" + fileId + "." + info.getChunkNo();
+                    String pathname = "Peer " + Peer.getPeerID() + "/SaveData/" + fileId + "." + info.getChunkNo();
                     FileManager manager = new FileManager(pathname);
                     try {
                         manager.saveChunk(info);

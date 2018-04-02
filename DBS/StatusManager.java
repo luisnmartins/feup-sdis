@@ -72,9 +72,22 @@ public class StatusManager implements java.io.Serializable{
      * Given a size of potential chunk to store, checks if it can be stored
      */
     public synchronized boolean canStore(int size){
-        if((size + this.sizeUsed) > this.maxSizeUse){
-            return false;
-        }else return true;
+
+        if((size + this.sizeUsed) > this.maxSizeUse){    
+            
+            for(String fileIdKey : backedUpFiles) {
+                if(chunkTable.get(fileIdKey).canBeDeleted() && chunkTable.get(fileIdKey).getSize() >= size) {
+                    
+                    
+                    Peer.removeFile(fileIdKey);
+                    
+                    return true;
+                }
+            }
+        } else{
+            return true;
+        }
+    return false;
     }
 
     /**

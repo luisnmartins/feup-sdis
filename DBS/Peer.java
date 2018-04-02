@@ -165,7 +165,7 @@ public class Peer implements remoteInterface {
             System.out.println("   Chunk size: " + sizeKB + " KBytes");
         }
 
-        System.out.println("Memory used_ " + stateManager.getSizeUsed() / 1000.0 + " KBytes");
+        System.out.println("Memory used: " + stateManager.getSizeUsed() / 1000.0 + " KBytes");
         System.out.println("Maximum capacity allowed: " + stateManager.getMaxSizeUse() / 1000.0 + " KBytes");
 
     }
@@ -178,33 +178,41 @@ public class Peer implements remoteInterface {
         while (stateManager.isOutOfMemory() && !string_aux.isEmpty()) {
 
             String toRemoveFileIdKey = new String(string_aux.get(0));
-            stateManager.deleteBackedUpFile(toRemoveFileIdKey);
-            FileManager manager = new FileManager();
-            String pathname = "Peer " + peerID + "/" + toRemoveFileIdKey;
-            byte[] data_removed = manager.deleteFile(pathname);
-            stateManager.updateChunkDec(toRemoveFileIdKey);
-            stateManager.updateChunkInfoPeerRemove(toRemoveFileIdKey, this.peerID);
-
-            int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65, toRemoveFileIdKey.length()));
-            String fileId = toRemoveFileIdKey.substring(0, 64);
-            int desiredRep = stateManager.getChunkTable().get(toRemoveFileIdKey).getChunkNo();
-
-            ChunkData chunk = new ChunkData(chunkId);
-            chunk.setData(data_removed.length, data_removed);
-
-            Message message = new RemoveMessage(fileId, version, peerID, chunkId);
-            Runnable thread = new MessageCarrier(message, "MC", chunkId);
-            exec.execute(thread);
+            byte[] data_removed = removeFile(toRemoveFileIdKey);
+            int desiredRep = stateManager.getChunkTable().get(toRemoveFileIdKey).getDesiredReplicationDegree();
 
             if (desiredRep == 1) {
 
-                Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunk, desiredRep);
+                int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65, toRemoveFileIdKey.length()));
+                String fileId = toRemoveFileIdKey.substring(0, 64);
+                ChunkData chunk = new ChunkData(chunkId);
+                chunk.setData(data_removed.length, data_removed);
+
+                Message messageToSend = new PutChunkMessage(fileId, "2.1", peerID, chunk, desiredRep);
                 ((PutChunkMessage) messageToSend).setToReclaim();
                 Runnable putchunkthread = new MessageCarrier(messageToSend, "MDB", chunkId);
-                Peer.getExec().schedule(thread, 1, TimeUnit.SECONDS);
+                Peer.getExec().schedule(putchunkthread, 1, TimeUnit.SECONDS);
             }
 
         }
+    }
+
+    public static byte[] removeFile(String toRemoveFileIdKey) {
+
+        stateManager.deleteBackedUpFile(toRemoveFileIdKey);
+        FileManager manager = new FileManager();
+        String pathname = "Peer " + peerID + "/" + toRemoveFileIdKey;
+        byte[] data_removed = manager.deleteFile(pathname);
+        stateManager.updateChunkDec(toRemoveFileIdKey);
+        stateManager.updateChunkInfoPeerRemove(toRemoveFileIdKey,getPeerID());
+
+        int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65, toRemoveFileIdKey.length()));
+        String fileId = toRemoveFileIdKey.substring(0, 64);
+        Message message = new RemoveMessage(fileId, version, peerID, chunkId);
+        Runnable thread = new MessageCarrier(message, "MC", chunkId);
+        exec.execute(thread);
+
+        return data_removed;
     }
 
     @Override
@@ -301,7 +309,6 @@ public class Peer implements remoteInterface {
 
     }
 
-    
     public static ScheduledExecutorService getExec() {
         return exec;
     }

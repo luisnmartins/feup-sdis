@@ -68,7 +68,7 @@ public class FileManager{
     public void mergeChunks(String fileId) throws IOException {
 
         //File dir = new File("Peer "+ Peer.getPeerID());
-        File dir = new File("Peer "+Peer.getPeerID());
+        File dir = new File("Peer "+Peer.getPeerID()+"/SaveData");
         File[] foundFiles = dir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 return name.startsWith(fileId);
@@ -87,11 +87,16 @@ public class FileManager{
             }
         });
 
-
+        
+        mergeFile(foundFiles);
         for (int i=0; i<foundFiles.length; i++) {
             System.out.println("FILENAME: "+foundFiles[i].getName());
+            foundFiles[i].delete();
+
         }
-        mergeFile(foundFiles);
+        if(dir.list().length == 0){
+            dir.delete();
+        }
 
     }
 

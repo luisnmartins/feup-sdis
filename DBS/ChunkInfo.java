@@ -64,6 +64,19 @@ public class ChunkInfo extends Chunk implements java.io.Serializable {
     }
 
     /**
+     * Check if a chunk can be deleted keeping the desired replication degree
+     * @return true if the chunk can be deleted and false otherwise
+     */
+    public synchronized boolean canBeDeleted(){
+        if(desiredReplicationDegree.equals(-1))
+            return false;
+        if(currentReplicationDegree.compareTo(desiredReplicationDegree) > 0) {
+            return true;
+        }
+        else return false;
+    }
+
+    /**
      * @param size the size to set
      */
     public synchronized void setSize(int size) {
