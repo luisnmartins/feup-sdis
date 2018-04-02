@@ -125,6 +125,8 @@ public class FileManager{
 
         File f = new File(pathname);
         Path path = Paths.get(pathname);
+        if(!f.exists() || f.isDirectory())
+            return null;
         String bitString = null;
         try {
             bitString = f.getName() + Long.toString(f.lastModified()) + Boolean.toString(f.canWrite()) + Boolean.toString(f.canRead()) + f.getPath() + Files.getOwner(path).getName();

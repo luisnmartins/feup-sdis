@@ -77,6 +77,11 @@ public class Peer implements remoteInterface {
 
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
+        if(fileId == null) {
+            System.err.println("Cannot access file");
+            return;
+        }
+
         String oldFileId;
         if ((oldFileId = this.stateManager.isBackedUp(pathname)) != null) {
 

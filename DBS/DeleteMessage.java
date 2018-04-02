@@ -30,6 +30,7 @@ public class DeleteMessage extends Message implements Runnable {
     public synchronized void action() throws IOException {
 
         String peerID = Peer.getPeerID();
+        boolean isToSendDeleted=false;
 
         if(peerID.equals(this.senderId)){
             return;
@@ -43,10 +44,18 @@ public class DeleteMessage extends Message implements Runnable {
                 Peer.getStateManager().deleteBackedUpFile(filesStored.get(i));
                 i--;
                 manager.deleteFile(pathname);
+                isToSendDeleted = true;
             }
             
         }
         Peer.getStateManager().removeChunks(fileId);
+
+
+        if(this.version.equals("2.0") && isToSendDeleted) {
+            Message deleted = new DeletedMessage(fileId, "1.0", Peer.getPeerID());
+            Runnable thread = new MessageCarrier(deleted, "MC");
+            Peer.getExec().execute(thread);
+        }
     }
 
     @Override

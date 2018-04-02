@@ -7,7 +7,7 @@ public class StatusManager implements java.io.Serializable{
 
     private static final int DEFAULT_MAX_SIZE = 1000000000;
     private volatile ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
-    private volatile Set<String> deletedFiles; //fileId; files that the current peer backedUp and deleted
+    private volatile ConcurrentHashMap<String, Set<String>> deletedFiles; //fileId; files that the current peer backedUp and deleted
     private volatile ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private volatile List<String> backedUpFiles;  //chunks stored by the current peer
     transient private volatile Set<String> chunksToRestore;
@@ -19,7 +19,7 @@ public class StatusManager implements java.io.Serializable{
      */
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
-        this.deletedFiles = Collections.synchronizedSet(new HashSet<>());
+        this.deletedFiles = new ConcurrentHashMap<>();
         this.chunkTable = new ConcurrentHashMap<>();
         this.backedUpFiles = Collections.synchronizedList(new ArrayList<>());
         this.chunksToRestore = Collections.synchronizedSet(new HashSet<>());
@@ -188,15 +188,17 @@ public class StatusManager implements java.io.Serializable{
         if((fileId = isBackedUp(pathname)) == null)
             return null;
         fileId = new String(fileId);
+        Set<String> peers = new HashSet<>();
         filesTables.remove(pathname);
-        if(version.equals("2.0")) {
-            deletedFiles.add(fileId);
-        }
         Set<String> keys = chunkTable.keySet();
         for(String key:keys){
             if(key.contains(fileId)){
+                peers.addAll(chunkTable.get(key).getPeers());
                 chunkTable.remove(key);
             }
+        }
+        if(version.equals("2.0")) {
+            deletedFiles.put(fileId, peers);
         }
         return fileId;
 
@@ -208,7 +210,30 @@ public class StatusManager implements java.io.Serializable{
      * @return True if the file was deleted by this peer and false otherwise
      */
     public synchronized boolean isADeletedFile(String fileId) {
-        return deletedFiles.contains(fileId);
+
+        if(deletedFiles.get(fileId) != null)
+            return true;
+        else
+            return false;
+    }
+
+    /**
+     * Remove a peerID from the set of waiting deleted message elements
+     * @param fileId id of the file which peer deleted
+     * @param peer id of the peer
+     * @return true if a peer was removed and false otherwise
+     */
+    public synchronized boolean removeDeletedFilePeer(String fileId, String peer) {
+
+        if(deletedFiles.get(fileId) != null) {
+            if(deletedFiles.get(fileId).remove(peer)){
+                if(deletedFiles.get(fileId).isEmpty()){
+                    deletedFiles.remove(fileId);
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -353,7 +378,7 @@ public class StatusManager implements java.io.Serializable{
                 continue;
             } else {
                 alreadySent.add(fileId);
-                Message checkAliveMessage = new AliveMessage(fileId, Peer.getVersion(), Peer.getPeerID());
+                Message checkAliveMessage = new AliveMessage(fileId, "2.0", Peer.getPeerID());
                 Runnable thread = new MessageCarrier(checkAliveMessage, "MC");
                 Peer.getExec().execute(thread);
             }
@@ -387,7 +412,7 @@ public class StatusManager implements java.io.Serializable{
 
         chunksToRestore = Collections.synchronizedSet(new HashSet<>());
         filesTables = (ConcurrentHashMap<String, String>) stream.readObject();
-        deletedFiles = (Set<String>) stream.readObject();
+        deletedFiles = (ConcurrentHashMap<String,Set<String>>) stream.readObject();
         chunkTable = (ConcurrentHashMap<String, ChunkInfo>)stream.readObject();
         backedUpFiles = (List<String>) stream.readObject();
 

@@ -91,6 +91,11 @@ public class MessageInterpreter implements Runnable {
                        Peer.getExec().execute(delete);
                        break;
                     }
+                    case "DELETED":{
+                        DeletedMessage deleted = new DeletedMessage(header);
+                        Peer.getExec().execute(deleted);
+                        break;
+                    }
                     case "REMOVED": {
                         RemoveMessage removeMessage = new RemoveMessage(header);
                         removeMessage.action();
