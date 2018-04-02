@@ -15,7 +15,7 @@ public class RMIHandler {
 
             remoteInterface stub = (remoteInterface) UnicastRemoteObject.exportObject(objectToSend,0);
             Registry reg = LocateRegistry.getRegistry();
-            reg.bind(tag,stub);
+            reg.rebind(tag,stub);
         } catch (Exception e) {
             System.err.println("Server exception: "+ e.toString());
             e.printStackTrace();

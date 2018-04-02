@@ -27,7 +27,7 @@ public class DeleteMessage extends Message implements Runnable {
     /**
      * Checks if it has the chunk stored if it completely deletes it from its record
      */
-    public void action() throws IOException {
+    public synchronized void action() throws IOException {
 
         String peerID = Peer.getPeerID();
 
@@ -37,13 +37,13 @@ public class DeleteMessage extends Message implements Runnable {
 
         List<String> filesStored = Peer.getStateManager().getBackedUpFiles();
         for(int i = 0; i< filesStored.size();i++){
-            FileManager manager = new FileManager();
-            String pathname =  "Peer " + Peer.getPeerID() + "/" +filesStored.get(i);
-            Peer.getStateManager().deleteBackedUpFile(filesStored.get(i));
-            i--;
-
-
-            manager.deleteFile(pathname);
+            if(filesStored.get(i).contains(fileId)) {
+                FileManager manager = new FileManager();
+                String pathname = "Peer " + Peer.getPeerID() + "/" + filesStored.get(i);
+                Peer.getStateManager().deleteBackedUpFile(filesStored.get(i));
+                i--;
+                manager.deleteFile(pathname);
+            }
             
         }
         Peer.getStateManager().removeChunks(fileId);

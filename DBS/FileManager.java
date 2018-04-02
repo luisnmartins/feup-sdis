@@ -220,21 +220,24 @@ public class FileManager{
     }
 
     /**
-     * Retrieves and deletes all the file data from the file specifie
+     * Retrieves and deletes all the file data from the file specified
+     * @param pathname name of the file to delete
+     * @return return deleted data or null if where's nothing to delete
      */
     public byte[] deleteFile(String pathname){
         Path path = Paths.get(pathname);
-        
+        File fileParent = new File(pathname).getParentFile();
         try {
-            byte[] return_data = Files.readAllBytes(new File(pathname).toPath());
+            byte[] return_data = Files.readAllBytes(path);
             Files.delete(path);
+            if(fileParent.isDirectory() && fileParent.list().length  ==  0)
+                Files.delete(fileParent.toPath());
             return return_data;
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return null;
-
         
     }
 

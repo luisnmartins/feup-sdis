@@ -33,6 +33,8 @@ public class Peer implements remoteInterface {
         this.initiateSocketThreads();
         LogsManager statusData = new LogsManager();
         this.stateManager = statusData.LoadData();
+        stateManager.updateData();
+
     }
 
     /**
@@ -49,6 +51,7 @@ public class Peer implements remoteInterface {
         this.initiateSocketThreads(MC, MDB, MDR);
         LogsManager statusData = new LogsManager();
         this.stateManager = statusData.LoadData();
+        stateManager.updateData();
 
     }
 
@@ -115,6 +118,7 @@ public class Peer implements remoteInterface {
             System.err.println("This file doesn't exist or your not the owner of it");
             return;
         }
+        stateManager.resetChunkToRestore();
         Set<String> set = stateManager.getChunkTable().keySet();
         for (String key : set) {
             if (key.contains(fileId)) {
@@ -222,7 +226,7 @@ public class Peer implements remoteInterface {
         if (enhanced)
             versionToUse = "2.0";
         String fileId;
-        if ((fileId = stateManager.deleteFile(pathname)) == null) {
+        if ((fileId = stateManager.deleteFile(pathname, versionToUse)) == null) {
             System.err.println("You didn't backup up this file so you can't delete it");
             return;
 
