@@ -7,6 +7,7 @@ public class StatusManager implements java.io.Serializable{
 
     private static final int DEFAULT_MAX_SIZE = 1000000000;
     private volatile ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
+    private volatile Set<String> deletedFiles; //fileId; files that the current peer backedUp and deleted
     private volatile ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private volatile List<String> backedUpFiles;  //chunks stored by the current peer
     transient private volatile Set<String> chunksToRestore;
@@ -18,6 +19,7 @@ public class StatusManager implements java.io.Serializable{
      */
     StatusManager(){
         this.filesTables = new ConcurrentHashMap<>();
+        this.deletedFiles = Collections.synchronizedSet(new HashSet<>());
         this.chunkTable = new ConcurrentHashMap<>();
         this.backedUpFiles = Collections.synchronizedList(new ArrayList<>());
         this.chunksToRestore = Collections.synchronizedSet(new HashSet<>());
@@ -36,7 +38,7 @@ public class StatusManager implements java.io.Serializable{
 
     }
     /**
-     * Deletes a file(chunk) to the list of stored chunks and updates the occupied space by the peer 
+     * Deletes a file(chunk) from the list of stored chunks and updates the occupied space by the peer
      */
     public synchronized void deleteBackedUpFile(String fileIdKey){
         sizeUsed -= chunkTable.get(fileIdKey).getSize();
@@ -94,6 +96,8 @@ public class StatusManager implements java.io.Serializable{
      */
     public synchronized void addFile(String pathname,String fileId){
         filesTables.put(pathname,fileId);
+        if(backedUpFiles.contains(fileId))
+            backedUpFiles.remove(fileId);
 
     }
 
@@ -165,13 +169,16 @@ public class StatusManager implements java.io.Serializable{
     /**
      * Deletes a file completely and all chunks associated (from tables)
      */
-    public synchronized String deleteFile(String pathname){
+    public synchronized String deleteFile(String pathname, String version){
 
         String fileId;
         if((fileId = isBackedUp(pathname)) == null)
             return null;
         fileId = new String(fileId);
         filesTables.remove(pathname);
+        if(version.equals("2.0")) {
+            deletedFiles.add(fileId);
+        }
         Set<String> keys = chunkTable.keySet();
         for(String key:keys){
             if(key.contains(fileId)){
@@ -180,8 +187,15 @@ public class StatusManager implements java.io.Serializable{
         }
         return fileId;
 
+    }
 
-
+    /**
+     * Check if the current peer deleted the file with FileID
+     * @param fileId Id of the file to check
+     * @return True if the file was deleted by this peer and false otherwise
+     */
+    public synchronized boolean isADeletedFile(String fileId) {
+        return deletedFiles.contains(fileId);
     }
 
     /**
@@ -258,6 +272,10 @@ public class StatusManager implements java.io.Serializable{
         return chunkTable.get(fileIdKey);
     }
 
+    public synchronized void resetChunkToRestore() {
+        chunksToRestore = Collections.synchronizedSet(new HashSet<>());
+    }
+
     public synchronized void addChunkToRestore(String fileIdKey) {
         chunksToRestore.add(fileIdKey);
     }
@@ -312,6 +330,26 @@ public class StatusManager implements java.io.Serializable{
 
 
     /**
+     * updates peer data information checking which chunks are still alive
+     */
+    public synchronized void updateData() {
+        List<String> alreadySent = new ArrayList<>();
+        for(String fileIdKey: backedUpFiles) {
+            String fileId = fileIdKey.substring(0,64);
+            if(alreadySent.contains(fileId)) {
+                continue;
+            } else {
+                alreadySent.add(fileId);
+                Message checkAliveMessage = new AliveMessage(fileId, Peer.getVersion(), Peer.getPeerID());
+                Runnable thread = new MessageCarrier(checkAliveMessage, "MC");
+                Peer.getExec().execute(thread);
+            }
+
+        }
+    }
+
+
+    /**
      * Write status variables to serializable
      * @param stream
      * @throws IOException
@@ -319,6 +357,7 @@ public class StatusManager implements java.io.Serializable{
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
 
         stream.writeObject(filesTables);
+        stream.writeObject(deletedFiles);
         stream.writeObject(chunkTable);
         stream.writeObject(backedUpFiles);
         stream.writeInt(sizeUsed);
@@ -335,8 +374,10 @@ public class StatusManager implements java.io.Serializable{
 
         chunksToRestore = Collections.synchronizedSet(new HashSet<>());
         filesTables = (ConcurrentHashMap<String, String>) stream.readObject();
+        deletedFiles = (Set<String>) stream.readObject();
         chunkTable = (ConcurrentHashMap<String, ChunkInfo>)stream.readObject();
         backedUpFiles = (List<String>) stream.readObject();
+
         sizeUsed = stream.readInt();
         maxSizeUse = stream.readInt();
 

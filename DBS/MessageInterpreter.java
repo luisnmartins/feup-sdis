@@ -96,6 +96,11 @@ public class MessageInterpreter implements Runnable {
                         removeMessage.action();
                         break;
                     }
+                    case "ALIVE": {
+                        AliveMessage alive = new AliveMessage(header);
+                        alive.action();
+                        break;
+                    }
                 }
             } catch (InterruptedException e) {
                 continue;
