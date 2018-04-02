@@ -29,13 +29,17 @@ public class ChunkInfo extends Chunk implements java.io.Serializable {
 
     }
 
+    /**
+     * Check whether or not a chunk is desired to be saved
+     * @return true if the chunk is desired to be saved and false otherwise
+     */
     public synchronized boolean isDesired(){
         if(desiredReplicationDegree.equals(-1))
-            return false;
-        if(currentReplicationDegree.compareTo(desiredReplicationDegree) >= 0 && desiredReplicationDegree.equals(-1) == false) {
             return true;
+        if(currentReplicationDegree.compareTo(desiredReplicationDegree) >= 0) {
+            return false;
         }
-        else return false;
+        else return true;
     }
 
     public synchronized void removeStorePeer(String peerId){

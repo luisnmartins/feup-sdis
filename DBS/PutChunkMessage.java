@@ -83,7 +83,7 @@ public class PutChunkMessage extends Message implements Runnable{
         } else {
 
             if(!Peer.getStateManager().canStore(info.getData().length)){
-                System.out.println("CANT STORE" + info.getData().length);
+                System.err.println("CANT STORE" + info.getData().length);
                 return ;
             }
             ChunkInfo chunkInfo = new ChunkInfo(info.getChunkNo(),0,info.getReplicationDegree(),info.getData().length);

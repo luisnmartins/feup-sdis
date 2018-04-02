@@ -224,11 +224,15 @@ public class StatusManager implements java.io.Serializable{
     }
 
     /**
-     * Check if chunk achieved the desired replication degree
+     *
+     * Check whether or not a chunk already achieved the desired replication degree
+     *
+     * @param fileIdKey fileId.ChunkNo of the chunk to check
+     * @return Returns true if the chunk doesn't need to be saved and false otherwise
      */
     public synchronized boolean checkChunkStatus(String fileIdKey){
 
-        if(chunkTable.get(fileIdKey).isDesired() == false) {
+        if(chunkTable.get(fileIdKey).isDesired() == true) {
             return false;
         }
         else {
