@@ -2,6 +2,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+/**
+ * Representation of the MDB socket
+ */
 public class MDBSocket extends ChannelSocket{
 
     private static final String ADDR_MDB = "224.0.0.2";

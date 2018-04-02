@@ -16,6 +16,9 @@ public class RemoveMessage extends Message{
         this.chunkNo = Integer.parseInt(headerWords[4]);
     }
 
+    /**
+     * Checks that a chunk has been removed from another peer so it updates is tables and if it has the chunk stored tries to send a putchunk message
+     */
     public void action(){
         if(this.senderId.equals(Peer.getPeerID())){
             return;

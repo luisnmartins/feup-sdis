@@ -17,6 +17,9 @@ public class MessageInterpreter implements Runnable {
 
     public MessageInterpreter(){bQueue = new LinkedBlockingQueue<>();}
 
+    /**
+     * Separates the message received in the necessary parts
+     */
     public void separateMessage(int size,byte[] data){
         int i=0;
         for(; i<size; i++) {
@@ -41,6 +44,10 @@ public class MessageInterpreter implements Runnable {
         }
     }
 
+    /**
+     * 
+     * Takes message from queue and checks the message type and acts accordingly
+     */
     @Override
     public void run() {
         while(true){

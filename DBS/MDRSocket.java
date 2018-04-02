@@ -2,10 +2,16 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+/**
+ * Representation of the MDR socket
+ */
 public class MDRSocket extends ChannelSocket {
 
     private static final String MDR_ADDR = "224.0.0.3";
 
+    /**
+     * Constructor with default address and port number
+     */
     MDRSocket() throws IOException {
         this.port= 8002;
         this.socket = new MulticastSocket(port);

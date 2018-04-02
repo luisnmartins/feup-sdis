@@ -95,6 +95,9 @@ public class FileManager{
 
     }
 
+    /**
+     * Merges chunk files into one
+     */
     public void mergeFile(File[] files) throws IOException{
 
         File file = new File(pathname);
@@ -110,6 +113,9 @@ public class FileManager{
         }
     }
 
+    /**
+     * Randomly generates an unique file id
+     */
     public String generateFileID(){
 
         File f = new File(pathname);
@@ -124,6 +130,9 @@ public class FileManager{
     }
 
 
+    /**
+     * Encrypts a String with sha256 without "prohibited characters"
+     */
     public static String sha256(String base) {
         try{
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -205,6 +214,9 @@ public class FileManager{
         return data;
     }
 
+    /**
+     * Retrieves and deletes all the file data from the file specifie
+     */
     public byte[] deleteFile(String pathname){
         Path path = Paths.get(pathname);
         
@@ -221,6 +233,9 @@ public class FileManager{
         
     }
 
+    /**
+     * Retrieves the data bytes of the file specified
+     */
     public byte[] getFileData(String pathname){
         try {
             return Files.readAllBytes(new File(pathname).toPath());

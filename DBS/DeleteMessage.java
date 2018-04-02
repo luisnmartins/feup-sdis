@@ -24,6 +24,9 @@ public class DeleteMessage extends Message implements Runnable {
 
     }
 
+    /**
+     * Checks if it has the chunk stored if it completely deletes it from its record
+     */
     public void action() throws IOException {
 
         String peerID = Peer.getPeerID();

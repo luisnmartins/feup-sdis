@@ -17,6 +17,9 @@ public class Application {
         }
     }
 
+    /**
+     * Verifies arguments to see what subprotocol is to be called and what peer is to get from the registry
+     */
     public static Boolean verifyArgs(String[] args){
 
         if(args.length != 4 && args.length != 3 && args.length != 2){

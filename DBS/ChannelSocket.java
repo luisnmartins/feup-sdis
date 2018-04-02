@@ -29,6 +29,9 @@ public abstract class ChannelSocket implements Runnable {
         return port;
     }
 
+    /**
+     * Sends a datagram packet
+     */
     public void sendMessage(Message msg){
 
         byte[] textMessage = msg.getFullMessage();
@@ -41,6 +44,9 @@ public abstract class ChannelSocket implements Runnable {
         }
     }
 
+    /**
+     * Receives the message and inserts it in the queueu to be interpret after
+     */
     @Override
     public void run() {
         while(true){

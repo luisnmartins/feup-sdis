@@ -5,11 +5,10 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
-
 /**
  * peer
  */
-public class Peer implements remoteInterface{
+public class Peer implements remoteInterface {
 
     private static String peerID;
     private static String version;
@@ -22,33 +21,39 @@ public class Peer implements remoteInterface{
     private static ScheduledThreadPoolExecutor exec;
     private static StatusManager stateManager;
 
+    public Peer() {
+    }
 
-    public Peer(){}
-
+    /**
+     * Simplified constructor of a Peer only use for testing
+     */
     public Peer(String id) throws IOException {
         version = "1.0";
-        peerID = id ;
+        peerID = id;
         this.initiateSocketThreads();
         LogsManager statusData = new LogsManager();
         this.stateManager = statusData.LoadData();
     }
 
-    public Peer(String version, String id, String accessPoint, Pair<Integer,String> MC,Pair<Integer,String> MDB, Pair<Integer,String> MDR) throws IOException {
+    /**
+     * Complete construtor of a peer, the version cant be "2.0" because it is used to defined the enhancements
+     */
+    public Peer(String version, String id, String accessPoint, Pair<Integer, String> MC, Pair<Integer, String> MDB,
+            Pair<Integer, String> MDR) throws IOException {
         this.version = version;
-        if(this.version.equals("2.0")){
+        if (this.version.equals("2.0")) {
             this.version = "1.9";
         }
         peerID = id;
         this.accessPoint = accessPoint;
-        this.initiateSocketThreads(MC,MDB,MDR);
+        this.initiateSocketThreads(MC, MDB, MDR);
         LogsManager statusData = new LogsManager();
         this.stateManager = statusData.LoadData();
 
     }
 
-
     public static void main(String[] args) throws IOException {
-        if(args.length != 1 && args.length != 9){
+        if (args.length != 1 && args.length != 9) {
 
             System.err.println("Error retrieving function arguments");
             return;
@@ -56,41 +61,39 @@ public class Peer implements remoteInterface{
         System.setProperty("java.net.preferIPv4Stack", "true");
         verifyArgs(args);
 
-
-      }
+    }
 
     @Override
-    public void backup(String pathname, int replicationDegree,boolean enhanced) throws RemoteException {
+    public void backup(String pathname, int replicationDegree, boolean enhanced) throws RemoteException {
 
         String versionToUse = new String(version);
-        if(enhanced)
+        if (enhanced)
             versionToUse = "2.0";
 
         FileManager chunks = new FileManager(pathname); //create a FileManager to get file in chunks
-        
+
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
         String oldFileId;
-        if((oldFileId = this.stateManager.isBackedUp(pathname)) != null){
+        if ((oldFileId = this.stateManager.isBackedUp(pathname)) != null) {
 
-            if(oldFileId.equals(fileId)) {
+            if (oldFileId.equals(fileId)) {
                 System.out.println("You have already backedUp this file");
                 return;
             }
             System.out.print("You have updated this file. Old ");
-            this.delete(pathname,false);
+            this.delete(pathname, false);
         }
-        this.stateManager.addFile(pathname,fileId);
+        this.stateManager.addFile(pathname, fileId);
         try {
 
             List<ChunkData> chunksArray = chunks.splitFile(); //get an array with all the chunks
 
+            for (int i = 0; i < chunksArray.size(); i++) {
 
-            for(int i=0; i<chunksArray.size(); i++) {
-
-
-                Message messageToSend = new PutChunkMessage(fileId, versionToUse, peerID, chunksArray.get(i), replicationDegree);
-                Runnable thread = new MessageCarrier(messageToSend, "MDB",chunksArray.get(i).getChunkNo());
+                Message messageToSend = new PutChunkMessage(fileId, versionToUse, peerID, chunksArray.get(i),
+                        replicationDegree);
+                Runnable thread = new MessageCarrier(messageToSend, "MDB", chunksArray.get(i).getChunkNo());
                 exec.execute(thread);
 
             }
@@ -99,24 +102,23 @@ public class Peer implements remoteInterface{
             e.printStackTrace();
         }
 
-
     }
 
     @Override
-    public void restore(String pathname,boolean enhanced) {
+    public void restore(String pathname, boolean enhanced) {
         String fileId;
         String versionToUse = new String(version);
-        if(enhanced)
+        if (enhanced)
             versionToUse = "2.0";
         int currentChunkNo;
-        if((fileId = stateManager.isBackedUp(pathname)) == null) {
+        if ((fileId = stateManager.isBackedUp(pathname)) == null) {
             System.err.println("This file doesn't exist or your not the owner of it");
             return;
         }
         Set<String> set = stateManager.getChunkTable().keySet();
-        for(String key: set) {
-            if(key.contains(fileId)) {
-                currentChunkNo = Integer.parseInt(key.substring(key.indexOf(".")+1,key.length()));
+        for (String key : set) {
+            if (key.contains(fileId)) {
+                currentChunkNo = Integer.parseInt(key.substring(key.indexOf(".") + 1, key.length()));
                 stateManager.addChunkToRestore(key);
 
                 Message getChunkMessage = new GetChunkMessage(versionToUse, peerID, fileId, currentChunkNo);
@@ -124,7 +126,6 @@ public class Peer implements remoteInterface{
                 exec.execute(thread);
             }
         }
-
 
     }
 
@@ -135,16 +136,18 @@ public class Peer implements remoteInterface{
         ConcurrentHashMap<String, String> peerFiles = stateManager.getFilesTables();
         Set<String> s = peerFiles.keySet();
         Set<String> chunksKeys = stateManager.getChunkTable().keySet();
-        for(String pathname: s){
+        for (String pathname : s) {
             String fileId = peerFiles.get(pathname);
             System.out.println("FILE: ");
-            System.out.println("   Pathname: "+pathname);
-            System.out.println("   File Id: "+fileId);
-            System.out.println("   Desired Replication Degree: "+stateManager.getChunkTable().get(fileId+".0").getDesiredReplicationDegree());
-            for(String fileIdKey: chunksKeys){
-                if(fileIdKey.contains(fileId)){
-                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo() + " ReplicationDegree: " + stateManager.getChunkTable().get(fileIdKey).getCurrentReplicationDegree());
-
+            System.out.println("   Pathname: " + pathname);
+            System.out.println("   File Id: " + fileId);
+            System.out.println("   Desired Replication Degree: "
+                    + stateManager.getChunkTable().get(fileId + ".0").getDesiredReplicationDegree());
+            for (String fileIdKey : chunksKeys) {
+                if (fileIdKey.contains(fileId)) {
+                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo()
+                            + " ReplicationDegree: "
+                            + stateManager.getChunkTable().get(fileIdKey).getCurrentReplicationDegree());
 
                 }
             }
@@ -153,17 +156,17 @@ public class Peer implements remoteInterface{
 
         List<String> backedUpFiles = stateManager.getBackedUpFiles();
         System.out.println("CHUNKS STORED: ");
-        for(int i = 0; i< backedUpFiles.size(); i++){
+        for (int i = 0; i < backedUpFiles.size(); i++) {
             String string_aux = backedUpFiles.get(i);
             System.out.println("Chunk:  " + backedUpFiles.get(i));
-            System.out.println("   CurrentReplicationDegree: " + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
-            double sizeKB = stateManager.getChunkTable().get(string_aux).getSize()/1000;
+            System.out.println("   CurrentReplicationDegree: "
+                    + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
+            double sizeKB = stateManager.getChunkTable().get(string_aux).getSize() / 1000;
             System.out.println("   Chunk size: " + sizeKB + " KBytes");
         }
 
-        System.out.println("Memory used_ " + stateManager.getSizeUsed()/1000.0 + " KBytes");
-        System.out.println("Maximum capacity allowed: " + stateManager.getMaxSizeUse()/1000.0 +  " KBytes");
-
+        System.out.println("Memory used_ " + stateManager.getSizeUsed() / 1000.0 + " KBytes");
+        System.out.println("Maximum capacity allowed: " + stateManager.getMaxSizeUse() / 1000.0 + " KBytes");
 
     }
 
@@ -172,48 +175,46 @@ public class Peer implements remoteInterface{
         stateManager.setMaxSizeUse(memory);
         List<String> string_aux = stateManager.getBackedUpFiles();
 
-        while(stateManager.isOutOfMemory() && !string_aux.isEmpty()){
-          
-          String toRemoveFileIdKey = new String(string_aux.get(0));
-          stateManager.deleteBackedUpFile(toRemoveFileIdKey);
-          FileManager manager = new FileManager();
-          String pathname = "Peer " + peerID + "/" + toRemoveFileIdKey;
-          byte[] data_removed = manager.deleteFile(pathname);
-          stateManager.updateChunkDec(toRemoveFileIdKey);
-          stateManager.updateChunkInfoPeerRemove(toRemoveFileIdKey, this.peerID);
+        while (stateManager.isOutOfMemory() && !string_aux.isEmpty()) {
 
-        
-          int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65,toRemoveFileIdKey.length()));
-          String fileId = toRemoveFileIdKey.substring(0,64);
-          int desiredRep = stateManager.getChunkTable().get(toRemoveFileIdKey).getChunkNo();
+            String toRemoveFileIdKey = new String(string_aux.get(0));
+            stateManager.deleteBackedUpFile(toRemoveFileIdKey);
+            FileManager manager = new FileManager();
+            String pathname = "Peer " + peerID + "/" + toRemoveFileIdKey;
+            byte[] data_removed = manager.deleteFile(pathname);
+            stateManager.updateChunkDec(toRemoveFileIdKey);
+            stateManager.updateChunkInfoPeerRemove(toRemoveFileIdKey, this.peerID);
 
-          ChunkData chunk = new ChunkData(chunkId);
-          chunk.setData(data_removed.length, data_removed);
+            int chunkId = Integer.parseInt(toRemoveFileIdKey.substring(65, toRemoveFileIdKey.length()));
+            String fileId = toRemoveFileIdKey.substring(0, 64);
+            int desiredRep = stateManager.getChunkTable().get(toRemoveFileIdKey).getChunkNo();
 
-          Message message = new RemoveMessage(fileId, version, peerID, chunkId);
-          Runnable thread = new MessageCarrier(message, "MC",chunkId);
-          exec.execute(thread);
+            ChunkData chunk = new ChunkData(chunkId);
+            chunk.setData(data_removed.length, data_removed);
 
-      
-          if(desiredRep == 1){
-            
-            Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunk,desiredRep);
-            ((PutChunkMessage) messageToSend).setToReclaim();
-            Runnable putchunkthread = new MessageCarrier(messageToSend, "MDB",chunkId);
-            Peer.getExec().schedule(thread,1,TimeUnit.SECONDS);
-          }
+            Message message = new RemoveMessage(fileId, version, peerID, chunkId);
+            Runnable thread = new MessageCarrier(message, "MC", chunkId);
+            exec.execute(thread);
+
+            if (desiredRep == 1) {
+
+                Message messageToSend = new PutChunkMessage(fileId, version, peerID, chunk, desiredRep);
+                ((PutChunkMessage) messageToSend).setToReclaim();
+                Runnable putchunkthread = new MessageCarrier(messageToSend, "MDB", chunkId);
+                Peer.getExec().schedule(thread, 1, TimeUnit.SECONDS);
+            }
 
         }
     }
 
     @Override
-    public void delete(String pathname,boolean enhanced) throws RemoteException {
+    public void delete(String pathname, boolean enhanced) throws RemoteException {
 
         String versionToUse = new String(version);
-        if(enhanced)
+        if (enhanced)
             versionToUse = "2.0";
         String fileId;
-        if((fileId = stateManager.deleteFile(pathname)) == null) {
+        if ((fileId = stateManager.deleteFile(pathname)) == null) {
             System.err.println("You didn't backup up this file so you can't delete it");
             return;
 
@@ -227,9 +228,8 @@ public class Peer implements remoteInterface{
 
     }
 
-    //Inicia as threads para os 3 canais necessarios
+    //Iniate the 3 multicasts sockets and the threads that will read the messages in a thread pool
     public void initiateSocketThreads() throws IOException {
-
 
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(150);
         //Thread para o canal principal MC;
@@ -253,21 +253,23 @@ public class Peer implements remoteInterface{
 
     }
 
-    public void initiateSocketThreads(Pair<Integer,String> MC,Pair<Integer,String> MDB,Pair<Integer,String> MDR) throws IOException {
+    //Iniate the 3 multicasts sockets and the threads that will read the messages in a thread pool
+    public void initiateSocketThreads(Pair<Integer, String> MC, Pair<Integer, String> MDB, Pair<Integer, String> MDR)
+            throws IOException {
 
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
         //Thread para o canal principal MC;
-        this.MC = new MCSocket(MC.getKey(),MC.getValue());
+        this.MC = new MCSocket(MC.getKey(), MC.getValue());
         Runnable mcThread = this.MC;
         this.exec.execute(mcThread);
 
         //Thread para o canal MDB
-        this.MDB = new MDBSocket(MDB.getKey(),MDB.getValue());
+        this.MDB = new MDBSocket(MDB.getKey(), MDB.getValue());
         Runnable mdbThread = this.MDB;
         this.exec.execute(mdbThread);
 
         //Thread para o canal MDR
-        this.MDR = new MDRSocket(MDR.getKey(),MDR.getValue());
+        this.MDR = new MDRSocket(MDR.getKey(), MDR.getValue());
         Runnable mdrThread = this.MDR;
         this.exec.execute(mdrThread);
 
@@ -276,28 +278,30 @@ public class Peer implements remoteInterface{
         this.exec.execute(interpreterThread);
     }
 
+    /**
+     * Verfies the arguments sent to start the application
+     */
     public static void verifyArgs(String args[]) throws IOException {
         Peer peer;
         RMIHandler handler = new RMIHandler();
-        if(args.length == 1){
-             peer = new Peer(args[0]);
-            handler.sendToRegistry(peer,peerID);
+        if (args.length == 1) {
+            peer = new Peer(args[0]);
+            handler.sendToRegistry(peer, peerID);
 
-
-        }else if (args.length == 9){
-            Pair<Integer,String> mc = new Pair<>(Integer.parseInt(args[3]),args[4]);
-            Pair<Integer,String> mdb = new Pair<>(Integer.parseInt(args[5]),args[6]);
-            Pair<Integer,String> mdr = new Pair<>(Integer.parseInt(args[7]),args[8]);
-            peer = new Peer(args[0],args[1],args[2],mc,mdb,mdr);
-            handler.sendToRegistry(peer,accessPoint);
-        }else{
+        } else if (args.length == 9) {
+            Pair<Integer, String> mc = new Pair<>(Integer.parseInt(args[3]), args[4]);
+            Pair<Integer, String> mdb = new Pair<>(Integer.parseInt(args[5]), args[6]);
+            Pair<Integer, String> mdr = new Pair<>(Integer.parseInt(args[7]), args[8]);
+            peer = new Peer(args[0], args[1], args[2], mc, mdb, mdr);
+            handler.sendToRegistry(peer, accessPoint);
+        } else {
             System.err.println("Error retrieving function arguments");
             return;
         }
 
-
     }
 
+    
     public static ScheduledExecutorService getExec() {
         return exec;
     }

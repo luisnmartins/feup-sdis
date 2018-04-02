@@ -17,6 +17,9 @@ public class MessageCarrier implements  Runnable{
         this.chunkNo = chunkNo;
     }
 
+    /**
+     * Sends message to the specified socket
+     */
     @Override
     public void run() {
         switch (channelToSend){
