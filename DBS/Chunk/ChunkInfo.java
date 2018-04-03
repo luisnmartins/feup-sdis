@@ -1,3 +1,6 @@
+package Chunk;
+
+import Chunk.Chunk;
 
 import java.util.HashSet;
 import java.util.Set;

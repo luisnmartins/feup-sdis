@@ -1,3 +1,9 @@
+package Peer;
+
+import Messages.Message;
+import Peer.Peer;
+import Workers.StoreHandler;
+
 import java.util.concurrent.TimeUnit;
 
 public class MessageCarrier implements  Runnable{
@@ -6,12 +12,12 @@ public class MessageCarrier implements  Runnable{
     private String channelToSend;
     private int chunkNo;
 
-    MessageCarrier(Message message,String type){
+    public MessageCarrier(Message message,String type){
         this.message = message;
         this.channelToSend = type;
     }
 
-    MessageCarrier(Message message,String type,int chunkNo){
+    public MessageCarrier(Message message,String type,int chunkNo){
         this.message = message;
         this.channelToSend = type;
         this.chunkNo = chunkNo;
@@ -22,6 +28,7 @@ public class MessageCarrier implements  Runnable{
      */
     @Override
     public void run() {
+        System.out.println("Sending: " + this.message.getMessageHeader());
         switch (channelToSend){
             case "MC":{
                 Peer.getMC().sendMessage(this.message);

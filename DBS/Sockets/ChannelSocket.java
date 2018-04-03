@@ -1,12 +1,13 @@
+package Sockets;
+
+import Messages.Message;
 import javafx.util.Pair;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import Peer.Peer;
 
 public abstract class ChannelSocket implements Runnable {
 
@@ -15,7 +16,7 @@ public abstract class ChannelSocket implements Runnable {
     protected int port;
     protected InetAddress address;
 
-    ChannelSocket(){}
+    public ChannelSocket(){}
 
     public MulticastSocket getSocket() {
         return socket;
@@ -35,7 +36,6 @@ public abstract class ChannelSocket implements Runnable {
     public void sendMessage(Message msg){
 
         byte[] textMessage = msg.getFullMessage();
-
         DatagramPacket packet = new DatagramPacket(textMessage,textMessage.length,this.address,this.port);
         try {
             socket.send(packet);

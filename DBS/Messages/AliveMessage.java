@@ -1,5 +1,9 @@
+package Messages;
 
-public class AliveMessage extends Message{
+
+import Peer.*;
+
+public class AliveMessage extends Message {
 
     public AliveMessage(String header) {
         super(header);
@@ -12,7 +16,7 @@ public class AliveMessage extends Message{
     }
 
     public byte[] getFullMessage() {
-        String header = "ALIVE " + version + " " + senderId + " " + fileId + " " + CRLF + CRLF;
+        String header = "ALIVE " + version + " " + senderId + " " + fileId + " " + Message.CRLF + Message.CRLF;
 
         byte[] headerBytes = header.getBytes();
 
@@ -34,6 +38,10 @@ public class AliveMessage extends Message{
             Runnable thread = new MessageCarrier(messageToDelete, "MC");
             Peer.getExec().execute(thread);
         }
+    }
+
+    public String getMessageHeader(){
+        return "ALIVE " + this.version + " " + this.senderId + " " + this.fileId;
     }
 
 }

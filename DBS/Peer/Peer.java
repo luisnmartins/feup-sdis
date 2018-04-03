@@ -1,3 +1,13 @@
+package Peer;
+
+import Chunk.ChunkData;
+import Messages.*;
+import RMI.RMIHandler;
+import RMI.remoteInterface;
+import Sockets.MCSocket;
+import Sockets.MDBSocket;
+import Sockets.MDRSocket;
+import Workers.RestoreChecker;
 import javafx.util.Pair;
 
 import java.util.*;
@@ -21,11 +31,14 @@ public class Peer implements remoteInterface {
     private static ScheduledThreadPoolExecutor exec;
     private static StatusManager stateManager;
 
+    private volatile static Integer window;
+    private volatile static boolean flag = true;
+
     public Peer() {
     }
 
     /**
-     * Simplified constructor of a Peer only use for testing
+     * Simplified constructor of a Peer.Peer only use for testing
      */
     public Peer(String id) throws IOException {
         version = "1.0";
@@ -73,7 +86,7 @@ public class Peer implements remoteInterface {
         if (enhanced)
             versionToUse = "2.0";
 
-        FileManager chunks = new FileManager(pathname); //create a FileManager to get file in chunks
+        FileManager chunks = new FileManager(pathname); //create a Peer.FileManager to get file in chunks
 
         String fileId = chunks.generateFileID(); //get fileId according to sha256 encryption
 
@@ -125,18 +138,38 @@ public class Peer implements remoteInterface {
         }
         stateManager.resetChunkToRestore();
         Set<String> set = stateManager.getChunkTable().keySet();
-        for (String key : set) {
-            if (key.contains(fileId)) {
-                currentChunkNo = Integer.parseInt(key.substring(key.indexOf(".") + 1, key.length()));
-                stateManager.addChunkToRestore(key);
+        String[] array = set.toArray(new String[set.size()]);
+        this.window = 0;
+        RestoreChecker checker = new RestoreChecker();
+        exec.execute(checker);
+        for (int i = 0; i< array.length;i++) {
+            if (array[i].contains(fileId)) {
 
-                Message getChunkMessage = new GetChunkMessage(versionToUse, peerID, fileId, currentChunkNo);
-                Runnable thread = new MessageCarrier(getChunkMessage, "MC");
-                exec.execute(thread);
+                if(this.flag){
+                    
+                    currentChunkNo = Integer.parseInt(array[i].substring(array[i].indexOf(".") + 1, array[i].length()));
+                    stateManager.addChunkToRestore(array[i]);
+                    window++;
+                    Message getChunkMessage = new GetChunkMessage(versionToUse, peerID, fileId, currentChunkNo);
+                    Runnable thread = new MessageCarrier(getChunkMessage, "MC");
+                    exec.execute(thread);
+                }else{
+                    while(!this.flag){
+
+                    }
+                    i--;
+                }
+                
+                }
+                
             }
+
+            Runnable check = new checkRestore(pathname,fileId);
+            exec.execute(check);
+            
         }
 
-    }
+
 
     @Override
     public void state() throws RemoteException {
@@ -154,7 +187,7 @@ public class Peer implements remoteInterface {
                     + stateManager.getChunkTable().get(fileId + ".0").getDesiredReplicationDegree());
             for (String fileIdKey : chunksKeys) {
                 if (fileIdKey.contains(fileId)) {
-                    System.out.println("   Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo()
+                    System.out.println("   Chunk.Chunk: " + stateManager.getChunkTable().get(fileIdKey).getChunkNo()
                             + " ReplicationDegree: "
                             + stateManager.getChunkTable().get(fileIdKey).getCurrentReplicationDegree());
 
@@ -167,11 +200,11 @@ public class Peer implements remoteInterface {
         System.out.println("CHUNKS STORED: ");
         for (int i = 0; i < backedUpFiles.size(); i++) {
             String string_aux = backedUpFiles.get(i);
-            System.out.println("Chunk:  " + backedUpFiles.get(i));
+            System.out.println("Chunk.Chunk:  " + backedUpFiles.get(i));
             System.out.println("   CurrentReplicationDegree: "
                     + stateManager.getChunkTable().get(string_aux).getCurrentReplicationDegree());
             double sizeKB = stateManager.getChunkTable().get(string_aux).getSize() / 1000;
-            System.out.println("   Chunk size: " + sizeKB + " KBytes");
+            System.out.println("   Chunk.Chunk size: " + sizeKB + " KBytes");
         }
 
         System.out.println("Memory used: " + stateManager.getSizeUsed() / 1000.0 + " KBytes");
@@ -248,7 +281,7 @@ public class Peer implements remoteInterface {
     //Iniate the 3 multicasts sockets and the threads that will read the messages in a thread pool
     public void initiateSocketThreads() throws IOException {
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(150);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
         //Thread para o canal principal MC;
         MC = new MCSocket();
         Runnable mcThread = MC;
@@ -274,7 +307,7 @@ public class Peer implements remoteInterface {
     public void initiateSocketThreads(Pair<Integer, String> MC, Pair<Integer, String> MDB, Pair<Integer, String> MDR)
             throws IOException {
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100);
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
         //Thread para o canal principal MC;
         this.MC = new MCSocket(MC.getKey(), MC.getValue());
         Runnable mcThread = this.MC;
@@ -348,6 +381,56 @@ public class Peer implements remoteInterface {
 
     public static String getVersion() {
         return version;
+    }
+
+    /**
+     * @return the window
+     */
+    public static int getWindow() {
+        return window;
+    }
+
+    /**
+     * @param window the window to set
+     */
+    public static void setWindow(Integer window) {
+        Peer.window = window;
+    }
+
+    /**
+     * @param flag the flag to set
+     */
+    public static void setFlag(boolean flag) {
+        Peer.flag = flag;
+    }
+
+    public static void decWindow(){
+        Peer.window--;
+    }
+
+    public class checkRestore implements Runnable{
+
+        private String pathname;
+        private String fileId;
+        checkRestore(String pathname,String fileId){
+            this.pathname = pathname;
+            this.fileId = fileId;
+        };
+
+        @Override
+        public void run(){
+            while(true){
+                if(stateManager.isChunkToRestoreEmpty()){
+                    FileManager manager = new FileManager(pathname);
+                        try {
+                            manager.mergeChunks(fileId);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return;
+                }
+            }
+        }
     }
 
 }

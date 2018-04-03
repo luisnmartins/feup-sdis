@@ -1,4 +1,10 @@
+package Messages;
 
+import Chunk.ChunkData;
+import Chunk.ChunkInfo;
+import Peer.Peer;
+import Peer.MessageCarrier;
+import Peer.FileManager;
 import java.io.*;
 
 public class PutChunkMessage extends Message implements Runnable{
@@ -30,7 +36,6 @@ public class PutChunkMessage extends Message implements Runnable{
 
         String fileIdKey = fileId.trim()+"."+info.getChunkNo();
 
-        //System.out.println("ESTOU AQUI " + version);
         if(Peer.getStateManager().hasFileById(fileId) && version.equals("2.1")){
             
             Peer.getStateManager().updateChunkRep(fileIdKey,info.getReplicationDegree()); //update desired replication degree
@@ -61,7 +66,7 @@ public class PutChunkMessage extends Message implements Runnable{
                 if(Peer.getStateManager().checkChunkStatus(fileIdKey))
                     return;
             }
-            System.out.println("INFO: " + info.getChunkNo() + " SIZE " + info.getData().length);
+           
             if(!Peer.getStateManager().canStore(info.getData().length)){
                 return;
             } else{ //if there's not data stores and sends message
@@ -73,7 +78,6 @@ public class PutChunkMessage extends Message implements Runnable{
 
                 //Store chunk data
                 String pathname = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
-                // System.out.println("NEW SAVE CHUNK: "+info.getChunkNo());
 
                 FileManager file = new FileManager(pathname);
                 try {
@@ -107,7 +111,6 @@ public class PutChunkMessage extends Message implements Runnable{
 
             //Store chunk data
             String pathname = "Peer " + Peer.getPeerID() + "/" +fileId+"."+info.getChunkNo();
-            // System.out.println("NEW SAVE CHUNK: "+info.getChunkNo());
 
             FileManager file = new FileManager(pathname);
             try {
@@ -154,6 +157,10 @@ public class PutChunkMessage extends Message implements Runnable{
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public String getMessageHeader(){
+        return "PUTCHUNK " + this.version + " " + this.senderId + " " + this.fileId + " " +info.getChunkNo() + " " + info.getDesiredReplicationDegree();
     }
 
 

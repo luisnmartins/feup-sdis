@@ -1,5 +1,8 @@
+package Peer;
 
-import java.awt.*;
+import Chunk.ChunkData;
+import Peer.Peer;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -11,7 +14,6 @@ import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class FileManager{
@@ -67,7 +69,7 @@ public class FileManager{
 
     public void mergeChunks(String fileId) throws IOException {
 
-        //File dir = new File("Peer "+ Peer.getPeerID());
+        //File dir = new File("Peer.Peer "+ Peer.Peer.getPeerID());
         File dir = new File("Peer "+Peer.getPeerID()+"/SaveData");
         File[] foundFiles = dir.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
@@ -94,7 +96,7 @@ public class FileManager{
             foundFiles[i].delete();
 
         }
-        if(dir.list().length == 0){
+       if(dir.list().length == 0){
             dir.delete();
         }
 
@@ -177,7 +179,7 @@ public class FileManager{
             @Override
             public void completed(Integer result, Object attachment) {
 
-                System.out.println(attachment + " completed and " + result + " bytes were written.");
+                //System.out.println(attachment + " completed and " + result + " bytes were written.");
                 try {
                     channel.close();
                 } catch (IOException e) {
@@ -197,7 +199,7 @@ public class FileManager{
             }
         };
 
-        channel.write(buffer,0, "Chunk saving", handler);
+        channel.write(buffer,0, "Chunk.Chunk saving", handler);
     }
 
     public byte[] readEntireFileData() throws IOException{

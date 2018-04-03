@@ -1,3 +1,7 @@
+package RMI;
+
+import RMI.remoteInterface;
+
 import java.rmi.Remote;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -6,11 +10,11 @@ import java.rmi.server.UnicastRemoteObject;
 public class RMIHandler {
 
     /**
-     * Sends any object that uses the remoteInterface to the registry
+     * Sends any object that uses the RMI.remoteInterface to the registry
      * @param objectToSend 
      * @param tag identifier of the object in the registry
      */
-    public <T extends remoteInterface> void sendToRegistry(T objectToSend,String tag) {
+    public <T extends remoteInterface> void sendToRegistry(T objectToSend, String tag) {
         try {
 
             remoteInterface stub = (remoteInterface) UnicastRemoteObject.exportObject(objectToSend,0);

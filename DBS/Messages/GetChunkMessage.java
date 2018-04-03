@@ -1,7 +1,12 @@
+package Messages;
+
+import Chunk.ChunkData;
+import Peer.Peer;
+
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class GetChunkMessage extends Message{
+public class GetChunkMessage extends Message {
 
     private int chunkNo;
 
@@ -9,7 +14,7 @@ public class GetChunkMessage extends Message{
         super(header);
         String[] headerWords = header.split(" ");
         this.chunkNo = Integer.parseInt(headerWords[4]);
-        System.out.println("GETCHUNK "+ this.chunkNo);
+        
     }
 
     public GetChunkMessage(String version, String senderId, String fileId, int chunkNo) {
@@ -34,12 +39,16 @@ public class GetChunkMessage extends Message{
 
         if(Peer.getStateManager().hasBackedUpChunk(this.fileId,this.chunkNo) != null){
 
-            Runnable chunkMessage = new ChunkMessage(this.fileId,this.version,Peer.getPeerID(),new ChunkData(this.chunkNo));
+            Runnable chunkMessage = new ChunkMessage(this.fileId,this.version, Peer.getPeerID(),new ChunkData(this.chunkNo));
             Random rand = new Random();
-            int randomTime = rand.nextInt(399);
+            int randomTime = rand.nextInt(400);
             Peer.getExec().schedule(chunkMessage,randomTime, TimeUnit.MILLISECONDS);
 
         }
 
+    }
+
+    public String getMessageHeader(){
+        return "GETCHUNK " + this.version + " " + this.senderId + " " + this.fileId + " " + chunkNo;
     }
 }

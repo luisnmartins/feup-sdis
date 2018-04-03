@@ -1,4 +1,8 @@
-import java.util.concurrent.Callable;
+package Workers;
+
+import Messages.Message;
+import Peer.Peer;
+
 import java.util.concurrent.TimeUnit;
 
 public class StoreHandler implements Runnable {
@@ -8,7 +12,7 @@ public class StoreHandler implements Runnable {
     private int tryCounter;
     private int time;
 
-    StoreHandler(Message messageToSend,int chunkNo){
+    public StoreHandler(Message messageToSend,int chunkNo){
         this.messageToSend = messageToSend;
         this.chunkNo = chunkNo;
         this.tryCounter = 2;
@@ -16,7 +20,7 @@ public class StoreHandler implements Runnable {
     }
     @Override
     public void run(){
-        String fileIdKey = messageToSend.fileId.trim()+"."+chunkNo;
+        String fileIdKey = messageToSend.getFileId().trim()+"."+chunkNo;
         if(tryCounter > 5) {
             return;
         }

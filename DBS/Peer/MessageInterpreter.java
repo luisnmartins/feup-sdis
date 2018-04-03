@@ -1,6 +1,9 @@
+package Peer;
+
+import Messages.*;
+import Peer.Peer;
 import javafx.util.Pair;
 
-import java.net.Inet4Address;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -42,6 +45,8 @@ public class MessageInterpreter implements Runnable {
         } else {
             this.body = null;
         }
+
+        System.out.println("Received: "  + this.header);
     }
 
     /**
@@ -77,8 +82,6 @@ public class MessageInterpreter implements Runnable {
                     }
                     case "CHUNK":{
                         try {
-                            System.out.println(header);
-                            System.out.println(body.length);
                             Message chunkMessage = new ChunkMessage(header, body);
                             chunkMessage.action();
                         }catch (Throwable e) {

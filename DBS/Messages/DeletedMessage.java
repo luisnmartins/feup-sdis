@@ -1,4 +1,6 @@
+package Messages;
 
+import Peer.Peer;
 
 public class DeletedMessage extends Message implements Runnable{
 
@@ -55,6 +57,10 @@ public class DeletedMessage extends Message implements Runnable{
     @Override
     public void run() {
             this.action();
+    }
+
+    public String getMessageHeader(){
+        return "DELETED " + this.version + " " + this.senderId + " " + this.fileId;
     }
 
 }

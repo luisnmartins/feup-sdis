@@ -1,3 +1,4 @@
+package Chunk;
 
 public abstract class Chunk implements java.io.Serializable{
 
@@ -14,13 +15,13 @@ public abstract class Chunk implements java.io.Serializable{
         this.desiredReplicationDegree = desiredReplicationDegree;
     }
 
-    int getChunkNo(){
+    public int getChunkNo(){
         return chunkNo;
     }
 
-    int getReplicationDegree() { return this.desiredReplicationDegree;}
+    public int getReplicationDegree() { return this.desiredReplicationDegree;}
 
-    void setReplicationDegree(int replicationDegree) { this.desiredReplicationDegree = replicationDegree;}
+    public void setReplicationDegree(int replicationDegree) { this.desiredReplicationDegree = replicationDegree;}
 
 
 

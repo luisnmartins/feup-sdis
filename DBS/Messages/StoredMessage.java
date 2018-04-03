@@ -1,5 +1,9 @@
+package Messages;
 
-public class StoredMessage extends Message{
+import Chunk.ChunkInfo;
+import Peer.Peer;
+
+public class StoredMessage extends Message {
 
     private int chunkNo;
 
@@ -43,5 +47,9 @@ public class StoredMessage extends Message{
 
     public int getChunkNo() {
         return chunkNo;
+    }
+
+    public String getMessageHeader(){
+        return "STORED " + this.version + " " + this.senderId + " " + this.fileId + " " + this.chunkNo;
     }
 }

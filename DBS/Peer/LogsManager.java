@@ -1,8 +1,8 @@
+package Peer;
+
+import Peer.Peer;
+
 import java.io.*;
-import java.rmi.RemoteException;
-import java.rmi.registry.LocateRegistry;
-import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 
 public class LogsManager {
 
@@ -83,7 +83,7 @@ public class LogsManager {
             in.close();
             file.close();
             if(state.getBackedUpFiles() == null) {
-                System.out.println("HELLO: ");
+            
             }
             System.out.println("Data has been loaded");
         }

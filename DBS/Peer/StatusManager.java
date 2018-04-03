@@ -1,3 +1,9 @@
+package Peer;
+
+import Chunk.ChunkInfo;
+import Messages.AliveMessage;
+import Messages.Message;
+import Peer.Peer;
 
 import java.io.IOException;
 import java.util.*;
@@ -8,7 +14,7 @@ public class StatusManager implements java.io.Serializable{
     private static final int DEFAULT_MAX_SIZE = 1000000000;
     private volatile ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
     private volatile ConcurrentHashMap<String, Set<String>> deletedFiles; //fileId; files that the current peer backedUp and deleted
-    private volatile ConcurrentHashMap<String,ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
+    private volatile ConcurrentHashMap<String, ChunkInfo> chunkTable;   //fileid.chunkno chunkinfo
     private volatile List<String> backedUpFiles;  //chunks stored by the current peer
     transient private volatile Set<String> chunksToRestore;
     private volatile int sizeUsed;
@@ -364,6 +370,13 @@ public class StatusManager implements java.io.Serializable{
 
     public synchronized boolean hasFileById(String fileId){
         return filesTables.contains(fileId);
+    }
+
+    /**
+     * @return the chunksToRestore
+     */
+    public Set<String> getChunksToRestore() {
+        return chunksToRestore;
     }
 
 

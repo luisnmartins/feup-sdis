@@ -1,7 +1,14 @@
+package Messages;
+
+import Chunk.ChunkData;
+import Peer.Peer;
+import Peer.FileManager;
+import Peer.MessageCarrier;
+
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class RemoveMessage extends Message{
+public class RemoveMessage extends Message {
 
     private int chunkNo;
 
@@ -33,7 +40,7 @@ public class RemoveMessage extends Message{
 
             ChunkData chunk = new ChunkData(chunkNo);
             FileManager manager = new FileManager();
-            String pathname = "Peer "+Peer.getPeerID()+"/"+fileIdKey;
+            String pathname = "Peer "+ Peer.getPeerID()+"/"+fileIdKey;
             byte[] data_to_send = manager.getFileData(pathname);
             chunk.setData(data_to_send.length, data_to_send);
 
@@ -86,4 +93,8 @@ public class RemoveMessage extends Message{
             }
        }
    }
+
+   public String getMessageHeader(){
+    return "REMOVE " + this.version + " " + this.senderId + " " + this.fileId + " " + this.chunkNo;
+}
 }

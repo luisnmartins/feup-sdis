@@ -1,5 +1,9 @@
-import java.awt.event.PaintEvent;
-import java.io.File;
+package Messages;
+
+import Peer.Peer;
+import Peer.FileManager;
+import Peer.MessageCarrier;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -66,5 +70,9 @@ public class DeleteMessage extends Message implements Runnable {
             e.printStackTrace();
         }
 
+    }
+
+    public String getMessageHeader(){
+        return "DELETE " + this.version + " " + this.senderId + " " + this.fileId;
     }
 }

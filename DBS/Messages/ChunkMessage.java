@@ -1,9 +1,12 @@
+package Messages;
 
+import Chunk.ChunkData;
+import Peer.FileManager;
+import Peer.MessageCarrier;
+import Peer.Peer;
 import java.io.IOException;
-import java.io.PipedWriter;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 
 public class ChunkMessage extends Message implements Runnable{
 
@@ -56,12 +59,12 @@ public class ChunkMessage extends Message implements Runnable{
         if(this.senderId.equals(Peer.getPeerID()))
             return;
 
-
         ConcurrentHashMap hashed = Peer.getStateManager().getFilesTables();
         Set<String> set = hashed.keySet();
+        String fileIdKey = fileId+"."+info.getChunkNo();
         for(String key : set){
             if(hashed.get(key).equals(fileId)){
-                String fileIdKey = fileId+"."+info.getChunkNo();
+                Peer.decWindow();
                 if(Peer.getStateManager().isChunkToRestore(fileIdKey)) {
                     System.out.println("Restoring chunk  "+ info.getChunkNo());
                     String pathname = "Peer " + Peer.getPeerID() + "/SaveData/" + fileId + "." + info.getChunkNo();
@@ -73,23 +76,11 @@ public class ChunkMessage extends Message implements Runnable{
                         e.printStackTrace();
                     }
                 }
-                if(Peer.getStateManager().isChunkToRestoreEmpty()){
-                    FileManager manager = new FileManager(key);
-                    try {
-                        manager.mergeChunks(fileId);
-                        //TODO delete temporary files
-                        //DeleteMessage tempFiles = new DeleteMessage(fileId, "1.0",Peer.getPeerID());
-                        //tempFiles.action();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return;
-
-                }
-                break;
+                return;
 
             }
         }
+        Peer.getStateManager().chunkReallyToRestore(fileIdKey);
 
     }
 
@@ -97,11 +88,15 @@ public class ChunkMessage extends Message implements Runnable{
     public void run() {
 
         String fileIdKey = fileId + "." + info.getChunkNo();
-        if(Peer.getStateManager().chunkReallyToRestore(fileIdKey)) {
+        if(Peer.getStateManager().isChunkToRestore(fileIdKey)) {
             Runnable messageToSend = new MessageCarrier(this,"MDR");
             Peer.getExec().execute(messageToSend);
         }
 
+    }
+
+    public String getMessageHeader(){
+        return "CHUNK " + this.version + " " + this.senderId + " " + this.fileId + " " + info.getChunkNo();
     }
 
 

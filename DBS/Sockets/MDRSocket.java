@@ -1,3 +1,7 @@
+package Sockets;
+
+import Sockets.ChannelSocket;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -12,14 +16,14 @@ public class MDRSocket extends ChannelSocket {
     /**
      * Constructor with default address and port number
      */
-    MDRSocket() throws IOException {
+    public MDRSocket() throws IOException {
         this.port= 8002;
         this.socket = new MulticastSocket(port);
         this.address = InetAddress.getByName(MDR_ADDR);
         this.socket.joinGroup(address);
     }
 
-    MDRSocket(int port,String address) throws IOException {
+    public MDRSocket(int port,String address) throws IOException {
         super();
         this.port = port;
         this.socket = new MulticastSocket(this.port);

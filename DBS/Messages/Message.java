@@ -1,3 +1,5 @@
+package Messages;
+
 import java.io.IOException;
 
 public abstract class Message {
@@ -31,6 +33,12 @@ public abstract class Message {
     public void action() throws IOException {}
 
 
+    public String getFileId() {
+        return fileId;
+    }
 
+    public String getMessageHeader(){
+        return "MESSAGE " + this.version + " " + this.senderId + " " + this.fileId;
+    }
 
 }

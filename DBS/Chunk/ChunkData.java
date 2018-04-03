@@ -1,4 +1,8 @@
-public class ChunkData extends Chunk{
+package Chunk;
+
+import Chunk.Chunk;
+
+public class ChunkData extends Chunk {
 
     private byte[] data;
 
@@ -7,9 +11,9 @@ public class ChunkData extends Chunk{
         super(chunkNo);
     }
 
-    byte[] getData() { return data; }
+    public byte[] getData() { return data; }
 
-    void setData(int size, byte[] data) {
+    public void setData(int size, byte[] data) {
         this.data = new byte[size];
         System.arraycopy(data, 0, this.data, 0, size);
     }
