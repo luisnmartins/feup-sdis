@@ -8,7 +8,7 @@ import Sockets.MCSocket;
 import Sockets.MDBSocket;
 import Sockets.MDRSocket;
 import Workers.RestoreChecker;
-import javafx.util.Pair;
+import java.util.AbstractMap.SimpleEntry;
 
 import java.util.*;
 import java.io.*;
@@ -53,8 +53,8 @@ public class Peer implements remoteInterface {
     /**
      * Complete construtor of a peer, the version cant be "2.0" because it is used to defined the enhancements
      */
-    public Peer(String version, String id, String accessPoint, Pair<Integer, String> MC, Pair<Integer, String> MDB,
-            Pair<Integer, String> MDR) throws IOException {
+    public Peer(String version, String id, String accessPoint,  SimpleEntry<Integer, String> MC, SimpleEntry<Integer, String> MDB,
+            SimpleEntry<Integer, String> MDR) throws IOException {
         this.version = version;
         if (this.version.equals("2.0")) {
             this.version = "1.9";
@@ -304,7 +304,7 @@ public class Peer implements remoteInterface {
     }
 
     //Iniate the 3 multicasts sockets and the threads that will read the messages in a thread pool
-    public void initiateSocketThreads(Pair<Integer, String> MC, Pair<Integer, String> MDB, Pair<Integer, String> MDR)
+    public void initiateSocketThreads(SimpleEntry<Integer, String> MC, SimpleEntry<Integer, String> MDB, SimpleEntry<Integer, String> MDR)
             throws IOException {
 
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
@@ -339,9 +339,9 @@ public class Peer implements remoteInterface {
             handler.sendToRegistry(peer, peerID);
 
         } else if (args.length == 9) {
-            Pair<Integer, String> mc = new Pair<>(Integer.parseInt(args[3]), args[4]);
-            Pair<Integer, String> mdb = new Pair<>(Integer.parseInt(args[5]), args[6]);
-            Pair<Integer, String> mdr = new Pair<>(Integer.parseInt(args[7]), args[8]);
+            SimpleEntry<Integer, String> mc = new SimpleEntry<>(Integer.parseInt(args[3]), args[4]);
+            SimpleEntry<Integer, String> mdb = new SimpleEntry<>(Integer.parseInt(args[5]), args[6]);
+            SimpleEntry<Integer, String> mdr = new SimpleEntry<>(Integer.parseInt(args[7]), args[8]);
             peer = new Peer(args[0], args[1], args[2], mc, mdb, mdr);
             handler.sendToRegistry(peer, accessPoint);
         } else {

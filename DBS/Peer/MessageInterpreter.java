@@ -2,12 +2,11 @@ package Peer;
 
 import Messages.*;
 import Peer.Peer;
-import javafx.util.Pair;
-
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.AbstractMap.SimpleEntry;
 
 public class MessageInterpreter implements Runnable {
 
@@ -16,7 +15,7 @@ public class MessageInterpreter implements Runnable {
 
     private String header;
     private byte[] body;
-    private BlockingQueue<Pair<Integer,byte[]>> bQueue;
+    private BlockingQueue<SimpleEntry<Integer,byte[]>> bQueue;
 
     public MessageInterpreter(){bQueue = new LinkedBlockingQueue<>();}
 
@@ -58,7 +57,7 @@ public class MessageInterpreter implements Runnable {
         while(true){
 
             try {
-                Pair<Integer,byte[]> pair  = bQueue.take();
+                SimpleEntry<Integer,byte[]> pair  = bQueue.take();
                 this.separateMessage(pair.getKey(),pair.getValue());
                 String messageType = this.header.substring(0,this.header.indexOf(" "));
 
@@ -120,7 +119,7 @@ public class MessageInterpreter implements Runnable {
 
     }
 
-    public void putInQueue(Pair<Integer,byte[]> pair){
+    public void putInQueue(SimpleEntry<Integer,byte[]> pair){
         try {
             this.bQueue.put(pair);
         } catch (InterruptedException e) {

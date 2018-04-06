@@ -1,12 +1,13 @@
 package Sockets;
 
 import Messages.Message;
-import javafx.util.Pair;
+
 
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.AbstractMap.SimpleEntry;
 import Peer.Peer;
 
 public abstract class ChannelSocket implements Runnable {
@@ -55,7 +56,7 @@ public abstract class ChannelSocket implements Runnable {
             DatagramPacket packet = new DatagramPacket(buf,buf.length);
             try {
                 this.socket.receive(packet);
-                Pair<Integer,byte[]> pair = new Pair<>(packet.getLength(),packet.getData());
+                SimpleEntry<Integer,byte[]> pair = new SimpleEntry<>(packet.getLength(),packet.getData());
                 Peer.getMessageInterpreter().putInQueue(pair);
             } catch (IOException e) {
                 e.printStackTrace();
