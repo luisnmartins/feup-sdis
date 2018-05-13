@@ -4,12 +4,9 @@ import Chunk.ChunkData;
 import Messages.*;
 import RMI.RMIHandler;
 import RMI.remoteInterface;
-import Sockets.MCSocket;
-import Sockets.MDBSocket;
-import Sockets.MDRSocket;
 import Workers.RestoreChecker;
 import java.util.AbstractMap.SimpleEntry;
-
+import Sockets.*;
 import java.util.*;
 import java.io.*;
 import java.rmi.RemoteException;
@@ -34,6 +31,13 @@ public class Peer implements remoteInterface {
     private volatile static Integer window;
     private volatile static boolean flag = true;
 
+    //SecureSockets
+
+    //Server always running
+    private static ReceiverSocket controlReceiver;
+    private static ReceiverSocket dataReceiver;
+
+
     public Peer() {
     }
 
@@ -43,7 +47,11 @@ public class Peer implements remoteInterface {
     public Peer(String id) throws IOException {
         version = "1.0";
         peerID = id;
-        this.initiateSocketThreads();
+        //this.initiateSocketThreads();
+        if(!this.generateKeyPair()){
+            System.out.println("There was a problem generating the keys");
+        }
+        initiateServerSockets();
         LogsManager statusData = new LogsManager();
         this.stateManager = statusData.LoadData();
         stateManager.updateData();
@@ -349,6 +357,40 @@ public class Peer implements remoteInterface {
             return;
         }
 
+    }
+
+    public void initiateServerSockets() throws IOException{
+        
+        this.dataReceiver = new ReceiverSocket(0);
+        this.controlReceiver = new ReceiverSocket(0);
+        Runnable dataThread = this.dataReceiver;
+        this.exec.execute(dataThread);
+        Runnable controlThread = this.controlReceiver;
+        this.exec.execute(controlThread);
+
+
+        messageInterpreter = new MessageInterpreter();
+        Runnable interpreterThread = messageInterpreter;
+        this.exec.execute(interpreterThread);
+    }
+
+
+    public boolean generateKeyPair(){
+       
+        String peerName = this.peerID;
+        String commandtoCreate = "keytool -genkey -alias " + peerName + "private -keystore " + peerName + ".private -storetype JKS -keyalg rsa -dname 'CN=Your Name, OU=Your Organizational Unit, O=Your Organization, L=Your City, S=Your State, C=Your Country' -storepass " + peerName + "pw -keypass "+ peerName + "pw";
+        String commandtoExportPublic = "keytool -export -alias " + peerName + "private -keystore " + peerName + ".private -file temp.key -storepass " + peerName + "pw";
+        String commandtoImportPublic = "keytool -import -noprompt -alias " +peerName + "public -keystore " + peerName + ".public -file temp.key -storepass public";
+
+        try{
+            String[] args = {"/bin/bash","-c",commandtoCreate + ";" + commandtoExportPublic + ";" + commandtoImportPublic + ";rm -f temp.key"};
+            Process proc = new ProcessBuilder(args).start();
+            proc.waitFor();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        System.out.println("Keys generated succesfully");
+        return true;
     }
 
     public static ScheduledExecutorService getExec() {

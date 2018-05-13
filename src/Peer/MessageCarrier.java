@@ -3,14 +3,18 @@ package Peer;
 import Messages.Message;
 import Peer.Peer;
 import Workers.StoreHandler;
-
+import Sockets.DSSocket;
 import java.util.concurrent.TimeUnit;
+import java.net.UnknownHostException;
 
 public class MessageCarrier implements  Runnable{
 
     private Message message;
     private String channelToSend;
     private int chunkNo;
+    private int toPort;
+    private String toHost;
+    private String toID;
 
     public MessageCarrier(Message message,String type){
         this.message = message;
@@ -21,6 +25,14 @@ public class MessageCarrier implements  Runnable{
         this.message = message;
         this.channelToSend = type;
         this.chunkNo = chunkNo;
+    }
+
+    public MessageCarrier(Message message,int port,String host,String toPeerName){
+        this.message = message;
+        this.toPort = port;
+        this.toHost = host;
+        this.toID = toPeerName;
+        this.channelToSend = "TCP";
     }
 
     /**
@@ -45,6 +57,18 @@ public class MessageCarrier implements  Runnable{
             case "MDR":{
                 Peer.getMDR().sendMessage(this.message);
                 break;
+            }
+
+            case "TCP":{
+                try{
+                        DSSocket socket = new DSSocket(toPort,toHost);
+                socket.connect(Peer.getPeerID(),this.toID);
+                Runnable senderSocket = socket;
+                Peer.getExec().execute(socket);
+                }catch(UnknownHostException e){
+                    e.printStackTrace();
+                }
+            
             }
 
         }

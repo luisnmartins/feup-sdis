@@ -2,7 +2,7 @@ package Sockets;
 
 import Messages.Message;
 
-
+import javax.net.ssl.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
@@ -15,6 +15,7 @@ public abstract class ChannelSocket implements Runnable {
     protected static final int PACKET_SIZE = 65536;
     protected MulticastSocket socket;
     protected int port;
+    protected SSLSocket tcpSocket;
     protected InetAddress address;
 
     public ChannelSocket(){}
