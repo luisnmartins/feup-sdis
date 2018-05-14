@@ -108,6 +108,11 @@ public class MessageInterpreter implements Runnable {
                         alive.action();
                         break;
                     }
+                    case "REGISTER": {
+                        RegisterMessage register = new RegisterMessage(header);
+                        register.action();
+                        break;
+                    }
                 }
             } catch (InterruptedException e) {
                 continue;
