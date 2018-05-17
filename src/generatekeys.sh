@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # Generate client public/private key pair into private keystore
-echo Generating client public private key pair
-keytool -genkey -alias clientprivate -keystore client.private -storetype JKS -keyalg rsa -dname "CN=Your Name, OU=Your Organizational Unit, O=Your Organization, L=Your City, S=Your State, C=Your Country" -storepass clientpw -keypass clientpw
+echo Generating tracker public private key pair
+keytool -genkey -alias trackerprivate -keystore tracker.private -storetype JKS -keyalg rsa -dname "CN=Your Name, OU=Your Organizational Unit, O=Your Organization, L=Your City, S=Your State, C=Your Country" -storepass trackerpw -keypass trackerpw
 
 # Generate server public/private key pair
 echo Generating server public private key pair
 keytool -genkey -alias serverprivate -keystore server.private -storetype JKS -keyalg rsa -dname "CN=Your Name, OU=Your Organizational Unit, O=Your Organization, L=Your City, S=Your State, C=Your Country" -storepass serverpw -keypass serverpw
 
 # Export client public key and import it into public keystore
-echo Generating client public key file
-keytool -export -alias clientprivate -keystore client.private -file temp.key -storepass clientpw
-keytool -import -noprompt -alias clientpublic -keystore client.public -file temp.key -storepass public
+echo Generating tracker public key file
+keytool -export -alias trackerprivate -keystore tracker.private -file temp.key -storepass trackerpw
+keytool -import -noprompt -alias trackerpublic -keystore tracker.public -file temp.key -storepass tracker
 rm -f temp.key
 
 # Export server public key and import it into public keystore

@@ -12,13 +12,14 @@ import Peer.Peer;
 /**
  * DRSocket
  */
-public class DSSocket extends SecureSocket{
+public class SenderSocket extends SecureSocket implements Runnable{
 
     protected String host;
     protected InetAddress address;
     protected TrustManager[] trustAllCerts;
+    protected SSLSocket socket;
 
-    public DSSocket(int port,String host)throws UnknownHostException{
+    public SenderSocket(int port,String host)throws UnknownHostException{
         super();
         this.port = port;
         this.host = host;
@@ -41,7 +42,7 @@ public class DSSocket extends SecureSocket{
     public void connect(String connectFrom,String connectTo){
         try{
             setupSocketKeyStore(connectFrom);
-            //setupPublicKeyStore(connectTo);
+            setupPublicKeyStore(connectTo);
             setupSSLContext();
 
             SSLSocketFactory sf = sslContext.getSocketFactory();
@@ -60,7 +61,7 @@ public class DSSocket extends SecureSocket{
         }
     }
 
-    public void setupSSLContext() throws GeneralSecurityException, IOException{
+    /*public void setupSSLContext() throws GeneralSecurityException, IOException{
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(publicKeyStore);
 
@@ -71,7 +72,7 @@ public class DSSocket extends SecureSocket{
         this.sslContext.init(kmf.getKeyManagers(),
                                 trustAllCerts,
                                 secureRandom);
-    }
+    }*/
 
     public void run(){
         while(true){

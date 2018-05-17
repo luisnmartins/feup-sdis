@@ -11,10 +11,10 @@ import Peer.Peer;
 /**
  * SecureSocket
  */
-public abstract class SecureSocket implements Runnable{
+public abstract class SecureSocket{
 
     protected int port;
-    protected SSLSocket socket;
+    
 
     protected static final int PACKET_SIZE = 65536;
 
@@ -38,9 +38,7 @@ public abstract class SecureSocket implements Runnable{
 
     SecureSocket(){createSecureRandom();setPassphrase(Peer.getPeerID());}
 
-    public SSLSocket getSocket(){
-        return socket;
-    }
+
 
     public void setPassphrase(String peerName){
         this.passphrase = peerName + "pw";
@@ -102,11 +100,11 @@ public abstract class SecureSocket implements Runnable{
     }
 
 
-    public void SendMessage(Message msg){
-        if(dout != null){
+    public void SendMessage(Message msg,DataOutputStream output){
+        if(output != null){
             byte[] textMessage = msg.getFullMessage();
             try{
-                 dout.write(textMessage);
+                 output.write(textMessage);
             }catch(IOException e){
                 e.printStackTrace();
             }

@@ -363,12 +363,7 @@ public class Peer implements remoteInterface {
         
         this.dataReceiver = new ReceiverSocket(0);
         this.controlReceiver = new ReceiverSocket(0);
-        Runnable dataThread = this.dataReceiver;
-        this.exec.execute(dataThread);
-        Runnable controlThread = this.controlReceiver;
-        this.exec.execute(controlThread);
-
-
+        
         messageInterpreter = new MessageInterpreter();
         Runnable interpreterThread = messageInterpreter;
         this.exec.execute(interpreterThread);

@@ -3,7 +3,9 @@ package Peer;
 import Messages.Message;
 import Peer.Peer;
 import Workers.StoreHandler;
-import Sockets.DSSocket;
+import Sockets.SenderSocket;
+import Sockets.SenderSocket;
+
 import java.util.concurrent.TimeUnit;
 import java.net.UnknownHostException;
 
@@ -61,10 +63,10 @@ public class MessageCarrier implements  Runnable{
 
             case "TCP":{
                 try{
-                        DSSocket socket = new DSSocket(toPort,toHost);
-                socket.connect(Peer.getPeerID(),this.toID);
-                Runnable senderSocket = socket;
-                Peer.getExec().execute(socket);
+                    SenderSocket socket = new SenderSocket(toPort,toHost);
+                    socket.connect(Peer.getPeerID(),this.toID);
+                    Runnable senderSocket = socket;
+                    Peer.getExec().execute(socket);
                 }catch(UnknownHostException e){
                     e.printStackTrace();
                 }

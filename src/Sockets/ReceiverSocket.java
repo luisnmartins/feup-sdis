@@ -9,67 +9,86 @@ import java.util.AbstractMap.SimpleEntry;
 import Peer.Peer;
 
 
-/**
- * DSSocket
- */
 public class ReceiverSocket extends SecureSocket {
 
     protected SSLServerSocket serverSocket;
 
-
-    public ReceiverSocket(int port){
+    public ReceiverSocket(int port) {
         super();
         this.port = port;
     }
 
-
-    public void connect(String connectFrom,String connectTo) {
-        try{
+    public void connect(String connectFrom) {
+        try {
             setupSocketKeyStore(connectFrom);
-            //setupPublicKeyStore(connectTo);
             setupSSLContext();
 
             SSLServerSocketFactory sf = sslContext.getServerSocketFactory();
-            SSLServerSocket ss = (SSLServerSocket) sf.createServerSocket(this.port);
-            
-            //Require client auth
-            ss.setNeedClientAuth(false);
+            this.serverSocket = (SSLServerSocket) sf.createServerSocket(this.port);
+
+            // Require client auth
+            this.serverSocket.setNeedClientAuth(false);
             System.out.println("Listening on " + this.port);
-            socket = (SSLSocket) ss.accept();
-            System.out.println( "Got connection from "+socket );
-            while(true){
-              
-                InputStream in = socket.getInputStream();
-                OutputStream out = socket.getOutputStream();
-
-                din = new DataInputStream(in);
-                dout = new DataOutputStream(out);
-
-                byte[] buf = new byte[PACKET_SIZE];
-
-                din.readFully(buf);
-
-                SimpleEntry<Integer,byte[]> pair = new SimpleEntry<>(buf.length,buf);
-                Peer.getMessageInterpreter().putInQueue(pair);
-
-                
-
-            }
-
-        }catch(GeneralSecurityException ge){
+            Runnable accepter = new connectionAccepter();
+            Peer.getExec().execute(accepter);
+        } catch (GeneralSecurityException ge) {
             ge.printStackTrace();
-        }catch(IOException e){
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public class connectionAccepter implements Runnable {
 
-     public void run(){
-        connect(Peer.getPeerID(),null);
+        public connectionAccepter() {
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                try {
+                    SSLSocket socketConnected = (SSLSocket) serverSocket.accept();
+                    System.out.println("Got connection from " + socketConnected);
+                    Runnable handler = new connectionHandler(socketConnected);
+                    Peer.getExec().execute(handler);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        }
     }
 
+    public class connectionHandler implements Runnable {
+        SSLSocket socketConnected;
 
+        public connectionHandler(SSLSocket socket) {
+            this.socketConnected = socket;
+        }
 
+        @Override
+        public void run() {
+            while (true) {
 
-    
+                try {
+                    InputStream in = socketConnected.getInputStream();
+                    OutputStream out = socketConnected.getOutputStream();
+
+                    DataInputStream dataIn = new DataInputStream(in);
+                    DataOutputStream dataOut = new DataOutputStream(out);
+
+                    byte[] buf = new byte[PACKET_SIZE];
+                    din.readFully(buf);
+
+                    SimpleEntry<Integer, byte[]> pair = new SimpleEntry<>(buf.length, buf);
+                    Peer.getMessageInterpreter().putInQueue(pair);
+
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
 }
