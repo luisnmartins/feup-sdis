@@ -62,7 +62,7 @@ public class MessageInterpreter implements Runnable {
                 String messageType = this.header.substring(0,this.header.indexOf(" "));
 
                 switch (messageType){
-                    case "PUTCHUNK": {
+                    /*case "PUTCHUNK": {
                         Runnable putchunk = new PutChunkMessage(header, body);
                         Random rand = new Random();
                         int randomTime = rand.nextInt(399);
@@ -107,16 +107,23 @@ public class MessageInterpreter implements Runnable {
                         AliveMessage alive = new AliveMessage(header);
                         alive.action();
                         break;
-                    }
+                    }*/
                     case "REGISTER": {
-                        RegisterMessage register = new RegisterMessage(header);
+                        RegisterMessage register = new RegisterMessage(header, "444.55.66");
                         register.action();
                         break;
                     }
+                    case "HASFILE": {                      
+                        HasFileMessage hasfile = new HasFileMessage(header, "444.55.66");
+                        hasfile.action();
+                        break;
+                    }
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
+                e.printStackTrace();
                 continue;
             }
+
 
 
 
@@ -125,9 +132,10 @@ public class MessageInterpreter implements Runnable {
     }
 
     public void putInQueue(SimpleEntry<Integer,byte[]> pair){
-        try {
+        try { 
             this.bQueue.put(pair);
         } catch (InterruptedException e) {
+            e.printStackTrace();            
             return;
         }
     }

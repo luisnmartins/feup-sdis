@@ -9,26 +9,30 @@ public class RegisterMessage{
 
     private String senderId;
     private String address;
-    private String receiverPort;
+    private int port;
+    private String senderIp;
+    
 
-    public RegisterMessage(String header) {
+    public RegisterMessage(String header, String senderIp){
 
         String[] headerWords = header.split(" ");
         this.senderId = headerWords[1];
         this.address = headerWords[2];
-        this.receiverPort = headerWords[3];
+        this.port = Integer.parseInt(headerWords[3]);
+        this.senderIp = senderIp;
+        
     }
 
-    public RegisterMessage(String senderId, String address, String receiverPort) {
+    public RegisterMessage(String senderId, String address, int port){
 
         this.senderId = senderId;
         this.address = address;
-        this.receiverPort = receiverPort;
-
+        this.port = port;
+    
     }
 
     public byte[] getFullMessage() {
-        String header = "REGISTER " + this.senderId + " " + this.address + this.receiverPort + this.CRLFCRLF;
+        String header = "REGISTER " + this.senderId + " " + this.address + " " + this.port + " " + this.CRLFCRLF;
         byte[] headerBytes = header.getBytes();
         return headerBytes;
 
@@ -36,8 +40,10 @@ public class RegisterMessage{
 
     public void action() {
 
-        Tracker.addOnlinePeer(this.senderId, this.address, this.receiverPort);
 
+        Tracker.addOnlinePeer(this.senderId, this.address, this.port, this.senderIp);
+
+        
         
     }
 }
