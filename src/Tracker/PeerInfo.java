@@ -8,11 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class PeerInfo{
     
     private String address;
-    private int receiverPort;
+    private int port;
 
-    public PeerInfo(String address, int receiverPort){
+    public PeerInfo(String address, int port){
         this.address=address;
-        this.receiverPort = receiverPort;
+        this.port = port;
     }
 
     public String getAddress() {
@@ -23,12 +23,12 @@ public class PeerInfo{
         this.address=address;
     }
 
-    public int getReceiverPort() {
-        return this.receiverPort;
+    public int getPort() {
+        return this.port;
     }
 
-    public void setRceiverPort(int receiverPort) {
-        this.receiverPort=receiverPort;
+    public void setPort(int port) {
+        this.port=port;
     }
 
 }
