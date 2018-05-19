@@ -108,6 +108,15 @@ public class MessageInterpreter implements Runnable {
                         alive.action();
                         break;
                     }*/
+                    case "SUCCESS": {
+                        //TODO: Success Action
+                        break;
+                    }
+                    case "ERROR": {
+                        //TODO: Success Action
+                        break;
+                    }
+                    //TRACKER
                     case "REGISTER": {
                         RegisterMessage register = new RegisterMessage(header, "444.55.66");
                         register.action();
@@ -116,6 +125,22 @@ public class MessageInterpreter implements Runnable {
                     case "HASFILE": {                      
                         HasFileMessage hasfile = new HasFileMessage(header, "444.55.66");
                         hasfile.action();
+                        break;
+                    }
+                    case "GETFILE": {                      
+                        GetFileMessage getfile = new GetFileMessage(header, "444.55.66");
+                        getfile.action();
+                        break;
+                    }
+                    //PEER
+                    case "PEERINFOSIZE": {                      
+                        PeerInfoSizeMessage peerinfosize = new PeerInfoSizeMessage(header);
+                        peerinfosize.action();
+                        break;
+                    }
+                    case "PEERINFO": {                      
+                        PeerInfoMessage peerinfo = new PeerInfoMessage(header);
+                        peerinfo.action();
                         break;
                     }
                 }

@@ -19,7 +19,14 @@ public class RegisterMessage{
         this.senderId = headerWords[1];
         this.address = headerWords[2];
         this.port = Integer.parseInt(headerWords[3]);
-        this.senderIp = senderIp;
+        //this.senderIp = senderIp;
+
+        //TODO: Delete
+        if(this.senderId.equals("abc123")){
+            this.senderIp = "444.55.66";
+        }else if(this.senderId.equals("abc456")){
+            this.senderIp = "777.88.99";
+        }
         
     }
 
@@ -40,10 +47,18 @@ public class RegisterMessage{
 
     public void action() {
 
-
-        Tracker.addOnlinePeer(this.senderId, this.address, this.port, this.senderIp);
-
+        int res = Tracker.addOnlinePeer(this.senderId, this.address, this.port, this.senderIp);
         
+        if(res == -1){
+            String header = "ERROR" + " " + this.CRLFCRLF;
+            byte[] headerBytes = header.getBytes();
+            //TODO: send error
+        
+        }else if(res == 0){
+            String header = "SUCCESS" + " " + this.CRLFCRLF;
+            byte[] headerBytes = header.getBytes();
+            //TODO: send success
+        }
         
     }
 }

@@ -17,7 +17,14 @@ public class HasFileMessage{
         String[] headerWords = header.split(" ");
         this.senderId = headerWords[1];
         this.fileId = headerWords[2];
-        this.senderIp = senderIp;
+        //this.senderIp = senderIp;
+
+        //TODO: Delete
+        if(this.senderId.equals("abc123")){
+            this.senderIp = "444.55.66";
+        }else if(this.senderId.equals("abc456")){
+            this.senderIp = "777.88.99";
+        }
         
     }
 
@@ -38,7 +45,18 @@ public class HasFileMessage{
 
     public void action() {
 
-        Tracker.addAvailableFile(this.senderId, this.fileId, this.senderIp);
+        int res = Tracker.addAvailableFile(this.senderId, this.fileId, this.senderIp);
+
+        if(res == -1){
+            String header = "ERROR" + " " + this.CRLFCRLF;
+            byte[] headerBytes = header.getBytes();
+            //TODO: send error
+        
+        }else if(res == 0){
+            String header = "SUCCESS" + " " + this.CRLFCRLF;
+            byte[] headerBytes = header.getBytes();
+            //TODO: send success
+        }
         
     }
 }
