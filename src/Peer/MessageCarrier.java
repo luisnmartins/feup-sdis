@@ -63,10 +63,7 @@ public class MessageCarrier implements  Runnable{
 
             case "TCP":{
                 try{
-                    SenderSocket socket = new SenderSocket(toPort,toHost);
-                    socket.connect(Peer.getPeerID(),this.toID);
-                    Runnable senderSocket = socket;
-                    Peer.getExec().execute(socket);
+                    
                 }catch(UnknownHostException e){
                     e.printStackTrace();
                 }

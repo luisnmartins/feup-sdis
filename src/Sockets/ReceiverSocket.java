@@ -78,8 +78,9 @@ public class ReceiverSocket extends SecureSocket {
                     DataOutputStream dataOut = new DataOutputStream(out);
 
                     byte[] buf = new byte[PACKET_SIZE];
-                    din.readFully(buf);
+                    int read =  din.read(buf);
 
+                    byte[] response = Arrays.copyOfRange(buf, 0, read);
                     SimpleEntry<Integer, byte[]> pair = new SimpleEntry<>(buf.length, buf);
                     Peer.getMessageInterpreter().putInQueue(pair);
 

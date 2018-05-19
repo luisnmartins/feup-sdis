@@ -12,6 +12,8 @@ import java.io.*;
 import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
+
+
 /**
  * peer
  */
@@ -35,7 +37,6 @@ public class Peer implements remoteInterface {
 
     //Server always running
     private static ReceiverSocket controlReceiver;
-    private static ReceiverSocket dataReceiver;
 
 
     public Peer() {
@@ -48,9 +49,16 @@ public class Peer implements remoteInterface {
         version = "1.0";
         peerID = id;
         //this.initiateSocketThreads();
-        if(!this.generateKeyPair()){
-            System.out.println("There was a problem generating the keys");
+        File priFile = new File("./" + peerID + ".private");
+        File pubFile = new File("./" + peerID + ".public");
+
+        if((!priFile.exists() || priFile.isDirectory()) || (!pubFile.exists() || pubFile.isDirectory())){
+            if(!this.generateKeyPair()){
+                System.out.println("There was a problem generating the keys");
+                return;
+            }
         }
+        
         initiateServerSockets();
         LogsManager statusData = new LogsManager();
         this.stateManager = statusData.LoadData();
@@ -361,8 +369,9 @@ public class Peer implements remoteInterface {
 
     public void initiateServerSockets() throws IOException{
         
-        this.dataReceiver = new ReceiverSocket(0);
         this.controlReceiver = new ReceiverSocket(0);
+
+        this.controlReceiver.connect(this.peerID);
         
         messageInterpreter = new MessageInterpreter();
         Runnable interpreterThread = messageInterpreter;
