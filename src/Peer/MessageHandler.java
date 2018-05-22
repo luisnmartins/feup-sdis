@@ -116,7 +116,7 @@ public class MessageHandler implements Runnable {
     }
 
     public void sendMessage(Message msg) {
-        if (writer != null) {
+        if (writer != null && fsmState == State.WRITE){
             byte[] textMessage = msg.getFullMessage();
             try {
                 writer.write(textMessage);
@@ -126,7 +126,7 @@ public class MessageHandler implements Runnable {
             }
 
         } else {
-            System.err.println("Error: cant send message if connection hasnt been established");
+            System.err.println("Error: cant send message if connection hasnt been established or you  are not the one to send the message");
         }
 
     }
