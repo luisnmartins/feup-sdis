@@ -62,11 +62,6 @@ public class MessageCarrier implements  Runnable{
             }
 
             case "TCP":{
-                try{
-                    
-                }catch(UnknownHostException e){
-                    e.printStackTrace();
-                }
             
             }
 

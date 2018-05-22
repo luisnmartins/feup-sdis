@@ -87,32 +87,11 @@ public abstract class SecureSocket{
                                 secureRandom);
     }
 
-    public void run(){
-
-    }
-
-
     public void createSecureRandom(){
         System.out.println( "Wait while secure random numbers are initialized...." );
         secureRandom = new SecureRandom();
         secureRandom.nextInt();
         System.out.println( "Done." );
     }
-
-
-    public void SendMessage(Message msg,DataOutputStream output){
-        if(output != null){
-            byte[] textMessage = msg.getFullMessage();
-            try{
-                 output.write(textMessage);
-            }catch(IOException e){
-                e.printStackTrace();
-            }
-           
-        }else{
-            System.err.println("Error: cant send message if connection hasnt been established");
-        }
-    }
-
 
 }

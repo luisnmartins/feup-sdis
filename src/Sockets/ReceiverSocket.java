@@ -5,8 +5,11 @@ import java.io.*;
 import java.security.GeneralSecurityException;
 import java.nio.charset.*;
 import java.lang.ProcessBuilder;
+import java.util.Arrays;
 import java.util.AbstractMap.SimpleEntry;
 import Peer.Peer;
+import Peer.MessageHandler;
+import Peer.MessageHandler.Transition;
 
 
 public class ReceiverSocket extends SecureSocket {
@@ -40,8 +43,7 @@ public class ReceiverSocket extends SecureSocket {
 
     public class connectionAccepter implements Runnable {
 
-        public connectionAccepter() {
-        }
+        public connectionAccepter() {}
 
         @Override
         public void run() {
@@ -49,7 +51,8 @@ public class ReceiverSocket extends SecureSocket {
                 try {
                     SSLSocket socketConnected = (SSLSocket) serverSocket.accept();
                     System.out.println("Got connection from " + socketConnected);
-                    Runnable handler = new connectionHandler(socketConnected);
+                    MessageHandler handler = new MessageHandler(socketConnected);
+                    handler.updateState(Transition.RECEIVER);
                     Peer.getExec().execute(handler);
                 } catch (IOException e) {
                     e.printStackTrace();

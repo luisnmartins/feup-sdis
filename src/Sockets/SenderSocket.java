@@ -3,21 +3,24 @@ package Sockets;
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.security.GeneralSecurityException;
 import java.net.UnknownHostException;
 import java.nio.charset.*;
 import java.lang.ProcessBuilder;
 import java.security.cert.X509Certificate;
 import Peer.Peer;
+import Peer.MessageHandler;
+import Peer.MessageHandler.Transition;
 /**
  * DRSocket
  */
-public class SenderSocket extends SecureSocket implements Runnable{
+public class SenderSocket extends SecureSocket{
 
     protected String host;
     protected InetAddress address;
     protected TrustManager[] trustAllCerts;
-    protected SSLSocket socket;
+    protected MessageHandler handler;
 
     public SenderSocket(int port,String host)throws UnknownHostException{
         super();
@@ -46,13 +49,12 @@ public class SenderSocket extends SecureSocket implements Runnable{
             setupSSLContext();
 
             SSLSocketFactory sf = sslContext.getSocketFactory();
-            this.socket = (SSLSocket) sf.createSocket(this.host,this.port);
+            SSLSocket socket = (SSLSocket) sf.createSocket(this.host,this.port);
 
-            InputStream in = socket.getInputStream();
-            OutputStream out = socket.getOutputStream();
+            handler = new MessageHandler(socket);
+            handler.updateState(Transition.SENDER);
 
-            din = new DataInputStream(in);
-            dout = new DataOutputStream(out);
+            Peer.getExec().execute(handler);
 
         }catch(GeneralSecurityException gse){
             gse.printStackTrace();
@@ -60,6 +62,8 @@ public class SenderSocket extends SecureSocket implements Runnable{
             e.printStackTrace();
         }
     }
+
+    
 
     /*public void setupSSLContext() throws GeneralSecurityException, IOException{
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
@@ -74,11 +78,6 @@ public class SenderSocket extends SecureSocket implements Runnable{
                                 secureRandom);
     }*/
 
-    public void run(){
-        while(true){
-            
-        }
-    }
 
       
 
