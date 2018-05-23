@@ -43,7 +43,13 @@ public class MessageHandler implements Runnable {
         START {
             @Override
             public State next(Transition transition) {
-                return (transition == SENDER) ? WRITE : RECEIVE;
+                if(transition == SENDER){
+                    return WRITE;
+                }else if(transition == RECEIVER){
+                    return RECEIVE;
+
+                }
+                return START;
             }
         },
         WRITE {
@@ -51,8 +57,8 @@ public class MessageHandler implements Runnable {
             public State next(Transition transition) {
                 if (transition == WROTE) {
                     return RECEIVE;
-                } else
-                    return WRITE;
+                }
+                return WRITE;
             }
         },
         RECEIVE {
@@ -62,8 +68,8 @@ public class MessageHandler implements Runnable {
                     return WRITE;
                 } else if (transition == QUIT) {
                     return CLOSE;
-                } else
-                    return RECEIVE;
+                }
+                return RECEIVE;
             }
         },
         CLOSE {
