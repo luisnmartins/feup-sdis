@@ -3,33 +3,31 @@ package Messages;
 
 import Tracker.*;
 
-public class RegisterMessage{
+public class NoFileMessage{
 
     private String CRLFCRLF = "\r\n\r\n";
 
     private String senderId;
-    private String address;
-    private int port;
-    
+    private String fileId;  
 
-    public RegisterMessage(String header){
+    public NoFileMessage(String header){
 
         String[] headerWords = header.split(" ");
         this.senderId = headerWords[1];
-        this.address = headerWords[2];
-        this.port = Integer.parseInt(headerWords[3]);       
+        this.fileId = headerWords[2];
+        
     }
 
-    public RegisterMessage(String senderId, String address, int port){
+    public NoFileMessage(String senderId, String fileId) {
 
         this.senderId = senderId;
-        this.address = address;
-        this.port = port;
+        this.fileId = fileId;
     
     }
 
+
     public byte[] getFullMessage() {
-        String header = "REGISTER " + this.senderId + " " + this.address + " " + this.port + " " + this.CRLFCRLF;
+        String header = "NOFILE " + this.senderId + " " + this.fileId + " " + this.CRLFCRLF;
         byte[] headerBytes = header.getBytes();
         return headerBytes;
 
@@ -37,8 +35,8 @@ public class RegisterMessage{
 
     public void action() {
 
-        int res = Tracker.addOnlinePeer(this.senderId, this.address, this.port);
-        
+        int res = Tracker.removePeerOfFile(this.senderId, this.fileId);
+
         if(res == -1){
             String header = "ERROR" + " " + this.CRLFCRLF;
             byte[] headerBytes = header.getBytes();

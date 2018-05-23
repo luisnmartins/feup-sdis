@@ -113,31 +113,40 @@ public class MessageInterpreter implements Runnable {
                         break;
                     }
                     case "ERROR": {
-                        //TODO: Success Action
+                        //TODO: Error Action
+                        break;
+                    }
+                    case "CLOSE": {
+                        //TODO: Close Action
                         break;
                     }
                     //TRACKER
                     case "REGISTER": {
-                        RegisterMessage register = new RegisterMessage(header, "444.55.66");
+                        RegisterMessage register = new RegisterMessage(header);
                         register.action();
                         break;
                     }
+                    case "ONLINE": {
+                        OnlineMessage online = new OnlineMessage(header);
+                        online.action();
+                        break;
+                    }
                     case "HASFILE": {                      
-                        HasFileMessage hasfile = new HasFileMessage(header, "444.55.66");
+                        HasFileMessage hasfile = new HasFileMessage(header);
                         hasfile.action();
                         break;
                     }
+                    case "NOFILE": {                      
+                        NoFileMessage nofile = new NoFileMessage(header);
+                        nofile.action();
+                        break;
+                    }
                     case "GETFILE": {                      
-                        GetFileMessage getfile = new GetFileMessage(header, "444.55.66");
+                        GetFileMessage getfile = new GetFileMessage(header);
                         getfile.action();
                         break;
                     }
                     //PEER
-                    case "PEERINFOSIZE": {                      
-                        PeerInfoSizeMessage peerinfosize = new PeerInfoSizeMessage(header);
-                        peerinfosize.action();
-                        break;
-                    }
                     case "PEERINFO": {                      
                         PeerInfoMessage peerinfo = new PeerInfoMessage(header);
                         peerinfo.action();

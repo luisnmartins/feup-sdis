@@ -6,17 +6,21 @@ import Peer.Peer;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class GetChunkMessage {
+public class GetChunkMessage extends Message{
 
     private String fileId;
     private int chunkNo;
 
     public GetChunkMessage(String header) {
-  
-        String[] headerWords = header.split(" ");
-        this.fileId = headerWords[1];        
-        this.chunkNo = Integer.parseInt(headerWords[2]);
+        super(header);
+        String[] headerWords = header.split(" ");      
+        this.chunkNo = Integer.parseInt(headerWords[4]);
         
+    }
+
+    public GetChunkMessage(String version, String senderId, String fileId, int chunkNo) {
+        super(fileId, version, senderId);
+        this.chunkNo = chunkNo;
     }
 
     public byte[] getFullMessage(){

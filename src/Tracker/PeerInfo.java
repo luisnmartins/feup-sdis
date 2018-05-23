@@ -9,10 +9,12 @@ public class PeerInfo{
     
     private String address;
     private int port;
+    private long lastTimeOnline; //in milliseconds
 
-    public PeerInfo(String address, int port){
+    public PeerInfo(String address, int port, long lastTimeOnline){
         this.address=address;
         this.port = port;
+        this.lastTimeOnline = lastTimeOnline;
     }
 
     public String getAddress() {
@@ -30,5 +32,14 @@ public class PeerInfo{
     public void setPort(int port) {
         this.port=port;
     }
+
+    public long getLastTimeOnline() {
+        return this.lastTimeOnline;
+    }
+
+    public void setLastTimeOnline(long lastTimeOnline) {
+        this.lastTimeOnline=lastTimeOnline;
+    }
+
 
 }

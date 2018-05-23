@@ -70,13 +70,13 @@ public class Tracker {
         //--TEST HASFILES--//
 
         //Test 1
-        HasFileMessage hasfileToSend1 = new HasFileMessage("abc123", "file123", true);
+        HasFileMessage hasfileToSend1 = new HasFileMessage("abc123", "file123");
         byte[] hasfile1 = hasfileToSend1.getFullMessage();
         SimpleEntry<Integer,byte[]> hasfilePair1 = new SimpleEntry<>(hasfile1.length,hasfile1);
         Tracker.getMessageInterpreter().putInQueue(hasfilePair1);
 
         //Test 2
-        HasFileMessage hasfileToSend2 = new HasFileMessage("abc456", "file123", true);
+        HasFileMessage hasfileToSend2 = new HasFileMessage("abc456", "file123");
         byte[] hasfile2 = hasfileToSend2.getFullMessage();
         SimpleEntry<Integer,byte[]> hasfilePair2 = new SimpleEntry<>(hasfile2.length,hasfile2);
         Tracker.getMessageInterpreter().putInQueue(hasfilePair2);
@@ -90,9 +90,18 @@ public class Tracker {
         Tracker.getMessageInterpreter().putInQueue(registerPair4);
 
         //Test 2
-        GetFileMessage getfileToSend1 = new GetFileMessage("abc456", "file123", true);
+        GetFileMessage getfileToSend1 = new GetFileMessage("abc456", "file123");
         byte[] getfile1 = getfileToSend1.getFullMessage();
         SimpleEntry<Integer,byte[]> getfilePair1 = new SimpleEntry<>(getfile1.length,getfile1);
+        Tracker.getMessageInterpreter().putInQueue(getfilePair1);
+
+        //--TEST NOFILES--//
+        //Test 1
+        NoFileMessage nofileToSend1 = new NoFileMessage("abc123", "file123");
+        byte[] nofile1 = nofileToSend1.getFullMessage();
+        SimpleEntry<Integer,byte[]> nofilePair1 = new SimpleEntry<>(nofile1.length,nofile1);
+        Tracker.getMessageInterpreter().putInQueue(nofilePair1);
+
         Tracker.getMessageInterpreter().putInQueue(getfilePair1);
     }
 
@@ -114,14 +123,11 @@ public class Tracker {
 
 
     
-    public static int addOnlinePeer(String peerId, String address, int port, String senderIp){
+    public static int addOnlinePeer(String peerId, String address, int port){
 
-        PeerInfo peerInfo = new PeerInfo(address, port);
-
-        if(!address.equals(senderIp)){
-            System.out.println("TRACKER ERROR - That ip address is not yours.");
-            return -1;            
-        }
+        long time = System.currentTimeMillis();
+        System.out.println(time);
+        PeerInfo peerInfo = new PeerInfo(address, port, time);
         
         if(onlinePeers.get(peerId)==null){
             Tracker.onlinePeers.put(peerId, peerInfo); 
@@ -148,16 +154,24 @@ public class Tracker {
         
     }
 
-    public static int addAvailableFile(String senderId, String fileId, String senderIp){
-
+    public static int refreshOnlinePeer(String senderId){
         if(onlinePeers.get(senderId)==null){
             System.out.println("TRACKER ERROR - You are not registered in the system.");
             return - 1;  
         }
 
-        if(!senderIp.equals(onlinePeers.get(senderId).getAddress())){
-            System.out.println("TRACKER ERROR - Your ip doesn't match with your id.");
-            return -1;            
+        PeerInfo peerInfo = onlinePeers.get(senderId);
+        long time = System.currentTimeMillis();
+        peerInfo.setLastTimeOnline(time);
+
+        return 0;
+    }
+
+    public static int addPeerToFile(String senderId, String fileId){
+
+        if(onlinePeers.get(senderId)==null){
+            System.out.println("TRACKER ERROR - You are not registered in the system.");
+            return - 1;  
         }
 
         if(availableFiles.get(fileId) == null){
@@ -174,14 +188,36 @@ public class Tracker {
                 System.out.println("TRACKER - You were added to the peers with this file.");
                 return 0;
             }
-            
         }
 
         return -1;
 
     }
 
-    public static ArrayList<PeerInfo> getAvailableFile(String senderId, String fileId, String senderIp){
+    public static int removePeerOfFile(String senderId, String fileId){
+
+        if(onlinePeers.get(senderId)==null){
+            System.out.println("TRACKER ERROR - You are not registered in the system.");
+            return - 1;  
+        }
+
+        if(availableFiles.get(fileId) != null){
+
+            availableFiles.get(fileId).remove(senderId);
+
+            if(availableFiles.get(fileId).isEmpty()){
+                availableFiles.remove(fileId);
+            }
+
+            System.out.println("TRACKER - File removed.");
+            return 0;
+        }
+
+        return -1;
+
+    }
+
+    public static ArrayList<PeerInfo> getAvailableFile(String senderId, String fileId){
 
 
         if(onlinePeers.get(senderId)==null){
@@ -189,17 +225,19 @@ public class Tracker {
             return null;  
         }
 
-        if(!senderIp.equals(onlinePeers.get(senderId).getAddress())){
-            System.out.println("TRACKER ERROR - Your ip doesn't match with your id.");
-            return null;            
-        }
-
         ArrayList<PeerInfo> filePeers = new ArrayList<>();
 
         ArrayList<String> peersIds = availableFiles.get(fileId);
-        for(int i = 0; i < peersIds.size(); i++){
-            filePeers.add(onlinePeers.get(peersIds.get(i)));
+        if(peersIds!=null){
+            for(int i = 0; i < peersIds.size(); i++){
+                filePeers.add(onlinePeers.get(peersIds.get(i)));
+            }
         }
+        else{
+            System.out.println("TRACKER ERROR - That file is not available");
+            return null;
+        }
+        
 
         return filePeers;
     }

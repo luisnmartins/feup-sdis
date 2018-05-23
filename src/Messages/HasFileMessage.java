@@ -8,27 +8,17 @@ public class HasFileMessage{
     private String CRLFCRLF = "\r\n\r\n";
 
     private String senderId;
-    private String fileId;
-    private String senderIp;
-    
+    private String fileId;  
 
-    public HasFileMessage(String header, String senderIp){
+    public HasFileMessage(String header){
 
         String[] headerWords = header.split(" ");
         this.senderId = headerWords[1];
         this.fileId = headerWords[2];
-        //this.senderIp = senderIp;
-
-        //TODO: Delete
-        if(this.senderId.equals("abc123")){
-            this.senderIp = "444.55.66";
-        }else if(this.senderId.equals("abc456")){
-            this.senderIp = "777.88.99";
-        }
         
     }
 
-    public HasFileMessage(String senderId, String fileId, boolean toSend) {
+    public HasFileMessage(String senderId, String fileId) {
 
         this.senderId = senderId;
         this.fileId = fileId;
@@ -45,7 +35,7 @@ public class HasFileMessage{
 
     public void action() {
 
-        int res = Tracker.addAvailableFile(this.senderId, this.fileId, this.senderIp);
+        int res = Tracker.addPeerToFile(this.senderId, this.fileId);
 
         if(res == -1){
             String header = "ERROR" + " " + this.CRLFCRLF;

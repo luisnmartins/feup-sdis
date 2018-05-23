@@ -3,41 +3,32 @@ package Messages;
 
 import Tracker.*;
 
-public class RegisterMessage{
+public class OnlineMessage{
 
     private String CRLFCRLF = "\r\n\r\n";
 
-    private String senderId;
-    private String address;
-    private int port;
-    
+    private String senderId;    
 
-    public RegisterMessage(String header){
+    public OnlineMessage(String header){
 
         String[] headerWords = header.split(" ");
-        this.senderId = headerWords[1];
-        this.address = headerWords[2];
-        this.port = Integer.parseInt(headerWords[3]);       
+        this.senderId = headerWords[1];        
     }
 
-    public RegisterMessage(String senderId, String address, int port){
+    public OnlineMessage(String senderId, boolean toSend){
 
-        this.senderId = senderId;
-        this.address = address;
-        this.port = port;
-    
+        this.senderId = senderId;    
     }
 
     public byte[] getFullMessage() {
-        String header = "REGISTER " + this.senderId + " " + this.address + " " + this.port + " " + this.CRLFCRLF;
+        String header = "ONLINE " + this.senderId + " " + this.CRLFCRLF;
         byte[] headerBytes = header.getBytes();
         return headerBytes;
-
     }
 
     public void action() {
 
-        int res = Tracker.addOnlinePeer(this.senderId, this.address, this.port);
+        int res = Tracker.refreshOnlinePeer(this.senderId);
         
         if(res == -1){
             String header = "ERROR" + " " + this.CRLFCRLF;
