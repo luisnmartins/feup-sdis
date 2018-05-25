@@ -10,5 +10,5 @@ public class MessageTemp {
 
         public byte[] getFullMessage(){ String s = "Ola" ; return s.getBytes();}
 
-        public void action(){};
+        public int action(){return 0;};
 }

@@ -9,6 +9,7 @@ import java.util.AbstractMap.SimpleEntry;
 import Sockets.*;
 import java.util.*;
 import java.io.*;
+import java.net.InetAddress;
 import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
@@ -398,7 +399,8 @@ public class Peer{
 
     public void sendRegister() throws IOException{
         byte[] key = readPublicKey();
-        String address = this.controlReceiver.getServerSocket().getInetAddress().getHostAddress();
+        InetAddress inet = InetAddress.getLocalHost();
+        String address = inet.getHostAddress();
         int port = this.controlReceiver.getServerSocket().getLocalPort();
         MessageTemp message = new RegisterMessage(peerID, address, port, key);
 

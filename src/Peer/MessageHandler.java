@@ -35,6 +35,8 @@ public class MessageHandler implements Runnable {
     private byte[] body;
     private static State fsmState = State.START;
 
+    private boolean running;
+
     public static enum Transition {
         SENDER, RECEIVER, WROTE, READ, QUIT;
     }
@@ -140,9 +142,9 @@ public class MessageHandler implements Runnable {
 
     @Override
     public void run() {
-
-        boolean running = true;
+        running = true;
         while (running) {
+            
             switch (fsmState) {
             case RECEIVE:
                 try {
@@ -154,6 +156,8 @@ public class MessageHandler implements Runnable {
             case CLOSE:
                 try {
                     this.connectedSocket.close();
+                    System.out.println("IS CLOSED: " + this.connectedSocket.isClosed());                
+                    
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -174,9 +178,10 @@ public class MessageHandler implements Runnable {
 
 
         System.out.println(new String(response));
-        fsmState = fsmState.next(READ);
+        //fsmState = fsmState.next(READ);
         this.separateMessage(response.length, response);
         String messageType = this.header.substring(0,this.header.indexOf(" "));
+        System.out.println("MESSAGETYPE: " + messageType);
         switch (messageType) {
             case "SUCCESS": {
                 //TODO: Success Action
@@ -186,15 +191,33 @@ public class MessageHandler implements Runnable {
                 //TODO: Success Action
                 break;
             }
+            case "CLOSE": {
+                System.out.println("ANTES");                                
+                fsmState=fsmState.next(QUIT);
+                System.out.println("DEPOIS");                
+                break;
+            }
             //TRACKER
             case "REGISTER": {
                 RegisterMessage register = new RegisterMessage(header,body);
-                register.action();
+                int res = register.action(writer);
+                if(res == 0)
+                    running = false;
+                break;
+            }
+            case "ONLINE": {
+                OnlineMessage online = new OnlineMessage(header);
+                online.action();
                 break;
             }
             case "HASFILE": {                      
                 HasFileMessage hasfile = new HasFileMessage(header);
                 hasfile.action();
+                break;
+            }
+            case "NOFILE": {                      
+                NoFileMessage nofile = new NoFileMessage(header);
+                nofile.action();
                 break;
             }
             case "GETFILE": {                      

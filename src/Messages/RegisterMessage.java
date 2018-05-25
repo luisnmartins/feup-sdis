@@ -2,6 +2,9 @@ package Messages;
 
 import Messages.*;
 import Tracker.*;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class RegisterMessage extends MessageTemp{
 
@@ -43,20 +46,29 @@ public class RegisterMessage extends MessageTemp{
 
     }
 
-    public void action() {
+    public int action(DataOutputStream writer) {
 
         int res = Tracker.addOnlinePeer(this.senderId, this.address, this.port,this.key);
         
         if(res == -1){
-            String header = "ERROR" + " " + this.CRLFCRLF;
+            String header = "ERROR " + " " + this.CRLFCRLF;
             byte[] headerBytes = header.getBytes();
             //TODO: send error
+            return -1;
         
         }else if(res == 0){
-            String header = "SUCCESS" + " " + this.CRLFCRLF;
+            String header = "CLOSE " + this.senderId + " " + this.CRLFCRLF;
             byte[] headerBytes = header.getBytes();
-            //TODO: send success
+
+            try {
+                writer.write(headerBytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return 0;
         }
         
+        return -1;
     }
 }
