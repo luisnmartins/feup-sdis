@@ -10,3 +10,4 @@ DBS/DBS\.iml
 DBS/out
 
 *.class
+/bin
