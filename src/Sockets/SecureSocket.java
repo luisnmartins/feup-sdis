@@ -64,7 +64,14 @@ public abstract class SecureSocket{
 
     public void setupSocketKeyStore(String peerName) throws GeneralSecurityException, IOException{
         this.socketKeyStore = KeyStore.getInstance("JKS");
-        this.socketKeyStore.load(new FileInputStream(peerName+".private"),
+        String filename;
+        if(peerName.equals("tracker")){
+            filename = "Tracker/"+peerName+".private";
+            this.setPassphrase("tracker");
+        } else
+            filename = "Peer/"+peerName+".private";
+        
+        this.socketKeyStore.load(new FileInputStream(filename),
                                     this.passphrase.toCharArray());
     }
 

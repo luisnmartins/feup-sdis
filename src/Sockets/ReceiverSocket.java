@@ -10,6 +10,7 @@ import java.util.AbstractMap.SimpleEntry;
 import Peer.Peer;
 import Peer.MessageHandler;
 import Peer.MessageHandler.Transition;
+import Tracker.Tracker;
 
 
 public class ReceiverSocket extends SecureSocket {
@@ -19,6 +20,13 @@ public class ReceiverSocket extends SecureSocket {
     public ReceiverSocket(int port) {
         super();
         this.port = port;
+    }
+
+    /**
+     * @return the serverSocket
+     */
+    public SSLServerSocket getServerSocket() {
+        return serverSocket;
     }
 
     public void connect(String connectFrom) {
@@ -31,9 +39,13 @@ public class ReceiverSocket extends SecureSocket {
 
             // Require client auth
             this.serverSocket.setNeedClientAuth(false);
-            System.out.println("Listening on " + this.port);
+            System.out.println("Listening on " + serverSocket.getLocalPort());
             Runnable accepter = new connectionAccepter();
-            Peer.getExec().execute(accepter);
+            if(connectFrom.equals("tracker")){
+                Tracker.getExec().execute(accepter);
+            }else{
+                Peer.getExec().execute(accepter);
+            }
         } catch (GeneralSecurityException ge) {
             ge.printStackTrace();
         } catch (IOException e) {

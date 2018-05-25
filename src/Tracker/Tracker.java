@@ -15,11 +15,13 @@ import java.util.concurrent.*;
  */
 public class Tracker {
 
-    private static ConcurrentHashMap<String,PeerInfo> onlinePeers = new ConcurrentHashMap<>();
-    private static ConcurrentHashMap<String,ArrayList<String>> availableFiles = new ConcurrentHashMap<>();; 
+    private static volatile ConcurrentHashMap<String,PeerInfo> onlinePeers = new ConcurrentHashMap<>();
+    private static volatile ConcurrentHashMap<String,ArrayList<String>> availableFiles = new ConcurrentHashMap<>();; 
 
     private static ScheduledThreadPoolExecutor exec;
     private static MessageInterpreter messageInterpreter;
+
+    private static ReceiverSocket sslServerSocket;
 
     public Tracker() throws IOException{
    
@@ -29,6 +31,10 @@ public class Tracker {
     public void initiateSocketThreads()throws IOException {
 
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
+
+
+        this.sslServerSocket = new ReceiverSocket(5555);
+        this.sslServerSocket.connect("tracker");
         
         messageInterpreter = new MessageInterpreter();
         Runnable interpreterThread = messageInterpreter;
@@ -42,7 +48,7 @@ public class Tracker {
 
         Tracker tracker = new Tracker();
 
-        tests(tracker);
+        //tests(tracker);
 
     }
 
@@ -50,19 +56,19 @@ public class Tracker {
         //--TESTS REGISTER--//
 
         //Test 1
-        RegisterMessage registerToSend1 = new RegisterMessage("abc123", "444.55.66", 7777);
+        RegisterMessage registerToSend1 = new RegisterMessage("abc123", "444.55.66", 7777,null);
         byte[] register1 = registerToSend1.getFullMessage();
         SimpleEntry<Integer,byte[]> registerPair1 = new SimpleEntry<>(register1.length,register1);
         Tracker.getMessageInterpreter().putInQueue(registerPair1);
 
         //Test 2
-        RegisterMessage registerToSend2 = new RegisterMessage("abc123", "444.55.66", 8888);
+        RegisterMessage registerToSend2 = new RegisterMessage("abc123", "444.55.66", 8888,null);
         byte[] register2 = registerToSend2.getFullMessage();
         SimpleEntry<Integer,byte[]> registerPair2 = new SimpleEntry<>(register2.length,register2);
         Tracker.getMessageInterpreter().putInQueue(registerPair2);
 
         //Test 3
-        RegisterMessage registerToSend3 = new RegisterMessage("abc123", "444.55.67", 8888);
+        RegisterMessage registerToSend3 = new RegisterMessage("abc123", "444.55.67", 8888,null);
         byte[] register3 = registerToSend3.getFullMessage();
         SimpleEntry<Integer,byte[]> registerPair3 = new SimpleEntry<>(register3.length,register3);
         Tracker.getMessageInterpreter().putInQueue(registerPair3);
@@ -84,7 +90,7 @@ public class Tracker {
 
         //--TEST GETFILES--//
         //Test 1
-        RegisterMessage registerToSend4 = new RegisterMessage("abc456", "777.88.99", 8888);
+        RegisterMessage registerToSend4 = new RegisterMessage("abc456", "777.88.99", 8888,null);
         byte[] register4 = registerToSend4.getFullMessage();
         SimpleEntry<Integer,byte[]> registerPair4 = new SimpleEntry<>(register4.length,register4);
         Tracker.getMessageInterpreter().putInQueue(registerPair4);
@@ -123,11 +129,11 @@ public class Tracker {
 
 
     
-    public static int addOnlinePeer(String peerId, String address, int port){
+    public static int addOnlinePeer(String peerId, String address, int port,byte[] key){
 
         long time = System.currentTimeMillis();
         System.out.println(time);
-        PeerInfo peerInfo = new PeerInfo(address, port, time);
+        PeerInfo peerInfo = new PeerInfo(address, port, time,key);
         
         if(onlinePeers.get(peerId)==null){
             Tracker.onlinePeers.put(peerId, peerInfo); 

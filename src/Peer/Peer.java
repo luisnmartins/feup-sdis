@@ -17,7 +17,7 @@ import java.util.concurrent.*;
 /**
  * peer
  */
-public class Peer implements remoteInterface {
+public class Peer{
 
     private static String peerID;
     private static String version;
@@ -29,6 +29,9 @@ public class Peer implements remoteInterface {
 
     private static ScheduledThreadPoolExecutor exec;
     private static StatusManager stateManager;
+
+    private static String trackerIP;
+    private static int trackerPort;
 
     private volatile static Integer window;
     private volatile static boolean flag = true;
@@ -45,12 +48,14 @@ public class Peer implements remoteInterface {
     /**
      * Simplified constructor of a Peer.Peer only use for testing
      */
-    public Peer(String id) throws IOException {
+    public Peer(String trackerIP ,int port) throws IOException {
         version = "1.0";
-        peerID = id;
+        peerID = UUID.randomUUID().toString();
+        this.trackerIP = trackerIP;
+        this.trackerPort = port;
         //this.initiateSocketThreads();
-        File priFile = new File("./" + peerID + ".private");
-        File pubFile = new File("./" + peerID + ".public");
+        File priFile = new File("./Peer/" + peerID + ".private");
+        File pubFile = new File("./Peer/" + peerID + ".public");
 
         if((!priFile.exists() || priFile.isDirectory()) || (!pubFile.exists() || pubFile.isDirectory())){
             if(!this.generateKeyPair()){
@@ -58,11 +63,13 @@ public class Peer implements remoteInterface {
                 return;
             }
         }
-        
+        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
         initiateServerSockets();
-        LogsManager statusData = new LogsManager();
+        /*LogsManager statusData = new LogsManager();
         this.stateManager = statusData.LoadData();
-        stateManager.updateData();
+        stateManager.updateData();*/
+
+        this.sendRegister();
 
     }
 
@@ -85,7 +92,7 @@ public class Peer implements remoteInterface {
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 1 && args.length != 9) {
+        if (args.length != 2) {
 
             System.err.println("Error retrieving function arguments");
             return;
@@ -95,7 +102,6 @@ public class Peer implements remoteInterface {
 
     }
 
-    @Override
     public void backup(String pathname, int replicationDegree, boolean enhanced) throws RemoteException {
 
         String versionToUse = new String(version);
@@ -141,7 +147,6 @@ public class Peer implements remoteInterface {
 
     }
 
-    @Override
     public void restore(String pathname, boolean enhanced) {
         String fileId;
         String versionToUse = new String(version);
@@ -186,8 +191,6 @@ public class Peer implements remoteInterface {
         }
 
 
-
-    @Override
     public void state() throws RemoteException {
 
         System.out.println("PEER FILES:   ");
@@ -228,7 +231,6 @@ public class Peer implements remoteInterface {
 
     }
 
-    @Override
     public void reclaim(Integer memory) throws RemoteException {
         stateManager.setMaxSizeUse(memory);
         List<String> string_aux = stateManager.getBackedUpFiles();
@@ -273,7 +275,6 @@ public class Peer implements remoteInterface {
         return data_removed;
     }
 
-    @Override
     public void delete(String pathname, boolean enhanced) throws RemoteException {
 
         String versionToUse = new String(version);
@@ -349,17 +350,9 @@ public class Peer implements remoteInterface {
      */
     public static void verifyArgs(String args[]) throws IOException {
         Peer peer;
-        RMIHandler handler = new RMIHandler();
-        if (args.length == 1) {
-            peer = new Peer(args[0]);
-            handler.sendToRegistry(peer, peerID);
+        if (args.length == 2) {
+            peer = new Peer(args[0],Integer.parseInt(args[1]));
 
-        } else if (args.length == 9) {
-            SimpleEntry<Integer, String> mc = new SimpleEntry<>(Integer.parseInt(args[3]), args[4]);
-            SimpleEntry<Integer, String> mdb = new SimpleEntry<>(Integer.parseInt(args[5]), args[6]);
-            SimpleEntry<Integer, String> mdr = new SimpleEntry<>(Integer.parseInt(args[7]), args[8]);
-            peer = new Peer(args[0], args[1], args[2], mc, mdb, mdr);
-            handler.sendToRegistry(peer, accessPoint);
         } else {
             System.err.println("Error retrieving function arguments");
             return;
@@ -372,15 +365,13 @@ public class Peer implements remoteInterface {
         this.controlReceiver = new ReceiverSocket(0);
 
         this.controlReceiver.connect(this.peerID);
-        
-        messageInterpreter = new MessageInterpreter();
-        Runnable interpreterThread = messageInterpreter;
-        this.exec.execute(interpreterThread);
     }
 
 
     public boolean generateKeyPair(){
-       
+        
+        System.out.println("Generating Peer keys at " + System.getProperty("user.dir"));
+        
         String peerName = this.peerID;
         String commandtoCreate = "keytool -genkey -alias " + peerName + "private -keystore " + peerName + ".private -storetype JKS -keyalg rsa -dname 'CN=Your Name, OU=Your Organizational Unit, O=Your Organization, L=Your City, S=Your State, C=Your Country' -storepass " + peerName + "pw -keypass "+ peerName + "pw";
         String commandtoExportPublic = "keytool -export -alias " + peerName + "private -keystore " + peerName + ".private -file temp.key -storepass " + peerName + "pw";
@@ -390,11 +381,33 @@ public class Peer implements remoteInterface {
             String[] args = {"/bin/bash","-c",commandtoCreate + ";" + commandtoExportPublic + ";" + commandtoImportPublic + ";rm -f temp.key"};
             Process proc = new ProcessBuilder(args).start();
             proc.waitFor();
+            System.out.println("Keys generated succesfully");
+            return true;
         }catch(Exception e){
             e.printStackTrace();
         }
-        System.out.println("Keys generated succesfully");
-        return true;
+        return false;
+      
+    }
+
+    public byte[] readPublicKey() throws IOException{
+        String pathname = "./Peer/"  + peerID + ".public";
+        FileManager manager = new FileManager(pathname);
+        return manager.readEntireFileData();
+    }
+
+    public void sendRegister() throws IOException{
+        byte[] key = readPublicKey();
+        String address = this.controlReceiver.getServerSocket().getInetAddress().toString();
+        int port = this.controlReceiver.getServerSocket().getLocalPort();
+        MessageTemp message = new RegisterMessage(peerID, address, port, key);
+
+        SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
+
+        channelStarter.connect(peerID, "tracker");
+
+        channelStarter.getHandler().sendMessage(message);
+
     }
 
     public static ScheduledExecutorService getExec() {
@@ -478,5 +491,7 @@ public class Peer implements remoteInterface {
             }
         }
     }
+
+
 
 }

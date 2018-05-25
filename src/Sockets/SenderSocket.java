@@ -41,6 +41,13 @@ public class SenderSocket extends SecureSocket{
 
     }
 
+    /**
+     * @return the handler
+     */
+    public MessageHandler getHandler() {
+        return handler;
+    }
+
 
     public void connect(String connectFrom,String connectTo){
         try{

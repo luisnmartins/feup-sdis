@@ -121,7 +121,7 @@ public class MessageHandler implements Runnable {
         System.out.println("Received: " + this.header);
     }
 
-    public void sendMessage(Message msg) {
+    public void sendMessage(MessageTemp msg) {
         if (writer != null && fsmState == State.WRITE){
             byte[] textMessage = msg.getFullMessage();
             try {
@@ -181,6 +181,8 @@ public class MessageHandler implements Runnable {
 
         }
 
+        System.out.println(response.toString());
+
         if (didRead) {
             fsmState.next(READ);
             this.separateMessage(response.length, response);
@@ -196,7 +198,7 @@ public class MessageHandler implements Runnable {
                 }
                 //TRACKER
                 case "REGISTER": {
-                    RegisterMessage register = new RegisterMessage(header);
+                    RegisterMessage register = new RegisterMessage(header,body);
                     register.action();
                     break;
                 }

@@ -122,7 +122,7 @@ public class MessageInterpreter implements Runnable {
                     }
                     //TRACKER
                     case "REGISTER": {
-                        RegisterMessage register = new RegisterMessage(header);
+                        RegisterMessage register = new RegisterMessage(header,body);
                         register.action();
                         break;
                     }

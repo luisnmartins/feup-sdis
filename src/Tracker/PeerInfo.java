@@ -10,11 +10,13 @@ public class PeerInfo{
     private String address;
     private int port;
     private long lastTimeOnline; //in milliseconds
+    private byte[] publicKey;
 
-    public PeerInfo(String address, int port, long lastTimeOnline){
+    public PeerInfo(String address, int port, long lastTimeOnline,byte[] key){
         this.address=address;
         this.port = port;
         this.lastTimeOnline = lastTimeOnline;
+        this.publicKey = key;
     }
 
     public String getAddress() {
