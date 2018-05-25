@@ -40,10 +40,12 @@ public class ReceiverSocket extends SecureSocket {
             // Require client auth
             this.serverSocket.setNeedClientAuth(false);
             System.out.println("Listening on " + serverSocket.getLocalPort());
-            Runnable accepter = new connectionAccepter();
+            Runnable accepter;
             if(connectFrom.equals("tracker")){
+                accepter = new connectionAccepter(true);
                 Tracker.getExec().execute(accepter);
             }else{
+                accepter =  new connectionAccepter(false);
                 Peer.getExec().execute(accepter);
             }
         } catch (GeneralSecurityException ge) {
@@ -55,7 +57,8 @@ public class ReceiverSocket extends SecureSocket {
 
     public class connectionAccepter implements Runnable {
 
-        public connectionAccepter() {}
+        boolean isTracker;
+        public connectionAccepter(boolean isTracker) {this.isTracker = isTracker;}
 
         @Override
         public void run() {
@@ -65,7 +68,10 @@ public class ReceiverSocket extends SecureSocket {
                     System.out.println("Got connection from " + socketConnected);
                     MessageHandler handler = new MessageHandler(socketConnected);
                     handler.updateState(Transition.RECEIVER);
-                    Peer.getExec().execute(handler);
+                    if(isTracker)
+                        Tracker.getExec().execute(handler);
+                    else
+                        Peer.getExec().execute(handler);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

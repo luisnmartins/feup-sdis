@@ -121,12 +121,13 @@ public class MessageHandler implements Runnable {
         System.out.println("Received: " + this.header);
     }
 
-    public void sendMessage(MessageTemp msg) {
+    public  synchronized void  sendMessage(MessageTemp msg) {
         if (writer != null && fsmState == State.WRITE){
             byte[] textMessage = msg.getFullMessage();
-            try {
-                writer.write(textMessage);
-                fsmState.next(WROTE);
+            try {             
+                writer.write(textMessage);             
+                fsmState = fsmState.next(WROTE);
+                System.out.println("SEND MESSAGE: " + fsmState);  
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -167,66 +168,53 @@ public class MessageHandler implements Runnable {
 
     public void checkMessage() throws IOException{
         byte[] buffer = new byte[MAX_SIZE];
-        byte[] response = null;
-        boolean didRead = false;
         int readsize = 0;
-        while ((readsize = reader.read(buffer)) > 0) {
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            didRead = true;
-            byte[] messagePart = Arrays.copyOfRange(buffer, 0, readsize);
-            outputStream.write(response);
-            outputStream.write(messagePart);
-            response = outputStream.toByteArray();
-            buffer = new byte[MAX_SIZE];
+        readsize = reader.read(buffer);
+        byte[] response = Arrays.copyOfRange(buffer, 0, readsize);
 
-        }
 
-        System.out.println(response.toString());
-
-        if (didRead) {
-            fsmState.next(READ);
-            this.separateMessage(response.length, response);
-            String messageType = this.header.substring(0,this.header.indexOf(" "));
-            switch (messageType) {
-                case "SUCCESS": {
-                    //TODO: Success Action
-                    break;
-                }
-                case "ERROR": {
-                    //TODO: Success Action
-                    break;
-                }
-                //TRACKER
-                case "REGISTER": {
-                    RegisterMessage register = new RegisterMessage(header,body);
-                    register.action();
-                    break;
-                }
-                case "HASFILE": {                      
-                    HasFileMessage hasfile = new HasFileMessage(header);
-                    hasfile.action();
-                    break;
-                }
-                case "GETFILE": {                      
-                    GetFileMessage getfile = new GetFileMessage(header);
-                    getfile.action();
-                    break;
-                }
-                //PEER
-                case "PEERINFO": {                      
-                    PeerInfoMessage peerinfo = new PeerInfoMessage(header);
-                    peerinfo.action();
-                    break;
-                }
-                default:
-                    break;
+        System.out.println(new String(response));
+        fsmState = fsmState.next(READ);
+        this.separateMessage(response.length, response);
+        String messageType = this.header.substring(0,this.header.indexOf(" "));
+        switch (messageType) {
+            case "SUCCESS": {
+                //TODO: Success Action
+                break;
             }
-            
+            case "ERROR": {
+                //TODO: Success Action
+                break;
+            }
+            //TRACKER
+            case "REGISTER": {
+                RegisterMessage register = new RegisterMessage(header,body);
+                register.action();
+                break;
+            }
+            case "HASFILE": {                      
+                HasFileMessage hasfile = new HasFileMessage(header);
+                hasfile.action();
+                break;
+            }
+            case "GETFILE": {                      
+                GetFileMessage getfile = new GetFileMessage(header);
+                getfile.action();
+                break;
+            }
+            //PEER
+            case "PEERINFO": {                      
+                PeerInfoMessage peerinfo = new PeerInfoMessage(header);
+                peerinfo.action();
+                break;
+            }
+            default:
+                break;
         }
 
     }
 
     public void updateState(Transition transition){
-        fsmState.next(transition);
+        fsmState = fsmState.next(transition);
     }
 }

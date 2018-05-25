@@ -78,7 +78,7 @@ public abstract class SecureSocket{
     public void setupPublicKeyStore(String peerName) throws GeneralSecurityException, IOException{
         this.publicKeyStore = KeyStore.getInstance("JKS");
         String publicpw = "public";
-        this.publicKeyStore.load(new FileInputStream(peerName + ".public"),publicpw.toCharArray());
+        this.publicKeyStore.load(new FileInputStream("Peer/"+peerName + ".public"),publicpw.toCharArray());
     }
 
     public void setupSSLContext() throws GeneralSecurityException, IOException{

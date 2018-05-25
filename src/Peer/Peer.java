@@ -378,7 +378,7 @@ public class Peer{
         String commandtoImportPublic = "keytool -import -noprompt -alias " +peerName + "public -keystore " + peerName + ".public -file temp.key -storepass public";
 
         try{
-            String[] args = {"/bin/bash","-c",commandtoCreate + ";" + commandtoExportPublic + ";" + commandtoImportPublic + ";rm -f temp.key"};
+            String[] args = {"/bin/bash","-c","cd Peer;" + commandtoCreate + ";" + commandtoExportPublic + ";" + commandtoImportPublic + ";rm -f temp.key"};
             Process proc = new ProcessBuilder(args).start();
             proc.waitFor();
             System.out.println("Keys generated succesfully");
@@ -398,7 +398,7 @@ public class Peer{
 
     public void sendRegister() throws IOException{
         byte[] key = readPublicKey();
-        String address = this.controlReceiver.getServerSocket().getInetAddress().toString();
+        String address = this.controlReceiver.getServerSocket().getInetAddress().getHostAddress();
         int port = this.controlReceiver.getServerSocket().getLocalPort();
         MessageTemp message = new RegisterMessage(peerID, address, port, key);
 

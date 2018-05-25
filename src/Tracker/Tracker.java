@@ -32,7 +32,6 @@ public class Tracker {
 
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
 
-
         this.sslServerSocket = new ReceiverSocket(5555);
         this.sslServerSocket.connect("tracker");
         
