@@ -17,6 +17,8 @@ import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import javax.net.ssl.SSLSocket;
+
+
 import java.util.AbstractMap.SimpleEntry;
 
 /**
@@ -86,6 +88,8 @@ public class MessageHandler implements Runnable {
         }
 
     }
+    
+
 
     public MessageHandler(SSLSocket socket) throws IOException{
         this.connectedSocket = socket;
@@ -234,6 +238,13 @@ public class MessageHandler implements Runnable {
                 break;
         }
 
+    }
+
+    /**
+     * @return the writer
+     */
+    public DataOutputStream getWriter() {
+        return writer;
     }
 
     public void updateState(Transition transition){

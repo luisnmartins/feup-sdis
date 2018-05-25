@@ -81,6 +81,13 @@ public abstract class SecureSocket{
         this.publicKeyStore.load(new FileInputStream("Peer/"+peerName + ".public"),publicpw.toCharArray());
     }
 
+    public void setupP2PPublicKeyStore(byte[] key)throws GeneralSecurityException, IOException{
+        this.publicKeyStore = KeyStore.getInstance("JKS");
+        String publicpw = "public";
+        this.publicKeyStore.load(new ByteArrayInputStream(key),publicpw.toCharArray());
+   
+    }
+
     public void setupSSLContext() throws GeneralSecurityException, IOException{
         TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
         tmf.init(publicKeyStore);

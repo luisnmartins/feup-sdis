@@ -121,9 +121,11 @@ public class Peer{
 
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
 
-        channelStarter.connect(peerID, "tracker");
+        channelStarter.connect(peerID, "tracker",false,null);
 
         channelStarter.getHandler().sendMessage(message);
+
+       
     }
 
     public void seed() throws IOException{
@@ -135,7 +137,7 @@ public class Peer{
 
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
 
-        channelStarter.connect(peerID, "tracker");
+        channelStarter.connect(peerID, "tracker",false,null);
 
         channelStarter.getHandler().sendMessage(message);
     }
@@ -295,6 +297,26 @@ public class Peer{
         }
     }
 
+    /**
+     * @return the controlReceiver
+     */
+    public static ReceiverSocket getControlReceiver() {
+        return controlReceiver;
+    }
+
+    /**
+     * @return the trackerIP
+     */
+    public static String getTrackerIP() {
+        return trackerIP;
+    }
+    /**
+     * @return the trackerPort
+     */
+    public static int getTrackerPort() {
+        return trackerPort;
+    }
+
     public static byte[] removeFile(String toRemoveFileIdKey) {
 
         stateManager.deleteBackedUpFile(toRemoveFileIdKey);
@@ -429,7 +451,7 @@ public class Peer{
 
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
 
-        channelStarter.connect(peerID, "tracker");
+        channelStarter.connect(peerID, "tracker",false,null);
 
         channelStarter.getHandler().sendMessage(message);
 

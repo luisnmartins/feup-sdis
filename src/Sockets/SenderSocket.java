@@ -49,10 +49,12 @@ public class SenderSocket extends SecureSocket{
     }
 
 
-    public void connect(String connectFrom,String connectTo){
+    public void connect(String connectFrom,String connectTo,boolean toPeer,byte[] key){
         try{
             setupSocketKeyStore(connectFrom);
-            setupPublicKeyStore(connectTo);
+            if(toPeer)
+                setupPublicKeyStore(connectTo);
+            else setupP2PPublicKeyStore(key);
             setupSSLContext();
 
             SSLSocketFactory sf = sslContext.getSocketFactory();
