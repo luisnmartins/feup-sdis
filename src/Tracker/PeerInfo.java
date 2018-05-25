@@ -35,6 +35,14 @@ public class PeerInfo{
         this.port=port;
     }
 
+    public byte[] getPublicKey() {
+        return publicKey;
+    }
+
+    public void setPublicKey(byte[] publicKey) {
+        this.publicKey = publicKey;
+    }
+    
     public long getLastTimeOnline() {
         return this.lastTimeOnline;
     }

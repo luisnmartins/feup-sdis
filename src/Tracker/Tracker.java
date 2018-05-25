@@ -35,9 +35,9 @@ public class Tracker {
         this.sslServerSocket = new ReceiverSocket(5555);
         this.sslServerSocket.connect("tracker");
         
-        messageInterpreter = new MessageInterpreter();
+        /*messageInterpreter = new MessageInterpreter();
         Runnable interpreterThread = messageInterpreter;
-        exec.execute(interpreterThread);
+        exec.execute(interpreterThread);*/
 
     }
 

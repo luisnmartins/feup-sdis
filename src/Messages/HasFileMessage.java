@@ -2,8 +2,11 @@ package Messages;
 
 
 import Tracker.*;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-public class HasFileMessage{
+public class HasFileMessage extends MessageTemp{
 
     private String CRLFCRLF = "\r\n\r\n";
 
@@ -12,6 +15,7 @@ public class HasFileMessage{
 
     public HasFileMessage(String header){
 
+        super();
         String[] headerWords = header.split(" ");
         this.senderId = headerWords[1];
         this.fileId = headerWords[2];
@@ -20,6 +24,7 @@ public class HasFileMessage{
 
     public HasFileMessage(String senderId, String fileId) {
 
+        super();
         this.senderId = senderId;
         this.fileId = fileId;
     
@@ -33,7 +38,7 @@ public class HasFileMessage{
 
     }
 
-    public void action() {
+    public int action(DataOutputStream writer) {
 
         int res = Tracker.addPeerToFile(this.senderId, this.fileId);
 
@@ -43,10 +48,18 @@ public class HasFileMessage{
             //TODO: send error
         
         }else if(res == 0){
-            String header = "SUCCESS" + " " + this.CRLFCRLF;
+            String header = "CLOSE " + this.senderId + " " + this.CRLFCRLF;
             byte[] headerBytes = header.getBytes();
-            //TODO: send success
+            try {
+                writer.write(headerBytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return 0;
         }
+
+        return -1;
         
     }
 }

@@ -107,7 +107,7 @@ public class MessageInterpreter implements Runnable {
                         AliveMessage alive = new AliveMessage(header);
                         alive.action();
                         break;
-                    }*/
+                    }
                     case "SUCCESS": {
                         //TODO: Success Action
                         break;
@@ -151,7 +151,7 @@ public class MessageInterpreter implements Runnable {
                         PeerInfoMessage peerinfo = new PeerInfoMessage(header);
                         peerinfo.action();
                         break;
-                    }
+                    }*/
                 }
             } catch (Exception e) {
                 e.printStackTrace();

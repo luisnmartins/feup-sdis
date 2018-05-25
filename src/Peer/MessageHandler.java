@@ -33,9 +33,9 @@ public class MessageHandler implements Runnable {
     private DataOutputStream writer;
     private String header;
     private byte[] body;
-    private static State fsmState = State.START;
+    private State fsmState = State.START;
 
-    private boolean running;
+    private volatile boolean running;
 
     public static enum Transition {
         SENDER, RECEIVER, WROTE, READ, QUIT;
@@ -128,8 +128,7 @@ public class MessageHandler implements Runnable {
             byte[] textMessage = msg.getFullMessage();
             try {             
                 writer.write(textMessage);             
-                fsmState = fsmState.next(WROTE);
-                System.out.println("SEND MESSAGE: " + fsmState);  
+                fsmState = fsmState.next(WROTE); 
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -144,7 +143,6 @@ public class MessageHandler implements Runnable {
     public void run() {
         running = true;
         while (running) {
-            
             switch (fsmState) {
             case RECEIVE:
                 try {
@@ -154,13 +152,12 @@ public class MessageHandler implements Runnable {
                 }
                 break;
             case CLOSE:
-                try {
-                    this.connectedSocket.close();
-                    System.out.println("IS CLOSED: " + this.connectedSocket.isClosed());                
+             try {
+                    this.connectedSocket.close();         
                     
                 } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                  e.printStackTrace();
+               }
                 running = false;
                 break;
             default:
@@ -191,10 +188,8 @@ public class MessageHandler implements Runnable {
                 //TODO: Success Action
                 break;
             }
-            case "CLOSE": {
-                System.out.println("ANTES");                                
-                fsmState=fsmState.next(QUIT);
-                System.out.println("DEPOIS");                
+            case "CLOSE": {                        
+                fsmState=fsmState.next(QUIT);              
                 break;
             }
             //TRACKER
@@ -202,7 +197,7 @@ public class MessageHandler implements Runnable {
                 RegisterMessage register = new RegisterMessage(header,body);
                 int res = register.action(writer);
                 if(res == 0)
-                    running = false;
+                   running=false;
                 break;
             }
             case "ONLINE": {
@@ -212,7 +207,9 @@ public class MessageHandler implements Runnable {
             }
             case "HASFILE": {                      
                 HasFileMessage hasfile = new HasFileMessage(header);
-                hasfile.action();
+                int res = hasfile.action(writer);
+                if(res == 0)
+                    running=false;
                 break;
             }
             case "NOFILE": {                      
@@ -222,12 +219,14 @@ public class MessageHandler implements Runnable {
             }
             case "GETFILE": {                      
                 GetFileMessage getfile = new GetFileMessage(header);
-                getfile.action();
+                int res = getfile.action(writer);
+                if(res == 0)
+                    running=false;
                 break;
             }
             //PEER
             case "PEERINFO": {                      
-                PeerInfoMessage peerinfo = new PeerInfoMessage(header);
+                PeerInfoMessage peerinfo = new PeerInfoMessage(header, body);
                 peerinfo.action();
                 break;
             }

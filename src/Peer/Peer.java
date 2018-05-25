@@ -93,14 +93,51 @@ public class Peer{
     }
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 2) {
+        System.setProperty("java.net.preferIPv4Stack", "true");
 
+        Peer peer;
+        if (args.length == 3) {
+            peer = new Peer(args[0],Integer.parseInt(args[1]));
+
+            if(args[2].equals("download")){
+                peer.download();
+            }else{
+                peer.seed();
+            }
+
+        } else {
             System.err.println("Error retrieving function arguments");
             return;
         }
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        verifyArgs(args);
 
+    }
+
+    public void download() throws IOException{
+        byte[] key = readPublicKey();
+        InetAddress inet = InetAddress.getLocalHost();
+        String address = inet.getHostAddress();
+        int port = this.controlReceiver.getServerSocket().getLocalPort();
+        MessageTemp message = new GetFileMessage(peerID, "abc");
+
+        SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
+
+        channelStarter.connect(peerID, "tracker");
+
+        channelStarter.getHandler().sendMessage(message);
+    }
+
+    public void seed() throws IOException{
+        byte[] key = readPublicKey();
+        InetAddress inet = InetAddress.getLocalHost();
+        String address = inet.getHostAddress();
+        int port = this.controlReceiver.getServerSocket().getLocalPort();
+        MessageTemp message = new HasFileMessage(peerID, "abc");
+
+        SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
+
+        channelStarter.connect(peerID, "tracker");
+
+        channelStarter.getHandler().sendMessage(message);
     }
 
     public void backup(String pathname, int replicationDegree, boolean enhanced) throws RemoteException {
@@ -346,20 +383,6 @@ public class Peer{
         this.exec.execute(interpreterThread);
     }
 
-    /**
-     * Verfies the arguments sent to start the application
-     */
-    public static void verifyArgs(String args[]) throws IOException {
-        Peer peer;
-        if (args.length == 2) {
-            peer = new Peer(args[0],Integer.parseInt(args[1]));
-
-        } else {
-            System.err.println("Error retrieving function arguments");
-            return;
-        }
-
-    }
 
     public void initiateServerSockets() throws IOException{
         

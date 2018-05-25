@@ -3,8 +3,11 @@ package Messages;
 
 import Tracker.*;
 import java.util.*;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
-public class GetFileMessage{
+public class GetFileMessage extends MessageTemp{
 
     private String CRLFCRLF = "\r\n\r\n";
 
@@ -13,6 +16,7 @@ public class GetFileMessage{
 
     public GetFileMessage(String header){
 
+        super();
         String[] headerWords = header.split(" ");
         this.senderId = headerWords[1];
         this.fileId = headerWords[2];        
@@ -20,6 +24,7 @@ public class GetFileMessage{
 
     public GetFileMessage(String senderId, String fileId) {
 
+        super();
         this.senderId = senderId;
         this.fileId = fileId;
     
@@ -33,7 +38,7 @@ public class GetFileMessage{
 
     }
 
-    public void action() {
+    public int action(DataOutputStream writer) {
 
         ArrayList<PeerInfo> filePeers = Tracker.getAvailableFile(this.senderId, this.fileId);
 
@@ -45,16 +50,26 @@ public class GetFileMessage{
         else{
             for(int i = 0; i < filePeers.size(); i++){
                 System.out.println("TRACKER - Peer: " + filePeers.get(i).getAddress() + " " +  filePeers.get(i).getPort());
-                PeerInfoMessage peerinfo = new PeerInfoMessage(filePeers.get(i).getAddress(), filePeers.get(i).getPort());
-                //TODO: send peerinfo
+                PeerInfoMessage peerinfo = new PeerInfoMessage(filePeers.get(i).getAddress(), filePeers.get(i).getPort(), filePeers.get(i).getPublicKey());
+                try {
+                    writer.write(peerinfo.getFullMessage());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 
             }
 
-            String header = "CLOSE" + " " + this.CRLFCRLF;
+            String header = "CLOSE " + this.senderId + " " + this.CRLFCRLF;
             byte[] headerBytes = header.getBytes();
-            //TODO: send close
+            try {
+                writer.write(headerBytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
        
+        return 0;
         
     }
 }
