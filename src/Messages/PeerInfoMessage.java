@@ -45,17 +45,11 @@ public class PeerInfoMessage extends MessageTemp{
 
     public int action() {
     
-        //clearbyte[] key = readPublicKey();
+         
         try{
-            InetAddress inet = InetAddress.getLocalHost();
-            String address = inet.getHostAddress();
-            int port = Peer.getControlReceiver().getServerSocket().getLocalPort();
-            MessageTemp message = new HasFileMessage(Peer.getPeerID(), "abc");
+            SenderSocket channelStarter = new SenderSocket(this.port,this.address);
     
-            SenderSocket channelStarter = new SenderSocket(Peer.getTrackerPort(), Peer.getTrackerIP());
-    
-            channelStarter.connect(Peer.getPeerID(),"tracker",true,key);
-    
+            channelStarter.connect(Peer.getPeerID(),"peer",key);
             channelStarter.getHandler().getWriter().write(new String("Ola").getBytes());
         }catch(IOException e){
 

@@ -121,7 +121,7 @@ public class Peer{
 
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
 
-        channelStarter.connect(peerID, "tracker",false,null);
+        channelStarter.connect(peerID, "tracker",null);
 
         channelStarter.getHandler().sendMessage(message);
 
@@ -137,7 +137,7 @@ public class Peer{
 
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
 
-        channelStarter.connect(peerID, "tracker",false,null);
+        channelStarter.connect(peerID, "tracker",null);
 
         channelStarter.getHandler().sendMessage(message);
     }
@@ -451,8 +451,7 @@ public class Peer{
 
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
 
-        channelStarter.connect(peerID, "tracker",false,null);
-
+        channelStarter.connect(peerID,"tracker",null);
         channelStarter.getHandler().sendMessage(message);
 
     }
