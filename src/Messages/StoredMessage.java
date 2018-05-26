@@ -1,4 +1,4 @@
-package Messages;
+/*package Messages;
 
 import Chunk.ChunkInfo;
 import Peer.Peer;
@@ -52,4 +52,4 @@ public class StoredMessage extends Message {
     public String getMessageHeader(){
         return "STORED " + this.version + " " + this.senderId + " " + this.fileId + " " + this.chunkNo;
     }
-}
+}*/

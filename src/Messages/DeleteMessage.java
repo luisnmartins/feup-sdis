@@ -1,4 +1,4 @@
-package Messages;
+/*package Messages;
 
 import Peer.Peer;
 import Peer.FileManager;
@@ -26,12 +26,12 @@ public class DeleteMessage extends Message implements Runnable {
 
         return headerBytes;
 
-    }
+    }*/
 
     /**
      * Checks if it has the chunk stored if it completely deletes it from its record
      */
-    public synchronized void action() throws IOException {
+    /*public synchronized void action() throws IOException {
 
         String peerID = Peer.getPeerID();
         boolean isToSendDeleted=false;
@@ -75,4 +75,4 @@ public class DeleteMessage extends Message implements Runnable {
     public String getMessageHeader(){
         return "DELETE " + this.version + " " + this.senderId + " " + this.fileId;
     }
-}
+}*/

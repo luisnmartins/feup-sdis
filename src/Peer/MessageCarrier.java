@@ -1,6 +1,6 @@
-package Peer;
+/*package Peer;
 
-import Messages.Message;
+//import Messages.Message;
 import Peer.Peer;
 import Workers.StoreHandler;
 import Sockets.SenderSocket;
@@ -40,7 +40,7 @@ public class MessageCarrier implements  Runnable{
     /**
      * Sends message to the specified socket
      */
-    @Override
+    /*@Override
     public void run() {
         System.out.println("Sending: " + this.message.getMessageHeader());
         switch (channelToSend){
@@ -67,4 +67,4 @@ public class MessageCarrier implements  Runnable{
 
         }
     }
-}
+}*/

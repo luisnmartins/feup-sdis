@@ -4,7 +4,6 @@ import javax.net.ssl.*;
 import java.io.*;
 import java.util.*;
 import java.security.*;
-import Messages.Message;
 
 import Peer.Peer;
 

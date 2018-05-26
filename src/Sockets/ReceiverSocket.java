@@ -101,9 +101,9 @@ public class ReceiverSocket extends SecureSocket {
                     byte[] buf = new byte[PACKET_SIZE];
                     int read =  din.read(buf);
 
-                    byte[] response = Arrays.copyOfRange(buf, 0, read);
+                    /*byte[] response = Arrays.copyOfRange(buf, 0, read);
                     SimpleEntry<Integer, byte[]> pair = new SimpleEntry<>(buf.length, buf);
-                    Peer.getMessageInterpreter().putInQueue(pair);
+                    Peer.getMessageInterpreter().putInQueue(pair);*/
 
                 }catch (IOException e) {
                     e.printStackTrace();

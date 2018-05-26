@@ -177,9 +177,6 @@ public class MessageHandler implements Runnable {
         readsize = reader.read(buffer);
         byte[] response = Arrays.copyOfRange(buffer, 0, readsize);
 
-
-        System.out.println(new String(response));
-        //fsmState = fsmState.next(READ);
         this.separateMessage(response.length, response);
         String messageType = this.header.substring(0,this.header.indexOf(" "));
         System.out.println("MESSAGETYPE: " + messageType);

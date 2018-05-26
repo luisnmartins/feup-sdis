@@ -1,4 +1,4 @@
-package Messages;
+/*package Messages;
 
 import Chunk.ChunkData;
 import Peer.Peer;
@@ -52,4 +52,4 @@ public class GetChunkMessage extends Message{
     public String getMessageHeader(){
         return "GETCHUNK " + this.version + " " + this.senderId + " " + this.fileId + " " + chunkNo;
     }
-}
+}*/

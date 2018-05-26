@@ -1,4 +1,4 @@
-package Messages;
+/*package Messages;
 
 import Chunk.ChunkData;
 import Peer.Peer;
@@ -26,7 +26,7 @@ public class RemoveMessage extends Message {
     /**
      * Checks that a chunk has been removed from another peer so it updates is tables and if it has the chunk stored tries to send a putchunk message
      */
-    public void action(){
+    /*public void action(){
         if(this.senderId.equals(Peer.getPeerID())){
             return;
         }
@@ -51,25 +51,25 @@ public class RemoveMessage extends Message {
             int wait_time = rand.nextInt(400);
             Peer.getExec().schedule(respond, wait_time,TimeUnit.MILLISECONDS);
         }
-    }
+    }*/
 
-    public byte[] getFullMessage(){
+    /*public byte[] getFullMessage(){
         String header = "REMOVED " + version + " " + senderId + " " + fileId + " "+ chunkNo +
                 " " + CRLF +CRLF;
         return header.getBytes();
-    }
+    }*/
 
     /**
      * @return the chunkNo
      */
-    public int getChunkNo() {
+    /*public int getChunkNo() {
         return chunkNo;
-    }
+    }*/
 
     /*
     Mini thread checks if the replication degree desired has been restored, if it has it means it already received a putchnk
     */
-   public class RemoveRespond implements Runnable{
+   /*public class RemoveRespond implements Runnable{
 
         ChunkData chunk;
         int desiredRep;
@@ -97,4 +97,4 @@ public class RemoveMessage extends Message {
    public String getMessageHeader(){
     return "REMOVE " + this.version + " " + this.senderId + " " + this.fileId + " " + this.chunkNo;
 }
-}
+}*/

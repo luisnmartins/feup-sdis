@@ -1,4 +1,4 @@
-package Sockets;
+/*package Sockets;
 
 import Sockets.ChannelSocket;
 
@@ -9,7 +9,7 @@ import java.net.MulticastSocket;
 /**
  * Representation of the MDB socket
  */
-public class MDBSocket extends ChannelSocket {
+/*public class MDBSocket extends ChannelSocket {
 
     private static final String ADDR_MDB = "224.0.0.2";
 
@@ -28,4 +28,4 @@ public class MDBSocket extends ChannelSocket {
 
         socket.joinGroup(this.address);
     }
-}
+}*/

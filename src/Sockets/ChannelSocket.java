@@ -1,4 +1,4 @@
-package Sockets;
+/*package Sockets;
 
 import Messages.Message;
 
@@ -35,7 +35,7 @@ public abstract class ChannelSocket implements Runnable {
     /**
      * Sends a datagram packet
      */
-    public void sendMessage(Message msg){
+    /*public void sendMessage(Message msg){
 
         byte[] textMessage = msg.getFullMessage();
         DatagramPacket packet = new DatagramPacket(textMessage,textMessage.length,this.address,this.port);
@@ -49,7 +49,7 @@ public abstract class ChannelSocket implements Runnable {
     /**
      * Receives the message and inserts it in the queueu to be interpret after
      */
-    @Override
+    /*@Override
     public void run() {
         while(true){
 
@@ -65,4 +65,4 @@ public abstract class ChannelSocket implements Runnable {
         }
     }
 
-}
+}*/

@@ -1,4 +1,4 @@
-package Messages;
+/*package Messages;
 
 import java.io.IOException;
 
@@ -41,4 +41,4 @@ public abstract class Message {
         return "MESSAGE " + this.version + " " + this.senderId + " " + this.fileId;
     }
 
-}
+}*/

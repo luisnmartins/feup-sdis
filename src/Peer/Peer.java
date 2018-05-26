@@ -4,7 +4,7 @@ import Chunk.ChunkData;
 import Messages.*;
 import RMI.RMIHandler;
 import RMI.remoteInterface;
-import Workers.RestoreChecker;
+//import Workers.RestoreChecker;
 import java.util.AbstractMap.SimpleEntry;
 import Sockets.*;
 import java.util.*;
@@ -21,12 +21,12 @@ import java.util.concurrent.*;
 public class Peer{
 
     private static String peerID;
-    private static String version;
-    private static String accessPoint;
+    //private static String version;
+    /*private static String accessPoint;
     private static MCSocket MC;
     private static MDBSocket MDB;
     private static MDRSocket MDR;
-    private static MessageInterpreter messageInterpreter;
+    private static MessageInterpreter messageInterpreter;*/
 
     private static ScheduledThreadPoolExecutor exec;
     private static StatusManager stateManager;
@@ -34,8 +34,8 @@ public class Peer{
     private static String trackerIP;
     private static int trackerPort;
 
-    private volatile static Integer window;
-    private volatile static boolean flag = true;
+    /*private volatile static Integer window;
+    private volatile static boolean flag = true;*/
 
     //SecureSockets
 
@@ -50,7 +50,7 @@ public class Peer{
      * Simplified constructor of a Peer.Peer only use for testing
      */
     public Peer(String trackerIP ,int port) throws IOException {
-        version = "1.0";
+        //version = "1.0";
         peerID = UUID.randomUUID().toString();
         this.trackerIP = trackerIP;
         this.trackerPort = port;
@@ -77,7 +77,7 @@ public class Peer{
     /**
      * Complete construtor of a peer, the version cant be "2.0" because it is used to defined the enhancements
      */
-    public Peer(String version, String id, String accessPoint,  SimpleEntry<Integer, String> MC, SimpleEntry<Integer, String> MDB,
+    /*public Peer(String version, String id, String accessPoint,  SimpleEntry<Integer, String> MC, SimpleEntry<Integer, String> MDB,
             SimpleEntry<Integer, String> MDR) throws IOException {
         this.version = version;
         if (this.version.equals("2.0")) {
@@ -90,7 +90,7 @@ public class Peer{
         this.stateManager = statusData.LoadData();
         stateManager.updateData();
 
-    }
+    }*/
 
     public static void main(String[] args) throws IOException {
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -142,7 +142,7 @@ public class Peer{
         channelStarter.getHandler().sendMessage(message);
     }
 
-    public void backup(String pathname, int replicationDegree, boolean enhanced) throws RemoteException {
+    /*public void backup(String pathname, int replicationDegree, boolean enhanced) throws RemoteException {
 
         String versionToUse = new String(version);
         if (enhanced)
@@ -185,9 +185,9 @@ public class Peer{
             e.printStackTrace();
         }
 
-    }
+    }*/
 
-    public void restore(String pathname, boolean enhanced) {
+    /*public void restore(String pathname, boolean enhanced) {
         String fileId;
         String versionToUse = new String(version);
         if (enhanced)
@@ -295,7 +295,7 @@ public class Peer{
             }
 
         }
-    }
+    }*/
 
     /**
      * @return the controlReceiver
@@ -317,7 +317,7 @@ public class Peer{
         return trackerPort;
     }
 
-    public static byte[] removeFile(String toRemoveFileIdKey) {
+    /*public static byte[] removeFile(String toRemoveFileIdKey) {
 
         stateManager.deleteBackedUpFile(toRemoveFileIdKey);
         FileManager manager = new FileManager();
@@ -333,9 +333,9 @@ public class Peer{
         exec.execute(thread);
 
         return data_removed;
-    }
+    }*/
 
-    public void delete(String pathname, boolean enhanced) throws RemoteException {
+    /*public void delete(String pathname, boolean enhanced) throws RemoteException {
 
         String versionToUse = new String(version);
         if (enhanced)
@@ -353,14 +353,14 @@ public class Peer{
             Peer.getExec().execute(thread);
         }
 
-    }
+    }*/
 
     //Iniate the 3 multicasts sockets and the threads that will read the messages in a thread pool
     public void initiateSocketThreads() throws IOException {
 
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
         //Thread para o canal principal MC;
-        MC = new MCSocket();
+        /*MC = new MCSocket();
         Runnable mcThread = MC;
         this.exec.execute(mcThread);
 
@@ -372,16 +372,16 @@ public class Peer{
         //Thread para o canal MDR
         MDR = new MDRSocket();
         Runnable mdrThread = MDR;
-        this.exec.execute(mdrThread);
+        this.exec.execute(mdrThread);*/
 
-        messageInterpreter = new MessageInterpreter();
-        Runnable interpreterThread = messageInterpreter;
-        this.exec.execute(interpreterThread);
+        //messageInterpreter = new MessageInterpreter();
+        //Runnable interpreterThread = messageInterpreter;
+        //this.exec.execute(interpreterThread);
 
     }
 
     //Iniate the 3 multicasts sockets and the threads that will read the messages in a thread pool
-    public void initiateSocketThreads(SimpleEntry<Integer, String> MC, SimpleEntry<Integer, String> MDB, SimpleEntry<Integer, String> MDR)
+    /*public void initiateSocketThreads(SimpleEntry<Integer, String> MC, SimpleEntry<Integer, String> MDB, SimpleEntry<Integer, String> MDR)
             throws IOException {
 
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
@@ -403,7 +403,7 @@ public class Peer{
         messageInterpreter = new MessageInterpreter();
         Runnable interpreterThread = messageInterpreter;
         this.exec.execute(interpreterThread);
-    }
+    }*/
 
 
     public void initiateServerSockets() throws IOException{
@@ -460,7 +460,7 @@ public class Peer{
         return exec;
     }
 
-    public static MCSocket getMC() {
+    /*public static MCSocket getMC() {
         return MC;
     }
 
@@ -470,7 +470,7 @@ public class Peer{
 
     public static MDRSocket getMDR() {
         return MDR;
-    }
+    }*/
 
     public static String getPeerID() {
         return peerID;
@@ -480,32 +480,32 @@ public class Peer{
         return stateManager;
     }
 
-    public static MessageInterpreter getMessageInterpreter() {
+    /*public static MessageInterpreter getMessageInterpreter() {
         return messageInterpreter;
-    }
+    }*/
 
-    public static String getVersion() {
+    /*public static String getVersion() {
         return version;
-    }
+    }*/
 
     /**
      * @return the window
      */
-    public static int getWindow() {
+    /*public static int getWindow() {
         return window;
-    }
+    }*/
 
     /**
      * @param window the window to set
      */
-    public static void setWindow(Integer window) {
+    /*public static void setWindow(Integer window) {
         Peer.window = window;
-    }
+    }*/
 
     /**
      * @param flag the flag to set
      */
-    public static void setFlag(boolean flag) {
+   /* public static void setFlag(boolean flag) {
         Peer.flag = flag;
     }
 
@@ -536,7 +536,7 @@ public class Peer{
                 }
             }
         }
-    }
+    }*/
 
 
 

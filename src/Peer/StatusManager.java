@@ -1,8 +1,8 @@
 package Peer;
 
 import Chunk.ChunkInfo;
-import Messages.AliveMessage;
-import Messages.Message;
+//import Messages.AliveMessage;
+//import Messages.Message;
 import Peer.Peer;
 
 import java.io.IOException;
@@ -79,7 +79,7 @@ public class StatusManager implements java.io.Serializable{
     /**
      * Given a size of potential chunk to store, checks if it can be stored
      */
-    public synchronized boolean canStore(int size){
+    /*public synchronized boolean canStore(int size){
 
         if((size + this.sizeUsed) > this.maxSizeUse){    
             
@@ -96,7 +96,7 @@ public class StatusManager implements java.io.Serializable{
             return true;
         }
     return false;
-    }
+    }*/
 
     /**
      * Checks if specified chunk is already stored
@@ -383,7 +383,7 @@ public class StatusManager implements java.io.Serializable{
     /**
      * updates peer data information checking which chunks are still alive
      */
-    public synchronized void updateData() {
+    /*public synchronized void updateData() {
         List<String> alreadySent = new ArrayList<>();
         for(String fileIdKey: backedUpFiles) {
             String fileId = fileIdKey.substring(0,64);
@@ -397,7 +397,7 @@ public class StatusManager implements java.io.Serializable{
             }
 
         }
-    }
+    }*/
 
 
     /**

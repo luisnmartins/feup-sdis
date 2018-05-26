@@ -1,4 +1,4 @@
-package Sockets;
+/*package Sockets;
 
 import Sockets.ChannelSocket;
 
@@ -9,14 +9,14 @@ import java.net.MulticastSocket;
 /**
  * Representation of the MC socket
  */
-public class MCSocket extends ChannelSocket {
+/*public class MCSocket extends ChannelSocket {
 
     private static final String MC_ADDR= "224.0.0.1";
 
     /**
      * Constructor with default values
      */
-    public MCSocket() throws IOException {
+    /*public MCSocket() throws IOException {
         super();
         this.port = 8000;
         this.socket =  new MulticastSocket(this.port);
@@ -37,4 +37,4 @@ public class MCSocket extends ChannelSocket {
 
 
 
-}
+}*/

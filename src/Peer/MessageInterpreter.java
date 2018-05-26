@@ -1,4 +1,4 @@
-package Peer;
+/*package Peer;
 
 import Messages.*;
 import Peer.Peer;
@@ -22,7 +22,7 @@ public class MessageInterpreter implements Runnable {
     /**
      * Separates the message received in the necessary parts
      */
-    public void separateMessage(int size,byte[] data){
+    /*public void separateMessage(int size,byte[] data){
         int i=0;
         for(; i<size; i++) {
             if(i <= size-5) {
@@ -52,7 +52,7 @@ public class MessageInterpreter implements Runnable {
      * 
      * Takes message from queue and checks the message type and acts accordingly
      */
-    @Override
+    /*@Override
     public void run() {
         while(true){
 
@@ -152,7 +152,7 @@ public class MessageInterpreter implements Runnable {
                         peerinfo.action();
                         break;
                     }*/
-                }
+               /* }
             } catch (Exception e) {
                 e.printStackTrace();
                 continue;
@@ -173,4 +173,4 @@ public class MessageInterpreter implements Runnable {
             return;
         }
     }
-}
+}*/

@@ -1,4 +1,4 @@
-package Messages;
+/*package Messages;
 
 
 import Peer.*;
@@ -44,4 +44,4 @@ public class AliveMessage extends Message {
         return "ALIVE " + this.version + " " + this.senderId + " " + this.fileId;
     }
 
-}
+}*/

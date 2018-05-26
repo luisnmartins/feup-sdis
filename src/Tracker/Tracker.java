@@ -3,7 +3,7 @@ package Tracker;
 import Chunk.ChunkData;
 import Messages.*;
 import Peer.*;
-import Workers.RestoreChecker;
+//import Workers.RestoreChecker;
 import java.util.AbstractMap.SimpleEntry;
 import Sockets.*;
 import java.util.*;
@@ -19,7 +19,7 @@ public class Tracker {
     private static volatile ConcurrentHashMap<String,ArrayList<String>> availableFiles = new ConcurrentHashMap<>();; 
 
     private static ScheduledThreadPoolExecutor exec;
-    private static MessageInterpreter messageInterpreter;
+    //private static MessageInterpreter messageInterpreter;
 
     private static ReceiverSocket sslServerSocket;
 
@@ -51,7 +51,7 @@ public class Tracker {
 
     }
 
-    public static void tests(Tracker tracker){
+    /*public static void tests(Tracker tracker){
         //--TESTS REGISTER--//
 
         //Test 1
@@ -108,15 +108,15 @@ public class Tracker {
         Tracker.getMessageInterpreter().putInQueue(nofilePair1);
 
         Tracker.getMessageInterpreter().putInQueue(getfilePair1);
-    }
+    }*/
 
     public static ScheduledExecutorService getExec() {
         return exec;
     }
 
-    public static MessageInterpreter getMessageInterpreter() {
+    /*public static MessageInterpreter getMessageInterpreter() {
         return messageInterpreter;
-    }
+    }*/
 
     public static ConcurrentHashMap<String,PeerInfo> getOnlinePeers(){
         return Tracker.onlinePeers;
