@@ -1,15 +1,13 @@
 package Peer;
 
 import Chunk.ChunkInfo;
-//import Messages.AliveMessage;
-//import Messages.Message;
 import Peer.Peer;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class StatusManager implements java.io.Serializable{
+public class Storage implements java.io.Serializable{
 
     private static final int DEFAULT_MAX_SIZE = 1000000000;
     private volatile ConcurrentHashMap<String,String> filesTables; //pathname fileId; files that the current peer sent to be backedUp
@@ -20,10 +18,15 @@ public class StatusManager implements java.io.Serializable{
     private volatile int sizeUsed;
     private volatile int maxSizeUse;
 
+
+    private volatile ConcurrentHashMap<String, TorrentInfo> filesSeeded;
+    private volatile ConcurrentHashMap<String, TorrentInfo> filesDownloaded;
+    
+
     /**
      * Default construtor of the database
      */
-    StatusManager(){
+    Storage(){
         this.filesTables = new ConcurrentHashMap<>();
         this.deletedFiles = new ConcurrentHashMap<>();
         this.chunkTable = new ConcurrentHashMap<>();
@@ -31,7 +34,37 @@ public class StatusManager implements java.io.Serializable{
         this.chunksToRestore = Collections.synchronizedSet(new HashSet<>());
         this.sizeUsed = 0;
         this.maxSizeUse = DEFAULT_MAX_SIZE;
+
+        this.filesSeeded = new ConcurrentHashMap<>();
+        this.filesDownloaded = new ConcurrentHashMap<>();
         
+    }
+
+    /**
+     * @return the filesSeeded
+     */
+    public ConcurrentHashMap<String, TorrentInfo> getFilesSeeded() {
+        return filesSeeded;
+    }
+    /**
+     * @param filesSeeded the filesSeeded to set
+     */
+    public void setFilesSeeded(ConcurrentHashMap<String, TorrentInfo> filesSeeded) {
+        this.filesSeeded = filesSeeded;
+    }
+
+    /**
+     * @return the filesDownloaded
+     */
+    public ConcurrentHashMap<String, TorrentInfo> getFilesDownloaded() {
+        return filesDownloaded;
+    }
+
+    /**
+     * @param filesDownloaded the filesDownloaded to set
+     */
+    public void setFilesDownloaded(ConcurrentHashMap<String, TorrentInfo> filesDownloaded) {
+        this.filesDownloaded = filesDownloaded;
     }
 
     /**
@@ -407,12 +440,18 @@ public class StatusManager implements java.io.Serializable{
      */
     private void writeObject(java.io.ObjectOutputStream stream) throws IOException {
 
-        stream.writeObject(filesTables);
+        /*stream.writeObject(filesTables);
         stream.writeObject(deletedFiles);
         stream.writeObject(chunkTable);
         stream.writeObject(backedUpFiles);
         stream.writeInt(sizeUsed);
-        stream.writeInt(maxSizeUse);
+        stream.writeInt(maxSizeUse);*/
+
+        stream.writeObject(filesDownloaded);
+        stream.writeObject(filesSeeded);
+        stream.writeObject(Peer.getPeerID());
+
+
     }
 
     /**
@@ -423,15 +462,19 @@ public class StatusManager implements java.io.Serializable{
      */
     private void readObject(java.io.ObjectInputStream stream) throws IOException, ClassNotFoundException {
 
-        chunksToRestore = Collections.synchronizedSet(new HashSet<>());
+        /*chunksToRestore = Collections.synchronizedSet(new HashSet<>());
         filesTables = (ConcurrentHashMap<String, String>) stream.readObject();
         deletedFiles = (ConcurrentHashMap<String,Set<String>>) stream.readObject();
         chunkTable = (ConcurrentHashMap<String, ChunkInfo>)stream.readObject();
         backedUpFiles = (List<String>) stream.readObject();
 
         sizeUsed = stream.readInt();
-        maxSizeUse = stream.readInt();
+        maxSizeUse = stream.readInt();*/
 
+
+        filesDownloaded = (ConcurrentHashMap<String, TorrentInfo>)stream.readObject();
+        filesSeeded = (ConcurrentHashMap<String, TorrentInfo>)stream.readObject();
+        Peer.setPeerID((String)stream.readObject());
     }
 
 

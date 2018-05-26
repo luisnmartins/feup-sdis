@@ -23,31 +23,34 @@ public class Peer{
     private static int trackerPort;
 
     private static ScheduledThreadPoolExecutor exec;
-    private static StatusManager stateManager;
+    private static Storage storage;
 
     private static ReceiverSocket controlReceiver;
+
+    private static int serId;
 
 
     public Peer() {
     }
 
     public Peer(String trackerIP ,int port) throws IOException {
-        this.peerID = UUID.randomUUID().toString();
-        this.trackerIP = trackerIP;
-        this.trackerPort = port;
+        peerID = UUID.randomUUID().toString();
+        Peer.trackerIP = trackerIP;
+        trackerPort = port;
 
-        this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
+        exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
+
+    
+        //Serializable
+        LogsManager logsManager = new LogsManager();
+        storage = logsManager.LoadData();
+
 
         if(!setKeyPair())
             return;
 
-        this.controlReceiver = new ReceiverSocket(0);
-        this.controlReceiver.connect(this.peerID);
-
-        //Serializable
-        /*LogsManager statusData = new LogsManager();
-        this.stateManager = statusData.LoadData();
-        stateManager.updateData();*/
+        controlReceiver = new ReceiverSocket(0);
+        controlReceiver.connect(peerID);
 
         //TEST
         this.sendRegister();
@@ -91,8 +94,12 @@ public class Peer{
         return peerID;
     }
 
-    public static StatusManager getStateManager() {
-        return stateManager;
+    public static void setPeerID(String peerID) {
+        Peer.peerID = peerID;
+    }
+
+    public static Storage getStorage() {
+        return storage;
     }
 
     public static ReceiverSocket getControlReceiver() {
@@ -107,17 +114,27 @@ public class Peer{
         return trackerPort;
     }
 
+    public static int getSerId() {
+        return serId;
+    }
+
+    public static void setSerId(int serId) {
+        Peer.serId = serId;
+    }
+
     public static void main(String[] args) throws IOException {
         System.setProperty("java.net.preferIPv4Stack", "true");
 
         Peer peer;
-        if (args.length == 3) {
+        if (args.length == 4) {
             peer = new Peer(args[0],Integer.parseInt(args[1]));
 
-            if(args[2].equals("download")){
+            serId = Integer.parseInt(args[2]);
+
+            if(args[3].equals("download")){
                 peer.download("path", "path");
             }else{
-                peer.seed("path", "path");
+                peer.seed("/home/julieta/Github/feup-sdis/src/bridge.jpeg", "/home/julieta/Github/feup-sdis/src");
             }
 
         } else {
@@ -176,8 +193,11 @@ public class Peer{
     }
 
     public void seed(String filePath, String torrentPath) throws IOException{
-    
-        Message message = new HasFileMessage(peerID, "abc");
+        FileManager manager = new FileManager(filePath);
+        InetAddress address = InetAddress.getByName(this.trackerIP);
+        SimpleEntry<String,TorrentInfo> torrentInfo = manager.createDownloadFile(260096, this.trackerPort, address.getHostAddress(),torrentPath);
+        storage.getFilesSeeded().put(torrentInfo.getKey(), torrentInfo.getValue());
+        Message message = new HasFileMessage(peerID, torrentInfo.getKey());
         sendMessageToTracker(message);
     }
 
@@ -186,13 +206,7 @@ public class Peer{
         channelStarter.connect(peerID, "tracker",null);
         channelStarter.getHandler().sendMessage(message);
     }
-
-    public void seedFile(){
-        FileManager manager = new FileManager("/home/carlosfr/Downloads/CMS_Creative_164657191_Kingfisher.jpg");
-        manager.createDownloadFile(65000, this.trackerPort, this.trackerIP);
-    }
-
-   
+ 
 
 
 }

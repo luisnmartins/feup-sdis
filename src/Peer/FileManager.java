@@ -2,6 +2,7 @@ package Peer;
 
 import Chunk.ChunkData;
 import Peer.Peer;
+import Peer.TorrentInfo;
 
 import java.io.*;
 import java.net.URI;
@@ -25,6 +26,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.AbstractMap.SimpleEntry;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.swing.text.StyledEditorKit.BoldAction;
@@ -246,13 +248,13 @@ public class FileManager {
 
     }
 
-    public boolean createDownloadFile(int chunkSize, int port, String address) {
+    public SimpleEntry<String,TorrentInfo> createDownloadFile(long chunkSize, int port, String address,String toStore) {
 
         File file = new File(pathname);
 
         if (!file.exists()) {
             System.err.println("Can't create download file from non existing files");
-            return false;
+            return null;
         }
 
         String fileName = file.getName();
@@ -282,7 +284,7 @@ public class FileManager {
             rootElement.appendChild(chunkElement);
 
             Attr sizeAttr = doc.createAttribute("length");
-            sizeAttr.setValue(Integer.toString(chunkSize));
+            sizeAttr.setValue(Long.toString(chunkSize));
             chunkElement.setAttributeNode(sizeAttr);
 
             Element fileElement = doc.createElement("File");
@@ -304,16 +306,16 @@ public class FileManager {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             Transformer transformer = transformerFactory.newTransformer();
             DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File(fileName + ".xml"));
+            StreamResult result = new StreamResult(new File(toStore +"/" + fileName + ".xml"));
             transformer.transform(source, result);
 
-            return true;
+            return new SimpleEntry<>(id,new TorrentInfo(address, port, chunkSize, file.length(), this.pathname));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return true;
+        return null;
 
     }
 

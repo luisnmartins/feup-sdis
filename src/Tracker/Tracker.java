@@ -6,7 +6,6 @@ import Peer.*;
 import java.util.AbstractMap.SimpleEntry;
 import Sockets.*;
 import java.util.*;
-import java.awt.TextArea;
 import java.io.*;
 import java.util.concurrent.*;
 

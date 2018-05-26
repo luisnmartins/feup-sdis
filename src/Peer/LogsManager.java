@@ -20,7 +20,7 @@ public class LogsManager {
     public boolean SaveData() {
 
 
-        String pathname = "Peer "+Peer.getPeerID()+"/data.out";
+        String pathname = "Peer/data"+Peer.getSerId()+".out"; 
 
         File file = new File(pathname);
         if(!file.exists()) {
@@ -41,7 +41,7 @@ public class LogsManager {
             ObjectOutputStream out = new ObjectOutputStream(buffer);
 
             // Method for serialization of object
-            out.writeObject(Peer.getStateManager());
+            out.writeObject(Peer.getStorage());
             out.close();
             buffer.close();
             fileStream.close();
@@ -61,11 +61,11 @@ public class LogsManager {
     }
 
 
-    public StatusManager LoadData() {
+    public Storage LoadData() {
 
-        StatusManager state;
+        Storage state;
 
-        String pathname = "Peer "+Peer.getPeerID()+"/data.out";
+        String pathname = "Peer/data"+Peer.getSerId()+".out"; 
 
         // Deserialization
         try(
@@ -77,7 +77,7 @@ public class LogsManager {
         {
 
             // Method for deserialization of object
-            state = (StatusManager) in.readObject();
+            state = (Storage) in.readObject();
 
 
             in.close();
@@ -91,7 +91,7 @@ public class LogsManager {
         catch(IOException ex)
         {
             System.out.println("Error loading Status Manager or there's not any data");
-            state = new StatusManager();
+            state = new Storage();
         }
 
         catch(ClassNotFoundException ex)
