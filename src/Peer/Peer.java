@@ -171,6 +171,11 @@ public class Peer{
         channelStarter.getHandler().sendMessage(message);
     }
 
+    public void seedFile(){
+        FileManager manager = new FileManager("/home/carlosfr/Downloads/CMS_Creative_164657191_Kingfisher.jpg");
+        manager.createDownloadFile(65000, this.trackerPort, this.trackerIP);
+    }
+
    
 
 
