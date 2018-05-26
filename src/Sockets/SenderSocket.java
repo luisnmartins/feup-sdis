@@ -57,7 +57,6 @@ public class SenderSocket extends SecureSocket{
                 setupPublicKeyStore(connectTo);
             }else{
                 setupP2PPublicKeyStore(key);
-                
             }
 
             setupSSLContext();
