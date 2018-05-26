@@ -32,6 +32,7 @@ public class GetChunkMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "GETCHUNK " + this.fileId + " " + this.chunkNro + " " + this.CRLFCRLF;
+        System.out.println("Sent: " + "GETCHUNK " + this.fileId + " " + this.chunkNro);                
         byte[] headerBytes = header.getBytes();
         return headerBytes;
 

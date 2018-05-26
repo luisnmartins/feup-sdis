@@ -33,6 +33,7 @@ public class GetFileMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "GETFILE " + this.senderId + " " + this.fileId + " " + this.CRLFCRLF;
+        System.out.println("Sent: " +  "GETFILE " + this.senderId + " " + this.fileId );                
         byte[] headerBytes = header.getBytes();
         return headerBytes;
 

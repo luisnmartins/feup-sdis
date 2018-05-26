@@ -33,6 +33,7 @@ public class HasFileMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "HASFILE " + this.senderId + " " + this.fileId + " " + this.CRLFCRLF;
+        System.out.println("Sent: " +  "HASFILE " + this.senderId + " " + this.fileId);                
         byte[] headerBytes = header.getBytes();
         return headerBytes;
 

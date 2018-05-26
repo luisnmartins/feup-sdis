@@ -3,6 +3,9 @@ package Messages;
 
 import Tracker.*;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class OnlineMessage extends Message{
 
     private String CRLFCRLF = "\r\n\r\n";
@@ -22,11 +25,12 @@ public class OnlineMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "ONLINE " + this.senderId + " " + this.CRLFCRLF;
+        System.out.println("Sent: " +  "ONLINE " + this.senderId );                
         byte[] headerBytes = header.getBytes();
         return headerBytes;
     }
 
-    public int action() {
+    public int action(DataOutputStream writer) {
 
         int res = Tracker.refreshOnlinePeer(this.senderId);
         
@@ -36,9 +40,13 @@ public class OnlineMessage extends Message{
             //TODO: send error
         
         }else if(res == 0){
-            String header = "SUCCESS" + " " + this.CRLFCRLF;
+            String header = "CLOSE " + this.senderId + " " + this.CRLFCRLF;
             byte[] headerBytes = header.getBytes();
-            //TODO: send success
+            try {
+                writer.write(headerBytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         return 0;

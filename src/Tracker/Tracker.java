@@ -27,6 +27,33 @@ public class Tracker {
         this.exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
         this.sslServerSocket = new ReceiverSocket(5555);
         this.sslServerSocket.connect("tracker");
+
+
+        Runnable verifyOnlinePeersThread = new VerifyOnlinePeersThread();
+        Tracker.getExec().scheduleAtFixedRate(verifyOnlinePeersThread, 60, 120, TimeUnit.SECONDS);
+
+    }
+
+    public class VerifyOnlinePeersThread implements Runnable {
+        public VerifyOnlinePeersThread() {}
+        @Override
+        public void run() {
+            System.out.println("TRACKER - Verifying online peers...");                        
+            for (String key : onlinePeers.keySet()) {
+                PeerInfo peer = onlinePeers.get(key);
+
+                long deltaTime = 120000;
+                long currTime = System.currentTimeMillis();
+                long lastTimeOnline = peer.getLastTimeOnline();
+
+                if(currTime - lastTimeOnline > deltaTime){
+                    onlinePeers.remove(key);
+                    System.out.println("TRACKER - Peer " + key + " is no longer online.");
+                }
+
+            }
+
+        }
     }
 
     public static ScheduledExecutorService getExec() {
@@ -51,7 +78,6 @@ public class Tracker {
     public static int addOnlinePeer(String peerId, String address, int port,byte[] key){
 
         long time = System.currentTimeMillis();
-        System.out.println(time);
         PeerInfo peerInfo = new PeerInfo(address, port, time,key);
         
         if(onlinePeers.get(peerId)==null){
@@ -155,7 +181,12 @@ public class Tracker {
         ArrayList<String> peersIds = availableFiles.get(fileId);
         if(peersIds!=null){
             for(int i = 0; i < peersIds.size(); i++){
-                filePeers.add(onlinePeers.get(peersIds.get(i)));
+                if(onlinePeers.get(peersIds.get(i)) != null){
+                    filePeers.add(onlinePeers.get(peersIds.get(i)));   
+                }
+                else{
+                    peersIds.remove(i);
+                }
             }
         }
         else{

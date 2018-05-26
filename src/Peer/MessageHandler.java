@@ -185,7 +185,6 @@ public class MessageHandler implements Runnable {
 
         this.separateMessage(response.length, response);
         String messageType = this.header.substring(0,this.header.indexOf(" "));
-        System.out.println("MESSAGETYPE: " + messageType);
         switch (messageType) {
             case "SUCCESS": {
                 //TODO: Success Action
@@ -208,7 +207,7 @@ public class MessageHandler implements Runnable {
             }
             case "ONLINE": {
                 OnlineMessage online = new OnlineMessage(header);
-                online.action();
+                online.action(writer);
                 break;
             }
             case "HASFILE": {                      

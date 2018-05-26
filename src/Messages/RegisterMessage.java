@@ -36,7 +36,7 @@ public class RegisterMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "REGISTER " + this.senderId + " " + this.address + " " + this.port + " " + this.CRLFCRLF;
-        
+        System.out.println("Sent: " + "REGISTER " + this.senderId + " " + this.address + " " + this.port);                
         byte[] headerBytes = header.getBytes();
         byte[] finalArray = new byte[headerBytes.length+key.length];
 

@@ -65,7 +65,7 @@ public class ReceiverSocket extends SecureSocket {
             while (true) {
                 try {
                     SSLSocket socketConnected = (SSLSocket) serverSocket.accept();
-                    System.out.println("Got connection from " + socketConnected);
+                    //System.out.println("Got connection from " + socketConnected);
                     MessageHandler handler = new MessageHandler(socketConnected);
                     handler.updateState(Transition.RECEIVER);
                     if(isTracker)

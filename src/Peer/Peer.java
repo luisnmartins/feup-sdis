@@ -52,6 +52,22 @@ public class Peer{
         //TEST
         this.sendRegister();
 
+        Runnable onlineMessagesThread = new OnlineMessagesThread();
+        Peer.getExec().scheduleAtFixedRate(onlineMessagesThread, 30, 60, TimeUnit.SECONDS);
+
+    }
+
+    public class OnlineMessagesThread implements Runnable {
+        public OnlineMessagesThread() {}
+        @Override
+        public void run() {
+            Message message = new OnlineMessage(peerID, true);
+            try {
+                Peer.sendMessageToTracker(message);                
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public boolean setKeyPair(){
@@ -144,8 +160,8 @@ public class Peer{
         byte[] key = readPublicKey();
  
         String address = InetAddress.getLocalHost().getHostAddress();
-        int port = this.controlReceiver.getServerSocket().getLocalPort();
-        SenderSocket channelStarter = new SenderSocket(this.trackerPort, this.trackerIP);
+        int port = controlReceiver.getServerSocket().getLocalPort();
+        SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
         channelStarter.connect(peerID, "tracker",null);
         Message message = new RegisterMessage(this.peerID, address, port, key);
         channelStarter.getHandler().sendMessage(message);
@@ -165,8 +181,8 @@ public class Peer{
         sendMessageToTracker(message);
     }
 
-    public void sendMessageToTracker(Message message) throws UnknownHostException {
-        SenderSocket channelStarter = new SenderSocket(this.trackerPort, this.trackerIP);
+    public static void sendMessageToTracker(Message message) throws UnknownHostException {
+        SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
         channelStarter.connect(peerID, "tracker",null);
         channelStarter.getHandler().sendMessage(message);
     }

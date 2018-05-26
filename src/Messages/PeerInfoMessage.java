@@ -35,6 +35,7 @@ public class PeerInfoMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "PEERINFO " + this.address + " " + this.port + " " +this.CRLFCRLF;
+        System.out.println("Sent: " +  "PEERINFO " + this.address + " " + this.port);                
         byte[] headerBytes = header.getBytes();
         byte[] finalByteArray = new byte[headerBytes.length+this.key.length];
         System.arraycopy( headerBytes, 0, finalByteArray, 0, headerBytes.length);
@@ -48,7 +49,6 @@ public class PeerInfoMessage extends Message{
          
         try{
             SenderSocket channelStarter = new SenderSocket(this.port,this.address);
-    
             channelStarter.connect(Peer.getPeerID(),"peer",key);
             channelStarter.getHandler().getWriter().write(new String("Ola").getBytes());
         }catch(IOException e){
