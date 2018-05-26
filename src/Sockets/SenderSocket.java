@@ -75,24 +75,6 @@ public class SenderSocket extends SecureSocket{
         }catch(IOException e){
             e.printStackTrace();
         }
-    }
-
-    
-
-    /*public void setupSSLContext() throws GeneralSecurityException, IOException{
-        TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
-        tmf.init(publicKeyStore);
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(socketKeyStore,passphrase.toCharArray());
-
-        this.sslContext = SSLContext.getInstance("TLS");
-        this.sslContext.init(kmf.getKeyManagers(),
-                                trustAllCerts,
-                                secureRandom);
-    }*/
-
-
-      
+    }     
 
 }

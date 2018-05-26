@@ -8,7 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 
-public class PeerInfoMessage extends MessageTemp{
+public class PeerInfoMessage extends Message{
 
     private String CRLFCRLF = "\r\n\r\n";
 

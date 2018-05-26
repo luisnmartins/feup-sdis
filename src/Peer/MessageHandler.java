@@ -127,7 +127,7 @@ public class MessageHandler implements Runnable {
         System.out.println("Received: " + this.header);
     }
 
-    public  synchronized void  sendMessage(MessageTemp msg) {
+    public  synchronized void  sendMessage(Message msg) {
         if (writer != null && fsmState == State.WRITE){
             byte[] textMessage = msg.getFullMessage();
             try {             

@@ -80,37 +80,4 @@ public class ReceiverSocket extends SecureSocket {
         }
     }
 
-    public class connectionHandler implements Runnable {
-        SSLSocket socketConnected;
-
-        public connectionHandler(SSLSocket socket) {
-            this.socketConnected = socket;
-        }
-
-        @Override
-        public void run() {
-            while (true) {
-
-                try {
-                    InputStream in = socketConnected.getInputStream();
-                    OutputStream out = socketConnected.getOutputStream();
-
-                    DataInputStream dataIn = new DataInputStream(in);
-                    DataOutputStream dataOut = new DataOutputStream(out);
-
-                    byte[] buf = new byte[PACKET_SIZE];
-                    int read =  din.read(buf);
-
-                    /*byte[] response = Arrays.copyOfRange(buf, 0, read);
-                    SimpleEntry<Integer, byte[]> pair = new SimpleEntry<>(buf.length, buf);
-                    Peer.getMessageInterpreter().putInQueue(pair);*/
-
-                }catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-            }
-        }
-    }
-
 }

@@ -3,7 +3,7 @@ package Messages;
 
 import Tracker.*;
 
-public class NoFileMessage{
+public class NoFileMessage extends Message{
 
     private String CRLFCRLF = "\r\n\r\n";
 
@@ -33,7 +33,7 @@ public class NoFileMessage{
 
     }
 
-    public void action() {
+    public int action() {
 
         int res = Tracker.removePeerOfFile(this.senderId, this.fileId);
 
@@ -47,6 +47,8 @@ public class NoFileMessage{
             byte[] headerBytes = header.getBytes();
             //TODO: send success
         }
+
+        return 0;
         
     }
 }

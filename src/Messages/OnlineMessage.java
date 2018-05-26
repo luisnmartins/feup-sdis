@@ -3,7 +3,7 @@ package Messages;
 
 import Tracker.*;
 
-public class OnlineMessage{
+public class OnlineMessage extends Message{
 
     private String CRLFCRLF = "\r\n\r\n";
 
@@ -26,7 +26,7 @@ public class OnlineMessage{
         return headerBytes;
     }
 
-    public void action() {
+    public int action() {
 
         int res = Tracker.refreshOnlinePeer(this.senderId);
         
@@ -40,6 +40,8 @@ public class OnlineMessage{
             byte[] headerBytes = header.getBytes();
             //TODO: send success
         }
+
+        return 0;
         
     }
 }

@@ -7,7 +7,7 @@ import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class GetFileMessage extends MessageTemp{
+public class GetFileMessage extends Message{
 
     private String CRLFCRLF = "\r\n\r\n";
 

@@ -1,44 +1,10 @@
-/*package Messages;
+package Messages;
 
-import java.io.IOException;
+public class Message {
 
-public abstract class Message {
+        public Message(){}
 
-    protected static final String CRLF = "\r\n";
-    protected static final String CRLFCRLF = "\r\n\r\n";
+        public byte[] getFullMessage(){ String s = "Ola" ; return s.getBytes();}
 
-    protected String fileId;
-    protected String version;
-    protected String senderId;
-
-
-    public Message(String header) {
-        String[] headerWords = header.split(" ");
-        this.version = headerWords[1];
-        this.senderId = headerWords[2];
-        this.fileId = headerWords[3];
-    }
-
-    public Message(String fileId, String version, String senderId){
-        this.fileId = fileId;
-        this.version = version;
-        this.senderId = senderId;
-    }
-
-    public byte[] getFullMessage() {
-        return new byte[5];
-
-    }
-
-    public void action() throws IOException {}
-
-
-    public String getFileId() {
-        return fileId;
-    }
-
-    public String getMessageHeader(){
-        return "MESSAGE " + this.version + " " + this.senderId + " " + this.fileId;
-    }
-
-}*/
+        public int action(){return 0;};
+}
