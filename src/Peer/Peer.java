@@ -99,9 +99,9 @@ public class Peer{
             peer = new Peer(args[0],Integer.parseInt(args[1]));
 
             if(args[2].equals("download")){
-                peer.download();
+                peer.download("path", "path");
             }else{
-                peer.seed();
+                peer.seed("path", "path");
             }
 
         } else {
@@ -152,14 +152,14 @@ public class Peer{
     
     }
 
-    public void download() throws IOException{
+    public void download(String torrentPath, String filePath) throws IOException{
         
         Message message = new GetFileMessage(peerID, "abc");
         sendMessageToTracker(message);
         
     }
 
-    public void seed() throws IOException{
+    public void seed(String filePath, String torrentPath) throws IOException{
     
         Message message = new HasFileMessage(peerID, "abc");
         sendMessageToTracker(message);
