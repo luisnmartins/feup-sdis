@@ -4,16 +4,26 @@ import Chunk.ChunkData;
 import Peer.Peer;
 
 import java.io.*;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.channels.CompletionHandler;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.file.FileSystem;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
+import java.nio.file.WatchEvent.Kind;
+import java.nio.file.WatchEvent.Modifier;
 import java.security.MessageDigest;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class FileManager{
@@ -32,7 +42,7 @@ public class FileManager{
         this.chunks = new ArrayList<>();
     }
 
-    public List<ChunkData> splitFile() throws IOException{
+    /*public List<ChunkData> splitFile() throws IOException{
 
         byte[] buffer = new byte[CHUNKSSIZE];
         List<ChunkData> chunksArray = new ArrayList<ChunkData>();
@@ -64,48 +74,13 @@ public class FileManager{
         }
         return chunksArray;
 
-    }
+    }*/
 
-
-    public void mergeChunks(String fileId) throws IOException {
-
-        //File dir = new File("Peer.Peer "+ Peer.Peer.getPeerID());
-        File dir = new File("Peer "+Peer.getPeerID()+"/SaveData");
-        File[] foundFiles = dir.listFiles(new FilenameFilter() {
-            public boolean accept(File dir, String name) {
-                return name.startsWith(fileId);
-            }
-        });
-        // Sort files by name
-        Arrays.sort(foundFiles, new Comparator()
-        {
-            @Override
-            public int compare(Object o1, Object o2){
-                File f1 = (File) o1;
-                File f2 = (File) o2;
-                Integer f1N = Integer.parseInt(f1.getName().substring(65, f1.getName().length()));
-                Integer f2N = Integer.parseInt(f2.getName().substring(65, f2.getName().length()));
-                return f1N.compareTo(f2N);
-            }
-        });
-
-        
-        mergeFile(foundFiles);
-        for (int i=0; i<foundFiles.length; i++) {
-            System.out.println("FILENAME: "+foundFiles[i].getName());
-            foundFiles[i].delete();
-
-        }
-       if(dir.list().length == 0){
-            dir.delete();
-        }
-
-    }
 
     /**
      * Merges chunk files into one
      */
-    public void mergeFile(File[] files) throws IOException{
+    /*public void mergeFile(File[] files) throws IOException{
 
         File file = new File(pathname);
         if(!file.exists()) {
@@ -118,89 +93,7 @@ public class FileManager{
                 Files.copy(f.toPath(), mergingStream);
              }   
         }
-    }
-
-    /**
-     * Randomly generates an unique file id
-     */
-    public String generateFileID(){
-
-        File f = new File(pathname);
-        Path path = Paths.get(pathname);
-        if(!f.exists() || f.isDirectory())
-            return null;
-        String bitString = null;
-        try {
-            bitString = f.getName() + Long.toString(f.lastModified()) + Boolean.toString(f.canWrite()) + Boolean.toString(f.canRead()) + f.getPath() + Files.getOwner(path).getName();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return sha256(bitString);
-    }
-
-
-    /**
-     * Encrypts a String with sha256 without "prohibited characters"
-     */
-    public static String sha256(String base) {
-        try{
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(base.getBytes("UTF-8"));
-            StringBuffer hexString = new StringBuffer();
-
-            for (int i = 0; i < hash.length; i++) {
-                String hex = Integer.toHexString(0xff & hash[i]);
-                if(hex.length() == 1) hexString.append('0');
-                hexString.append(hex);
-            }
-
-            return hexString.toString();
-        } catch(Exception ex){
-            throw new RuntimeException(ex);
-        }
-    }
-
-    public void saveChunk(ChunkData info) throws IOException {
-
-        File file = new File(pathname);
-        if(!file.exists()) {
-            file.getParentFile().mkdirs();
-            file.createNewFile();
-        }
-
-        Path path = file.toPath();
-        ByteBuffer buffer = ByteBuffer.wrap(info.getData());
-
-
-        AsynchronousFileChannel channel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE);
-
-        CompletionHandler handler = new CompletionHandler<Integer, Object>() {
-
-            @Override
-            public void completed(Integer result, Object attachment) {
-
-                //System.out.println(attachment + " completed and " + result + " bytes were written.");
-                try {
-                    channel.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            @Override
-            public void failed(Throwable e, Object attachment) {
-
-                System.out.println(attachment + " failed with exception:");
-                try {
-                    channel.close();
-                } catch (IOException exc) {
-                    exc.printStackTrace();
-                }
-                e.printStackTrace();
-            }
-        };
-
-        channel.write(buffer,0, "Chunk.Chunk saving", handler);
-    }
+    }*/
 
     public byte[] readEntireFileData() throws IOException{
 
@@ -221,6 +114,7 @@ public class FileManager{
         buffer.clear();
 
         return data;
+        
     }
 
     /**
@@ -255,6 +149,63 @@ public class FileManager{
             e.printStackTrace();
         }
         return null;
+    }
+
+
+    public void writeToFileAsync(byte[] data,long offset) throws IOException{
+
+        Path path = Paths.get(pathname);
+        AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(path,StandardOpenOption.WRITE,StandardOpenOption.CREATE,StandardOpenOption.APPEND,StandardOpenOption.SYNC);
+
+        ByteBuffer buffer = ByteBuffer.allocate(data.length);
+        buffer.put(data);
+        buffer.flip();
+
+        fileChannel.write(buffer, offset, buffer, new CompletionHandler<Integer,ByteBuffer>() {
+
+            @Override
+            public void completed(Integer result,ByteBuffer attachment){
+
+            }
+
+            @Override
+            public void failed(Throwable exc,ByteBuffer attachment){
+
+            }
+
+        });
+
+
+    }
+
+    public boolean createFileDir(String folderName){
+        File dir = new File(folderName);
+        return dir.mkdir();
+    }
+
+
+    public byte[] readFileAsync(long offset,int dataSize) throws IOException{
+        AsynchronousFileChannel channel = AsynchronousFileChannel.open(Paths.get(pathname),StandardOpenOption.READ,StandardOpenOption.READ);
+        
+        ByteBuffer buffer = ByteBuffer.allocate(dataSize);
+
+        Future<Integer> operation = channel.read(buffer,offset);
+
+        try {
+            operation.get();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }catch(InterruptedException ie){
+            ie.printStackTrace();
+        }
+        
+        byte[] returnChunk = buffer.array();
+
+        buffer.clear();
+
+        return returnChunk;
+
+
     }
 
     
