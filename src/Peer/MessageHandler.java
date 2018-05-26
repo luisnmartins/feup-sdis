@@ -88,59 +88,9 @@ public class MessageHandler implements Runnable {
         }
 
     }
-    
 
-
-    public MessageHandler(SSLSocket socket) throws IOException{
-        this.connectedSocket = socket;
-
-        InputStream in = this.connectedSocket.getInputStream();
-        OutputStream out = this.connectedSocket.getOutputStream();
-
-        reader = new DataInputStream(in);
-        writer = new DataOutputStream(out);
-
-    }
-
-    public void separateMessage(int size, byte[] data) {
-        int i = 0;
-        for (; i < size; i++) {
-            if (i <= size - 5) {
-                if (data[i] == CR && data[i + 1] == LF && data[i + 2] == CR && data[i + 3] == LF) {
-                    break;
-                }
-            }
-        }
-        byte[] headerByte = new byte[i];
-        System.arraycopy(data, 0, headerByte, 0, i - 1);
-        this.header = new String(headerByte);
-        this.header = this.header.trim();
-
-        if (size > i + 3) {
-            this.body = new byte[size - i - 4];
-            System.arraycopy(data, i + 4, this.body, 0, size - i - 4);
-
-        } else {
-            this.body = null;
-        }
-
-        System.out.println("Received: " + this.header);
-    }
-
-    public  synchronized void  sendMessage(Message msg) {
-        if (writer != null && fsmState == State.WRITE){
-            byte[] textMessage = msg.getFullMessage();
-            try {             
-                writer.write(textMessage);             
-                fsmState = fsmState.next(WROTE); 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-        } else {
-            System.err.println("Error: cant send message if connection hasnt been established or you  are not the one to send the message");
-        }
-
+    public void updateState(Transition transition){
+        fsmState = fsmState.next(transition);
     }
 
     @Override
@@ -170,6 +120,62 @@ public class MessageHandler implements Runnable {
         }
 
     }
+    
+    public MessageHandler(SSLSocket socket) throws IOException{
+        this.connectedSocket = socket;
+
+        InputStream in = this.connectedSocket.getInputStream();
+        OutputStream out = this.connectedSocket.getOutputStream();
+
+        reader = new DataInputStream(in);
+        writer = new DataOutputStream(out);
+
+    }
+
+    public DataOutputStream getWriter() {
+        return writer;
+    }
+
+    public synchronized void  sendMessage(Message msg) {
+        if (writer != null && fsmState == State.WRITE){
+            byte[] textMessage = msg.getFullMessage();
+            try {             
+                writer.write(textMessage);             
+                fsmState = fsmState.next(WROTE); 
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } else {
+            System.err.println("Error: cant send message if connection hasnt been established or you  are not the one to send the message");
+        }
+
+    }
+
+    public void separateMessage(int size, byte[] data) {
+        int i = 0;
+        for (; i < size; i++) {
+            if (i <= size - 5) {
+                if (data[i] == CR && data[i + 1] == LF && data[i + 2] == CR && data[i + 3] == LF) {
+                    break;
+                }
+            }
+        }
+        byte[] headerByte = new byte[i];
+        System.arraycopy(data, 0, headerByte, 0, i - 1);
+        this.header = new String(headerByte);
+        this.header = this.header.trim();
+
+        if (size > i + 3) {
+            this.body = new byte[size - i - 4];
+            System.arraycopy(data, i + 4, this.body, 0, size - i - 4);
+
+        } else {
+            this.body = null;
+        }
+
+        System.out.println("Received: " + this.header);
+    }
 
     public void checkMessage() throws IOException{
         byte[] buffer = new byte[MAX_SIZE];
@@ -186,7 +192,7 @@ public class MessageHandler implements Runnable {
                 break;
             }
             case "ERROR": {
-                //TODO: Success Action
+                fsmState=fsmState.next(QUIT); 
                 break;
             }
             case "CLOSE": {                        
@@ -196,9 +202,8 @@ public class MessageHandler implements Runnable {
             //TRACKER
             case "REGISTER": {
                 RegisterMessage register = new RegisterMessage(header,body);
-                int res = register.action(writer);
-                if(res == 0)
-                   running=false;
+                register.action(writer);
+                running=false;
                 break;
             }
             case "ONLINE": {
@@ -208,9 +213,8 @@ public class MessageHandler implements Runnable {
             }
             case "HASFILE": {                      
                 HasFileMessage hasfile = new HasFileMessage(header);
-                int res = hasfile.action(writer);
-                if(res == 0)
-                    running=false;
+                hasfile.action(writer);
+                running=false;
                 break;
             }
             case "NOFILE": {                      
@@ -221,8 +225,7 @@ public class MessageHandler implements Runnable {
             case "GETFILE": {                      
                 GetFileMessage getfile = new GetFileMessage(header);
                 int res = getfile.action(writer);
-                if(res == 0)
-                    running=false;
+                running=false;
                 break;
             }
             //PEER
@@ -237,14 +240,4 @@ public class MessageHandler implements Runnable {
 
     }
 
-    /**
-     * @return the writer
-     */
-    public DataOutputStream getWriter() {
-        return writer;
-    }
-
-    public void updateState(Transition transition){
-        fsmState = fsmState.next(transition);
-    }
 }
