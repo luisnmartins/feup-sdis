@@ -1,6 +1,6 @@
 package view;
 
-import Peer.Peer;
+import Peer.*;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -9,8 +9,6 @@ import javax.swing.JFileChooser;
 
 import java.awt.BorderLayout;
 import javax.swing.JTextField;
-
-import Peer.Peer;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -44,7 +42,7 @@ public class PeerWindow {
 	 * @throws IOException 
 	 */
 	public PeerWindow() throws IOException {
-		this.peer = new Peer("localhost", 5555);
+		this.peer = new Peer("localhost", 5555, 1);
 		initialize(peer);
 	}
 	

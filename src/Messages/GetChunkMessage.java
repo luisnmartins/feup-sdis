@@ -1,12 +1,6 @@
 package Messages;
-
-import Tracker.*;
 import Peer.*;
-import java.util.*;
-
 import Peer.FileManager;
-
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
@@ -34,7 +28,7 @@ public class GetChunkMessage extends Message {
 
     public byte[] getFullMessage() {
         String header = "GETCHUNK " + this.fileId + " " + this.chunkNro + " " + this.CRLFCRLF;
-        //System.out.println("Sent: " + "GETCHUNK " + this.fileId + " " + this.chunkNro);
+        System.out.println("Sent: " + "GETCHUNK " + this.fileId + " " + this.chunkNro);
         byte[] headerBytes = header.getBytes();
         return headerBytes;
 

@@ -65,7 +65,7 @@ public abstract class SecureSocket{
         this.socketKeyStore = KeyStore.getInstance("JKS");
         String filename;
         if(peerName.equals("tracker")){
-            filename = "Tracker/"+peerName+".private";
+            filename = "Peer/"+peerName+".private";
             this.setPassphrase("tracker");
         } else
             filename = "Peer/"+peerName+".private";

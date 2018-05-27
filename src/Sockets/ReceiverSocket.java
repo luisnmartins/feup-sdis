@@ -7,10 +7,9 @@ import java.nio.charset.*;
 import java.lang.ProcessBuilder;
 import java.util.Arrays;
 import java.util.AbstractMap.SimpleEntry;
-import Peer.Peer;
+import Peer.*;
 import Peer.MessageHandler;
 import Peer.MessageHandler.Transition;
-import Tracker.Tracker;
 
 
 public class ReceiverSocket extends SecureSocket {
@@ -42,7 +41,6 @@ public class ReceiverSocket extends SecureSocket {
             System.out.println("Listening on " + serverSocket.getLocalPort());
             Runnable accepter;
             if(connectFrom.equals("tracker")){
-                System.out.println("CONNECTED FROM TRACKER");
                 accepter = new connectionAccepter(true);
                 Tracker.getExec().execute(accepter);
             }else{
@@ -68,7 +66,7 @@ public class ReceiverSocket extends SecureSocket {
 
                 
                 if(!isTracker){
-                    if(Peer.getReceiverCounter() >= 1){
+                    if(Peer.getReceiverCounter() >= 10){
                         continue;
                     }
                 }
@@ -76,7 +74,7 @@ public class ReceiverSocket extends SecureSocket {
                
                 try {
                     SSLSocket socketConnected = (SSLSocket) serverSocket.accept();
-                    System.out.println("Got connection from " + socketConnected);
+                    //System.out.println("Got connection from " + socketConnected);
                     MessageHandler handler = new MessageHandler(socketConnected);
                     handler.updateState(Transition.RECEIVER);
                     if(isTracker)

@@ -99,23 +99,24 @@ public class MessageHandler implements Runnable {
         try{
             while (running) {
 
-                if(this.connectedSocket.isClosed()){
+                /*if(this.connectedSocket.isClosed()){
                     Node.decReceiverCounter();
                     break;                           
-                }
+                }*/
             
                 switch (fsmState) {
                 case RECEIVE:
                     try {
                         checkMessage();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                       // e.printStackTrace();
                     }
                     break;
                 case CLOSE:
                  try {
-                        this.connectedSocket.close();         
-                        
+                        this.connectedSocket.close();
+                        Node.decReceiverCounter();
+                                    
                     } catch (IOException e) {
                       e.printStackTrace();
                    }
@@ -153,7 +154,7 @@ public class MessageHandler implements Runnable {
                 writer.write(textMessage);             
                 fsmState = fsmState.next(WROTE); 
             } catch (IOException e) {
-                e.printStackTrace();
+                
             }
 
         } else {
@@ -184,7 +185,7 @@ public class MessageHandler implements Runnable {
             this.body = null;
         }
 
-        //System.out.println("Received: " + this.header);
+        System.out.println("Received: " + this.header);
         
         
     }
@@ -198,6 +199,7 @@ public class MessageHandler implements Runnable {
             return;
         if(readsize == -1)
         {
+            Node.decReceiverCounter();            
             running=false;
             return;
         }

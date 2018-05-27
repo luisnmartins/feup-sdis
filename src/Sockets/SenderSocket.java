@@ -62,11 +62,13 @@ public class SenderSocket extends SecureSocket{
             setupSSLContext();
 
             SSLSocketFactory sf = sslContext.getSocketFactory();
-            try(SSLSocket socket = (SSLSocket) sf.createSocket(this.host,this.port)){
+            SSLSocket socket;
+            try{
+                socket = (SSLSocket) sf.createSocket(this.host,this.port);
             }catch (IOException e) {
                 return false;
             }
-            SSLSocket socket = (SSLSocket) sf.createSocket(this.host,this.port);
+            
 
             handler = new MessageHandler(socket);
             handler.updateState(Transition.SENDER);

@@ -1,6 +1,5 @@
 package Peer;
 
-import Chunk.ChunkData;
 import Peer.Peer;
 import Peer.TorrentInfo;
 
@@ -47,15 +46,13 @@ public class FileManager {
     private static final int CHUNKSSIZE = 64000;
 
     private String pathname;
-    private List<ChunkData> chunks;
 
     public FileManager(String pathname) {
         this.pathname = pathname;
-        this.chunks = new ArrayList<>();
     }
 
     public FileManager() {
-        this.chunks = new ArrayList<>();
+
     }
 
     /*

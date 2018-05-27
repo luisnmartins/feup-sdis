@@ -1,12 +1,8 @@
 package Messages;
 
 import Peer.*;
-import Sockets.SenderSocket;
-import Tracker.*;
-import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 
 public class ChunkMessage extends Message{
 
@@ -36,7 +32,7 @@ public class ChunkMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "CHUNK " + this.fileId + " " + this.chunkNr + " " +this.CRLFCRLF;
-        //System.out.println("Sent: " + "CHUNK " + this.fileId + " " + this.chunkNr );        
+        System.out.println("Sent: " + "CHUNK " + this.fileId + " " + this.chunkNr );        
         byte[] headerBytes = header.getBytes();
         byte[] finalByteArray = new byte[headerBytes.length+this.body.length];
         System.arraycopy( headerBytes, 0, finalByteArray, 0, headerBytes.length);
@@ -52,16 +48,12 @@ public class ChunkMessage extends Message{
             FileManager manager = new FileManager(torrentInfo.getFilePath());
 
             try {
-                manager.writeToFileAsync(body,chunkNr*torrentInfo.getChunkLength());
-
-                /*torrentInfo.getChunksDownloaded().remove(chunkNr);                
-                torrentInfo.getChunksDownloaded().add(chunkNr, true);*/
-
+                manager.writeToFileAsync(body,chunkNr*torrentInfo.getChunkLength());           
                 
-                int nextChunkNro = torrentInfo.getNextFalse();
+                int nextChunkNro = torrentInfo.getNextFalseSendedGetChunks();
                 if(nextChunkNro != -1){
 
-                    torrentInfo.updateChunkDownloaded(nextChunkNro, true);
+                    torrentInfo.updateSendedGetChunkMessages(nextChunkNro, true);
 
                     Message getchunk = new GetChunkMessage(fileId,nextChunkNro);
                     try {
@@ -70,13 +62,13 @@ public class ChunkMessage extends Message{
                         e.printStackTrace();
                     }
 
-                    
-
                     return 0;
 
                 }
                 else{
+                    torrentInfo.setSendedGetChunkMessages(null);            
                     Peer.getStorage().getFilesSeeded().put(fileId, torrentInfo);
+                    Peer.getStorage().getFilesDownloaded().remove(fileId);
                     Message message = new HasFileMessage(Peer.getPeerID(), fileId);
                     Peer.sendMessageToTracker(message);
                     return 1;

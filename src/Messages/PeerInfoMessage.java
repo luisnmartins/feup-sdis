@@ -2,11 +2,6 @@ package Messages;
 
 import Peer.*;
 import Sockets.SenderSocket;
-import Tracker.*;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class PeerInfoMessage extends Message{

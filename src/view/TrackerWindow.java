@@ -3,9 +3,7 @@ import java.awt.EventQueue;
 
 import javax.swing.JFrame;
 import javax.swing.JTextArea;
-
-import Tracker.Tracker;
-
+import Peer.*;
 import java.awt.BorderLayout;
 import java.awt.TextArea;
 import java.awt.TextField;

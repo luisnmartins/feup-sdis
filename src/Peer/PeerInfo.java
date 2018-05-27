@@ -1,5 +1,5 @@
 
-package Tracker;
+package Peer;
 
 import java.io.IOException;
 import java.util.*;
@@ -11,6 +11,7 @@ public class PeerInfo implements java.io.Serializable{
     private int port;
     private long lastTimeOnline; //in milliseconds
     private byte[] publicKey;
+    private boolean available = true;
 
     public PeerInfo(String address, int port, long lastTimeOnline,byte[] key) {
         this.address=address;
@@ -49,6 +50,14 @@ public class PeerInfo implements java.io.Serializable{
 
     public void setLastTimeOnline(long lastTimeOnline) {
         this.lastTimeOnline=lastTimeOnline;
+    }
+
+    public boolean isAvailable(){
+        return this.available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
     }
 
 

@@ -1,6 +1,5 @@
-package Tracker;
+package Peer;
 
-import Chunk.ChunkData;
 import Messages.*;
 import Peer.*;
 import java.util.AbstractMap.SimpleEntry;

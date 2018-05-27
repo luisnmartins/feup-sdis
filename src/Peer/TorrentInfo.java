@@ -11,8 +11,8 @@ public class TorrentInfo implements java.io.Serializable{
     private long chunkLength;
     private long fileLength;
     private String filePath;
-    private volatile List<Boolean> chunksDownloaded; 
-
+    private volatile List<Boolean> sendedGetChunkMessages;
+     
 
     public TorrentInfo(String trackerAddress, int trackerPort, long chunkLength, long fileLength, String filePath){
 
@@ -24,11 +24,10 @@ public class TorrentInfo implements java.io.Serializable{
 
         long totalChunks = (fileLength + chunkLength - 1)/chunkLength;
         
-        this.chunksDownloaded = Collections.synchronizedList(new ArrayList<>((int)totalChunks)) ;   
+        this.sendedGetChunkMessages = Collections.synchronizedList(new ArrayList<>((int)totalChunks)) ;   
         for(int i = 0; i < totalChunks; i++){
-            this.chunksDownloaded.add(false);
+            this.sendedGetChunkMessages.add(false);
         }
-
     }
 
     /**
@@ -48,27 +47,23 @@ public class TorrentInfo implements java.io.Serializable{
     /**
      * @return the chunksDownloaded
      */
-    public synchronized List<Boolean> getChunksDownloaded() {
-        return chunksDownloaded;
+    public synchronized List<Boolean> getSendedGetChunkMessages() {
+        return sendedGetChunkMessages;
     }
 
-    /**
-     * @param chunksDownloaded the chunksDownloaded to set
-     */
-    public synchronized void setChunksDownloaded(List<Boolean>chunksDownloaded) {
-        this.chunksDownloaded = chunksDownloaded;
+    
+    public synchronized void setSendedGetChunkMessages(List<Boolean>sendedGetChunkMessages) {
+        this.sendedGetChunkMessages = sendedGetChunkMessages;
     }
 
-    public synchronized void updateChunkDownloaded(int index, boolean bool){
-        chunksDownloaded.remove(index);                        
-        chunksDownloaded.add(index, bool);
+    public synchronized void updateSendedGetChunkMessages(int index, boolean bool){
+        sendedGetChunkMessages.remove(index);                        
+        sendedGetChunkMessages.add(index, bool);
     }
 
-    public synchronized int getNextFalse(){
-        return chunksDownloaded.indexOf(false);
+    public synchronized int getNextFalseSendedGetChunks(){
+        return sendedGetChunkMessages.indexOf(false);
     }
-
-
 
     /**
      * @return the fileLength

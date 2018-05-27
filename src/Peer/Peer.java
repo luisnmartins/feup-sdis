@@ -1,16 +1,12 @@
 package Peer;
 
-import Chunk.ChunkData;
 import Messages.*;
 import java.util.AbstractMap.SimpleEntry;
 import Sockets.*;
-import Tracker.PeerInfo;
-
 import java.util.*;
 import java.net.UnknownHostException;
 import java.io.*;
 import java.net.InetAddress;
-import java.rmi.RemoteException;
 import java.util.concurrent.*;
 
 
@@ -35,10 +31,11 @@ public class Peer extends Node{
     public Peer() {
     }
 
-    public Peer(String trackerIP ,int port) throws IOException {
+    public Peer(String trackerIP ,int port, int serId) throws IOException {
         peerID = UUID.randomUUID().toString();
         Peer.trackerIP = trackerIP;
         trackerPort = port;
+        this.serId = serId;
 
         exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
 
@@ -54,14 +51,16 @@ public class Peer extends Node{
         controlReceiver = new ReceiverSocket(0);
         controlReceiver.connect(peerID);
 
-        //TEST
-        this.sendRegister();
+        if(!this.sendRegister()){
+            return;
+        }
+
+        updateTracker();
 
         Runnable onlineMessagesThread = new OnlineMessagesThread();
         Peer.getExec().scheduleAtFixedRate(onlineMessagesThread, 30, 60, TimeUnit.SECONDS);
 
     }
-
 
     public class OnlineMessagesThread implements Runnable {
         public OnlineMessagesThread() {}
@@ -74,6 +73,21 @@ public class Peer extends Node{
                 e.printStackTrace();
             }
         }
+    }
+
+    public void updateTracker(){
+
+
+        for (String key : storage.getFilesSeeded().keySet()) {
+            Message message = new HasFileMessage(peerID, key);
+            
+            try {
+                sendMessageToTracker(message);                
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }  
+        }
+        
     }
 
     public boolean setKeyPair(){
@@ -130,13 +144,11 @@ public class Peer extends Node{
 
         Peer peer;
         if (args.length == 4) {
-            peer = new Peer(args[0],Integer.parseInt(args[1]));
-
-            serId = Integer.parseInt(args[2]);
+            peer = new Peer(args[0],Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 
             if(args[3].equals("download")){
                 peer.download("/home/julieta/Github/feup-sdis/src/10MB.zip.xml", "/home/julieta/Downloads/10MB.zip");
-            }else{
+            }else if(args[3].equals("seed")){
                 peer.seed("/home/julieta/Github/feup-sdis/src/10MB.zip", "/home/julieta/Github/feup-sdis/src");
             }
 
@@ -175,17 +187,20 @@ public class Peer extends Node{
         return manager.readEntireFileData();
     }
 
-    public void sendRegister() throws IOException{
+    public boolean sendRegister() throws IOException{
 
         byte[] key = readPublicKey();
  
         String address = InetAddress.getLocalHost().getHostAddress();
         int port = controlReceiver.getServerSocket().getLocalPort();
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
-        channelStarter.connect(peerID, "tracker",null);
+        if(!channelStarter.connect(peerID, "tracker",null)){
+            System.out.println("Tracker is offline");
+            return false;
+        }
         Message message = new RegisterMessage(this.peerID, address, port, key);
         channelStarter.getHandler().sendMessage(message);
-    
+        return true;
     }
 
     public void download(String torrentPath, String filePath) throws IOException{
@@ -212,11 +227,13 @@ public class Peer extends Node{
         long totalChunks = (fileLength + chunkLength - 1)/chunkLength;
         long totalPeers = storage.getFilePeers().get(fileId).size();
 
+        int threadsLimit = 10;
         int size = (int) Math.min(totalChunks, totalPeers);
+        int limit = Math.min(size, threadsLimit);
 
-        for(int i = 0; i < size; i++){
+        for(int i = 0; i < limit; i++){
 
-            storage.getFilesDownloaded().get(fileId).updateChunkDownloaded(i, true);
+            storage.getFilesDownloaded().get(fileId).updateSendedGetChunkMessages(i, true);
             PeerInfo peerInfo= storage.getFilePeers().get(fileId).get(i);
             Message message = new GetChunkMessage(fileId,i);
             try {
@@ -250,7 +267,7 @@ public class Peer extends Node{
 
     public static boolean sendMessageToTracker(Message message) throws UnknownHostException {
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
-        if(channelStarter.connect(peerID, "tracker",null)){
+        if(!channelStarter.connect(peerID, "tracker",null)){
             System.out.println("Tracker is offline");
             return false;
         } 

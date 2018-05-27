@@ -1,8 +1,6 @@
 package Messages;
 
-
-import Tracker.*;
-
+import Peer.*;
 public class NoFileMessage extends Message{
 
     private String CRLFCRLF = "\r\n\r\n";

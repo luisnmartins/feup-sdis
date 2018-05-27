@@ -1,7 +1,6 @@
 package Peer;
 
-import Peer.Peer;
-
+import Peer.*;
 import java.io.*;
 
 public class LogsManager {
@@ -82,9 +81,6 @@ public class LogsManager {
 
             in.close();
             file.close();
-            if(state.getBackedUpFiles() == null) {
-            
-            }
             System.out.println("Data has been loaded");
         }
 
