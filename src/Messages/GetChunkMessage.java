@@ -1,24 +1,27 @@
 package Messages;
 
-
 import Tracker.*;
+import Peer.*;
 import java.util.*;
+
+import Peer.FileManager;
+
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.IOException;
 
-public class GetChunkMessage extends Message{
+public class GetChunkMessage extends Message {
 
     private String CRLFCRLF = "\r\n\r\n";
 
     private String fileId;
-    private int chunkNro;    
+    private int chunkNro;
 
-    public GetChunkMessage(String header){
+    public GetChunkMessage(String header) {
 
         super();
         String[] headerWords = header.split(" ");
-        this.fileId = headerWords[1];        
+        this.fileId = headerWords[1];
         this.chunkNro = Integer.parseInt(headerWords[2]);
     }
 
@@ -29,10 +32,9 @@ public class GetChunkMessage extends Message{
         this.chunkNro = chunkNro;
     }
 
-
     public byte[] getFullMessage() {
         String header = "GETCHUNK " + this.fileId + " " + this.chunkNro + " " + this.CRLFCRLF;
-        System.out.println("Sent: " + "GETCHUNK " + this.fileId + " " + this.chunkNro);                
+        System.out.println("Sent: " + "GETCHUNK " + this.fileId + " " + this.chunkNro);
         byte[] headerBytes = header.getBytes();
         return headerBytes;
 
@@ -40,8 +42,26 @@ public class GetChunkMessage extends Message{
 
     public int action(DataOutputStream writer) {
 
-        
-        return 0;
-        
+        TorrentInfo torrentInfo = Peer.getStorage().getFilesSeeded().get(fileId);
+
+        if (torrentInfo != null) {
+            FileManager manager = new FileManager(torrentInfo.getFilePath());
+
+            try {
+                byte[] data = manager.readFileAsync(chunkNro * torrentInfo.getChunkLength(),
+                        (int) torrentInfo.getChunkLength());
+                System.out.println("DATALENGTH: " + data.length);
+                ChunkMessage chunkMessage = new ChunkMessage(this.fileId, this.chunkNro, data);
+                writer.write(chunkMessage.getFullMessage());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return 0;
+
+        }
+
+        return -1;
+
     }
 }

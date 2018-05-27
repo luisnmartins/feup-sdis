@@ -51,7 +51,7 @@ public class GetFileMessage extends Message{
         else{
             for(int i = 0; i < filePeers.size(); i++){
                 System.out.println("TRACKER - Peer: " + filePeers.get(i).getAddress() + " " +  filePeers.get(i).getPort());
-                PeerInfoMessage peerinfo = new PeerInfoMessage(filePeers.get(i).getAddress(), filePeers.get(i).getPort(), filePeers.get(i).getPublicKey());
+                PeerInfoMessage peerinfo = new PeerInfoMessage(this.fileId, filePeers.get(i).getAddress(), filePeers.get(i).getPort(), filePeers.get(i).getPublicKey());
                 try {
                     writer.write(peerinfo.getFullMessage());
                 } catch (IOException e) {
@@ -59,11 +59,10 @@ public class GetFileMessage extends Message{
                 }
                 
             }
-
-            String header = "CLOSE " + this.senderId + " " + this.CRLFCRLF;
-            byte[] headerBytes = header.getBytes();
+            PeerInfoEndMessage peerinfoend = new PeerInfoEndMessage(this.fileId, true);
             try {
-                writer.write(headerBytes);
+                writer.write(peerinfoend.getFullMessage());
+                
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -195,9 +195,12 @@ public class FileManager {
 
     public void writeToFileAsync(byte[] data, long offset) throws IOException {
 
-        Path path = Paths.get(pathname);
+        try {
+            Path path = Paths.get(pathname);
+
+            System.out.println("Pathanma : " + pathname);
         AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE,
-                StandardOpenOption.CREATE, StandardOpenOption.APPEND, StandardOpenOption.SYNC);
+                StandardOpenOption.CREATE, StandardOpenOption.SYNC);
 
         ByteBuffer buffer = ByteBuffer.allocate(data.length);
         buffer.put(data);
@@ -217,6 +220,10 @@ public class FileManager {
 
         });
 
+        } catch (Throwable e) {
+            e.printStackTrace();
+                }
+        
     }
 
     public boolean createFileDir(String folderName) {
@@ -239,12 +246,17 @@ public class FileManager {
         } catch (InterruptedException ie) {
             ie.printStackTrace();
         }
-
+    
         byte[] returnChunk = buffer.array();
+        int remaining = buffer.remaining();
+
+        byte[] chunk = new byte[returnChunk.length-remaining];
+
+        System.arraycopy(returnChunk, 0, chunk,0, returnChunk.length-remaining);
 
         buffer.clear();
 
-        return returnChunk;
+        return chunk;
 
     }
 
@@ -319,12 +331,12 @@ public class FileManager {
 
     }
 
-    public boolean parseDownloadFile() {
+    public SimpleEntry<String,TorrentInfo> parseDownloadFile() {
         File toParse = new File(this.pathname);
 
         if (!toParse.exists()) {
             System.err.println("File does not exist");
-            return false;
+            return null;
         }
 
         try {
@@ -335,7 +347,8 @@ public class FileManager {
             doc.getDocumentElement().normalize();
 
             NodeList nList = doc.getElementsByTagName("tracker");
-            
+            String ip = null;
+            int port = 0;
             for (int i = 0; i < nList.getLength(); i++) {
                 
                 Node nNode = nList.item(i);
@@ -343,49 +356,50 @@ public class FileManager {
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) nNode;
 
-                    String ip = eElement.getAttribute("IP");
-                    int port = Integer.parseInt(eElement.getAttribute("Port"));
+                    ip = eElement.getAttribute("IP");
+                    port = Integer.parseInt(eElement.getAttribute("Port"));
 
-                    System.out.println("Tracker IP: " + ip + " port: " + port);
 
                 }
             }
 
             nList = doc.getElementsByTagName("Chunk");
-
+            long length = -1;
             for (int i = 0; i < nList.getLength(); i++) {
                 Node nNode = nList.item(i);
 
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) nNode;
 
-                    int length = Integer.parseInt(eElement.getAttribute("length"));
+                    length = Long.parseLong(eElement.getAttribute("length"));
 
-                    System.out.println("Chunk length: " + length);
                 }
             }
 
             nList = doc.getElementsByTagName("File");
+            String fileID = null;
+            long fileLength = -1;
+            String name = null;
 
             for (int i = 0; i < nList.getLength(); i++) {
                 Node nNode = nList.item(i);
                 if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                     Element eElement = (Element) nNode;
 
-                    String fileID = eElement.getAttribute("ID");
-                    long fileLength = Long.parseLong(eElement.getAttribute("length"));
-                    String name = eElement.getAttribute("name");
+                    fileID = eElement.getAttribute("ID");
+                    fileLength = Long.parseLong(eElement.getAttribute("length"));
+                    name = eElement.getAttribute("name");
 
-                    System.out.println("File ID: " + fileID + " length: " + fileLength + " name: " + name);
 
                 }
             }
+            return new SimpleEntry<>(fileID,new TorrentInfo(ip, port, length, fileLength, pathname));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return true;
+        return null;
 
     }
 

@@ -28,7 +28,7 @@ public class MessageHandler implements Runnable {
 
     private static final byte CR = 0xD;
     private static final byte LF = 0xA;
-    private static final int MAX_SIZE = 65435;
+    private static final int MAX_SIZE = 31000;
 
     private SSLSocket connectedSocket;
     private DataInputStream reader;
@@ -96,27 +96,35 @@ public class MessageHandler implements Runnable {
     @Override
     public void run() {
         running = true;
-        while (running) {
-            switch (fsmState) {
-            case RECEIVE:
-                try {
-                    checkMessage();
-                } catch (IOException e) {
-                    e.printStackTrace();
+        try{
+            while (running) {
+
+                if(this.connectedSocket.isClosed())
+                    break;
+            
+                switch (fsmState) {
+                case RECEIVE:
+                    try {
+                        checkMessage();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case CLOSE:
+                 try {
+                        this.connectedSocket.close();         
+                        
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                   }
+                    running = false;
+                    break;
+                default:
+                    break;
                 }
-                break;
-            case CLOSE:
-             try {
-                    this.connectedSocket.close();         
-                    
-                } catch (IOException e) {
-                  e.printStackTrace();
-               }
-                running = false;
-                break;
-            default:
-                break;
             }
+        }catch(Throwable o){
+            o.printStackTrace();
         }
 
     }
@@ -175,16 +183,42 @@ public class MessageHandler implements Runnable {
         }
 
         System.out.println("Received: " + this.header);
+        //System.out.println("Received: " + this.body);
+        
+        /*if(this.body!=null)
+            System.out.println("Body: " + new String(this.body));
+        else System.out.println("BODY NULL");*/
+        
     }
 
     public void checkMessage() throws IOException{
+        
         byte[] buffer = new byte[MAX_SIZE];
         int readsize = 0;
         readsize = reader.read(buffer);
+        if(readsize == 0)
+            return;
+        if(readsize == -1)
+        {
+            running=false;
+            return;
+        }
         byte[] response = Arrays.copyOfRange(buffer, 0, readsize);
-
+        buffer = new byte[MAX_SIZE];
+        if(readsize > 16000){
+                readsize = reader.read(buffer);
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                byte[] messagePart = Arrays.copyOfRange(buffer, 0, readsize);
+                outputStream.write(response);
+                outputStream.write(messagePart);
+                response = outputStream.toByteArray();
+                buffer = new byte[MAX_SIZE];
+            
+        }
+        
         this.separateMessage(response.length, response);
         String messageType = this.header.substring(0,this.header.indexOf(" "));
+        
         switch (messageType) {
             case "SUCCESS": {
                 //TODO: Success Action
@@ -198,7 +232,6 @@ public class MessageHandler implements Runnable {
                 fsmState=fsmState.next(QUIT);              
                 break;
             }
-            //TRACKER
             case "REGISTER": {
                 RegisterMessage register = new RegisterMessage(header,body);
                 register.action(writer);
@@ -208,6 +241,7 @@ public class MessageHandler implements Runnable {
             case "ONLINE": {
                 OnlineMessage online = new OnlineMessage(header);
                 online.action(writer);
+                running=false;                
                 break;
             }
             case "HASFILE": {                      
@@ -223,16 +257,34 @@ public class MessageHandler implements Runnable {
             }
             case "GETFILE": {                      
                 GetFileMessage getfile = new GetFileMessage(header);
-                int res = getfile.action(writer);
+                getfile.action(writer);
                 running=false;
                 break;
             }
-            //PEER
             case "PEERINFO": {                      
                 PeerInfoMessage peerinfo = new PeerInfoMessage(header, body);
                 peerinfo.action();
                 break;
             }
+            case "PEERINFOEND": {                      
+                PeerInfoEndMessage peerinfoend = new PeerInfoEndMessage(header);
+                peerinfoend.action();
+                fsmState=fsmState.next(QUIT);  
+                break;
+            }
+            case "GETCHUNK": {                      
+                GetChunkMessage getChunkMessage = new GetChunkMessage(header);
+                getChunkMessage.action(writer);
+                break;
+            }
+            case "CHUNK": {                      
+                ChunkMessage chunkMessage = new ChunkMessage(header, body);
+                int res = chunkMessage.action(writer);
+                if(res == 1){
+                    fsmState=fsmState.next(QUIT);              
+                }
+                break;
+            }  
             default:
                 break;
         }

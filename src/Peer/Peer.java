@@ -4,6 +4,8 @@ import Chunk.ChunkData;
 import Messages.*;
 import java.util.AbstractMap.SimpleEntry;
 import Sockets.*;
+import Tracker.PeerInfo;
+
 import java.util.*;
 import java.net.UnknownHostException;
 import java.io.*;
@@ -132,7 +134,7 @@ public class Peer{
             serId = Integer.parseInt(args[2]);
 
             if(args[3].equals("download")){
-                peer.download("path", "path");
+                peer.download("/home/julieta/Github/feup-sdis/src/bridge.jpeg.xml", "/home/julieta/Downloads/bridge.jpeg");
             }else{
                 peer.seed("/home/julieta/Github/feup-sdis/src/bridge.jpeg", "/home/julieta/Github/feup-sdis/src");
             }
@@ -187,18 +189,56 @@ public class Peer{
 
     public void download(String torrentPath, String filePath) throws IOException{
         
-        Message message = new GetFileMessage(peerID, "abc");
+        FileManager manager = new FileManager(torrentPath);
+        SimpleEntry<String,TorrentInfo> torrentInfo = manager.parseDownloadFile();
+        torrentInfo.getValue().setFilePath(filePath);
+        storage.getFilesDownloaded().put(torrentInfo.getKey(), torrentInfo.getValue());
+        Message message = new GetFileMessage(peerID, torrentInfo.getKey());
         sendMessageToTracker(message);
         
+    }
+
+    public static void manageFileDownload(String fileId){
+        
+        
+        long chunkLength = storage.getFilesDownloaded().get(fileId).getChunkLength();
+        long fileLength = storage.getFilesDownloaded().get(fileId).getFileLength();
+
+        /*int totalChunks = (int)Math.ceil(fileLength/chunkLength);
+        if(totalChunks == 0)
+            totalChunks = 1;*/
+
+        long totalChunks = (fileLength + chunkLength - 1)/chunkLength;
+        long totalPeers = storage.getFilePeers().get(fileId).size();
+
+        int size = (int) Math.min(totalChunks, totalPeers);
+
+        for(int i = 0; i < size; i++){
+
+            storage.getFilesDownloaded().get(fileId).updateChunkDownloaded(i, true);
+            PeerInfo peerInfo= storage.getFilePeers().get(fileId).get(i);
+            Message message = new GetChunkMessage(fileId,i);
+            try {
+                sendMessageToPeer(peerInfo.getAddress(), peerInfo.getPort(), peerInfo.getPublicKey(), message);                
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void seed(String filePath, String torrentPath) throws IOException{
         FileManager manager = new FileManager(filePath);
         InetAddress address = InetAddress.getByName(this.trackerIP);
-        SimpleEntry<String,TorrentInfo> torrentInfo = manager.createDownloadFile(260096, this.trackerPort, address.getHostAddress(),torrentPath);
+        SimpleEntry<String,TorrentInfo> torrentInfo = manager.createDownloadFile(30000, this.trackerPort, address.getHostAddress(),torrentPath);
         storage.getFilesSeeded().put(torrentInfo.getKey(), torrentInfo.getValue());
         Message message = new HasFileMessage(peerID, torrentInfo.getKey());
         sendMessageToTracker(message);
+    }
+
+    public static void sendMessageToPeer(String address, int port, byte[] key, Message message) throws UnknownHostException {
+        SenderSocket channelStarter = new SenderSocket(port, address);
+        channelStarter.connect(peerID, "peer" ,key);
+        channelStarter.getHandler().sendMessage(message);
     }
 
     public static void sendMessageToTracker(Message message) throws UnknownHostException {

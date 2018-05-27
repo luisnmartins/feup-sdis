@@ -5,14 +5,14 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class PeerInfo{
+public class PeerInfo implements java.io.Serializable{
     
     private String address;
     private int port;
     private long lastTimeOnline; //in milliseconds
     private byte[] publicKey;
 
-    public PeerInfo(String address, int port, long lastTimeOnline,byte[] key){
+    public PeerInfo(String address, int port, long lastTimeOnline,byte[] key) {
         this.address=address;
         this.port = port;
         this.lastTimeOnline = lastTimeOnline;

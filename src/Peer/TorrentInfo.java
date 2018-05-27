@@ -11,7 +11,7 @@ public class TorrentInfo implements java.io.Serializable{
     private long chunkLength;
     private long fileLength;
     private String filePath;
-    private ArrayList<Boolean> chunksDownloaded; 
+    private volatile List<Boolean> chunksDownloaded; 
 
 
     public TorrentInfo(String trackerAddress, int trackerPort, long chunkLength, long fileLength, String filePath){
@@ -22,8 +22,9 @@ public class TorrentInfo implements java.io.Serializable{
         this.fileLength = fileLength;
         this.filePath = filePath;
 
-        int totalChunks = (int)Math.ceil(this.fileLength/this.chunkLength);
-        this.chunksDownloaded = new ArrayList<>(totalChunks);   
+        long totalChunks = (fileLength + chunkLength - 1)/chunkLength;
+        
+        this.chunksDownloaded = Collections.synchronizedList(new ArrayList<>((int)totalChunks)) ;   
         for(int i = 0; i < totalChunks; i++){
             this.chunksDownloaded.add(false);
         }
@@ -33,7 +34,7 @@ public class TorrentInfo implements java.io.Serializable{
     /**
      * @return the chunkLength
      */
-    public long getChunkLength() {
+    public synchronized long getChunkLength() {
         return chunkLength;
     }
 
@@ -47,21 +48,34 @@ public class TorrentInfo implements java.io.Serializable{
     /**
      * @return the chunksDownloaded
      */
-    public ArrayList<Boolean> getChunksDownloaded() {
+    public synchronized List<Boolean> getChunksDownloaded() {
         return chunksDownloaded;
     }
 
     /**
      * @param chunksDownloaded the chunksDownloaded to set
      */
-    public void setChunksDownloaded(ArrayList<Boolean> chunksDownloaded) {
+    public synchronized void setChunksDownloaded(List<Boolean>chunksDownloaded) {
         this.chunksDownloaded = chunksDownloaded;
     }
+
+    public synchronized void updateChunkDownloaded(int index, boolean bool){
+        chunksDownloaded.remove(index);                        
+        chunksDownloaded.add(index, bool);
+
+        System.out.println("INDEX: " + index + " " + bool);
+    }
+
+    public synchronized int getNextFalse(){
+        return chunksDownloaded.indexOf(false);
+    }
+
+
 
     /**
      * @return the fileLength
      */
-    public long getFileLength() {
+    public synchronized long getFileLength() {
         return fileLength;
     }
 
@@ -75,7 +89,7 @@ public class TorrentInfo implements java.io.Serializable{
     /**
      * @return the path
      */
-    public String getFilePath() {
+    public synchronized String getFilePath() {
         return filePath;
     }
 
@@ -89,7 +103,7 @@ public class TorrentInfo implements java.io.Serializable{
     /**
      * @return the trackerAddress
      */
-    public String getTrackerAddress() {
+    public synchronized String getTrackerAddress() {
         return trackerAddress;
     }
     /**
@@ -102,7 +116,7 @@ public class TorrentInfo implements java.io.Serializable{
     /**
      * @return the trackerPort
      */
-    public int getTrackerPort() {
+    public synchronized int getTrackerPort() {
         return trackerPort;
     }
 
