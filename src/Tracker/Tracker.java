@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 /**
  * Tracker
  */
-public class Tracker {
+public class Tracker extends Node{
 
     private static volatile ConcurrentHashMap<String,PeerInfo> onlinePeers = new ConcurrentHashMap<>();
     private static volatile ConcurrentHashMap<String,ArrayList<String>> availableFiles = new ConcurrentHashMap<>();

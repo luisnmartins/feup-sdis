@@ -18,7 +18,7 @@ import java.util.concurrent.*;
 /**
  * peer
  */
-public class Peer{
+public class Peer extends Node{
 
     private static String peerID;
     private static String trackerIP;
@@ -30,7 +30,7 @@ public class Peer{
     private static ReceiverSocket controlReceiver;
 
     private static int serId;
-
+       
 
     public Peer() {
     }
@@ -61,6 +61,7 @@ public class Peer{
         Peer.getExec().scheduleAtFixedRate(onlineMessagesThread, 30, 60, TimeUnit.SECONDS);
 
     }
+
 
     public class OnlineMessagesThread implements Runnable {
         public OnlineMessagesThread() {}
@@ -134,9 +135,9 @@ public class Peer{
             serId = Integer.parseInt(args[2]);
 
             if(args[3].equals("download")){
-                peer.download("/home/julieta/Github/feup-sdis/src/bridge.jpeg.xml", "/home/julieta/Downloads/bridge.jpeg");
+                peer.download("/home/julieta/Github/feup-sdis/src/10MB.zip.xml", "/home/julieta/Downloads/10MB.zip");
             }else{
-                peer.seed("/home/julieta/Github/feup-sdis/src/bridge.jpeg", "/home/julieta/Github/feup-sdis/src");
+                peer.seed("/home/julieta/Github/feup-sdis/src/10MB.zip", "/home/julieta/Github/feup-sdis/src");
             }
 
         } else {

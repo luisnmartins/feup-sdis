@@ -99,8 +99,10 @@ public class MessageHandler implements Runnable {
         try{
             while (running) {
 
-                if(this.connectedSocket.isClosed())
-                    break;
+                if(this.connectedSocket.isClosed()){
+                    Node.decReceiverCounter();
+                    break;                           
+                }
             
                 switch (fsmState) {
                 case RECEIVE:
@@ -182,12 +184,8 @@ public class MessageHandler implements Runnable {
             this.body = null;
         }
 
-        System.out.println("Received: " + this.header);
-        //System.out.println("Received: " + this.body);
+        //System.out.println("Received: " + this.header);
         
-        /*if(this.body!=null)
-            System.out.println("Body: " + new String(this.body));
-        else System.out.println("BODY NULL");*/
         
     }
 

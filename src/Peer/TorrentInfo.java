@@ -62,8 +62,6 @@ public class TorrentInfo implements java.io.Serializable{
     public synchronized void updateChunkDownloaded(int index, boolean bool){
         chunksDownloaded.remove(index);                        
         chunksDownloaded.add(index, bool);
-
-        System.out.println("INDEX: " + index + " " + bool);
     }
 
     public synchronized int getNextFalse(){

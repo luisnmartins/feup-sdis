@@ -36,7 +36,7 @@ public class ChunkMessage extends Message{
 
     public byte[] getFullMessage() {
         String header = "CHUNK " + this.fileId + " " + this.chunkNr + " " +this.CRLFCRLF;
-        System.out.println("Sent: " + "CHUNK " + this.fileId + " " + this.chunkNr );        
+        //System.out.println("Sent: " + "CHUNK " + this.fileId + " " + this.chunkNr );        
         byte[] headerBytes = header.getBytes();
         byte[] finalByteArray = new byte[headerBytes.length+this.body.length];
         System.arraycopy( headerBytes, 0, finalByteArray, 0, headerBytes.length);

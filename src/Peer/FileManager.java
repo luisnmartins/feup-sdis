@@ -197,8 +197,6 @@ public class FileManager {
 
         try {
             Path path = Paths.get(pathname);
-
-            System.out.println("Pathanma : " + pathname);
         AsynchronousFileChannel fileChannel = AsynchronousFileChannel.open(path, StandardOpenOption.WRITE,
                 StandardOpenOption.CREATE, StandardOpenOption.SYNC);
 

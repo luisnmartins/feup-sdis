@@ -35,18 +35,20 @@ public class ReceiverSocket extends SecureSocket {
             setupSSLContext();
 
             SSLServerSocketFactory sf = sslContext.getServerSocketFactory();
-            this.serverSocket = (SSLServerSocket) sf.createServerSocket(this.port);
+            this.serverSocket = (SSLServerSocket) sf.createServerSocket(this.port, 2);
 
             // Require client auth
             this.serverSocket.setNeedClientAuth(false);
             System.out.println("Listening on " + serverSocket.getLocalPort());
             Runnable accepter;
             if(connectFrom.equals("tracker")){
+                System.out.println("CONNECTED FROM TRACKER");
                 accepter = new connectionAccepter(true);
                 Tracker.getExec().execute(accepter);
             }else{
-                accepter =  new connectionAccepter(false);
-                Peer.getExec().execute(accepter);
+                    accepter =  new connectionAccepter(false);
+                    Peer.getExec().execute(accepter);
+               
             }
         } catch (GeneralSecurityException ge) {
             ge.printStackTrace();
@@ -63,18 +65,30 @@ public class ReceiverSocket extends SecureSocket {
         @Override
         public void run() {
             while (true) {
+
+                
+                if(!isTracker){
+                    if(Peer.getReceiverCounter() >= 1){
+                        continue;
+                    }
+                }
+
+               
                 try {
                     SSLSocket socketConnected = (SSLSocket) serverSocket.accept();
-                    //System.out.println("Got connection from " + socketConnected);
+                    System.out.println("Got connection from " + socketConnected);
                     MessageHandler handler = new MessageHandler(socketConnected);
                     handler.updateState(Transition.RECEIVER);
                     if(isTracker)
                         Tracker.getExec().execute(handler);
-                    else
+                    else{
+                        Peer.incReceiverCounter();
                         Peer.getExec().execute(handler);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+               
             }
 
         }
