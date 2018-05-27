@@ -49,7 +49,7 @@ public class SenderSocket extends SecureSocket{
     }
 
 
-    public void connect(String connectFrom,String connectTo,byte[] key){
+    public boolean connect(String connectFrom,String connectTo,byte[] key){
         
         try{
             setupSocketKeyStore(connectFrom);
@@ -62,6 +62,10 @@ public class SenderSocket extends SecureSocket{
             setupSSLContext();
 
             SSLSocketFactory sf = sslContext.getSocketFactory();
+            try(SSLSocket socket = (SSLSocket) sf.createSocket(this.host,this.port)){
+            }catch (IOException e) {
+                return false;
+            }
             SSLSocket socket = (SSLSocket) sf.createSocket(this.host,this.port);
 
             handler = new MessageHandler(socket);
@@ -69,10 +73,16 @@ public class SenderSocket extends SecureSocket{
 
             Peer.getExec().execute(handler);
 
+            return true;
+
         }catch(GeneralSecurityException gse){
             gse.printStackTrace();
+            return false;
         }catch(IOException e){
             e.printStackTrace();
+            return false;
+            //System.out.println("Error connecting to the host");
+            //return false;
         }
     }     
 

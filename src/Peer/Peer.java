@@ -235,16 +235,26 @@ public class Peer{
         sendMessageToTracker(message);
     }
 
-    public static void sendMessageToPeer(String address, int port, byte[] key, Message message) throws UnknownHostException {
+    public static boolean sendMessageToPeer(String address, int port, byte[] key, Message message) throws UnknownHostException {
         SenderSocket channelStarter = new SenderSocket(port, address);
-        channelStarter.connect(peerID, "peer" ,key);
+        if(!channelStarter.connect(peerID, "peer" ,key)){
+            System.out.println("The peer you trying to communicate is offline");
+            return false;
+        }
+            
         channelStarter.getHandler().sendMessage(message);
+
+        return true;
     }
 
-    public static void sendMessageToTracker(Message message) throws UnknownHostException {
+    public static boolean sendMessageToTracker(Message message) throws UnknownHostException {
         SenderSocket channelStarter = new SenderSocket(trackerPort, trackerIP);
-        channelStarter.connect(peerID, "tracker",null);
+        if(channelStarter.connect(peerID, "tracker",null)){
+            System.out.println("Tracker is offline");
+            return false;
+        } 
         channelStarter.getHandler().sendMessage(message);
+        return true;
     }
  
 
