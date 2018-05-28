@@ -205,19 +205,27 @@ public class FileManager {
 
             @Override
             public void completed(Integer result, ByteBuffer attachment) {
-
+                try {
+                    fileChannel.close();
+                }catch(IOException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
             public void failed(Throwable exc, ByteBuffer attachment) {
-
+                try {
+                    fileChannel.close();
+                }catch(IOException e) {
+                    e.printStackTrace();
+                }
             }
 
         });
-
+        
         } catch (Throwable e) {
             e.printStackTrace();
-                }
+        }
         
     }
 
@@ -251,6 +259,8 @@ public class FileManager {
 
         buffer.clear();
 
+        channel.close();
+
         return chunk;
 
     }
@@ -258,6 +268,12 @@ public class FileManager {
     public SimpleEntry<String,TorrentInfo> createDownloadFile(long chunkSize, int port, String address,String toStore) {
 
         File file = new File(pathname);
+        long size = 0;
+        try{
+            size = Files.size(file.toPath());
+        }catch(IOException e ){
+            e.printStackTrace();
+        }
 
         if (!file.exists()) {
             System.err.println("Can't create download file from non existing files");
@@ -307,7 +323,8 @@ public class FileManager {
             fileElement.setAttributeNode(fileNameAttr);
 
             Attr fileLengthAttr = doc.createAttribute("length");
-            fileLengthAttr.setValue(Long.toString(file.length()));
+            System.out.println("FILE YOLO: "+size);
+            fileLengthAttr.setValue(Long.toString(size));
             fileElement.setAttributeNode(fileLengthAttr);
 
             TransformerFactory transformerFactory = TransformerFactory.newInstance();

@@ -18,9 +18,10 @@ public class PeerInfo implements java.io.Serializable{
         this.port = port;
         this.lastTimeOnline = lastTimeOnline;
         this.publicKey = key;
+        this.available = true;
     }
 
-    public String getAddress() {
+    public synchronized String getAddress() {
         return this.address;
     }
 
@@ -28,7 +29,7 @@ public class PeerInfo implements java.io.Serializable{
         this.address=address;
     }
 
-    public int getPort() {
+    public synchronized int getPort() {
         return this.port;
     }
 
@@ -52,12 +53,25 @@ public class PeerInfo implements java.io.Serializable{
         this.lastTimeOnline=lastTimeOnline;
     }
 
-    public boolean isAvailable(){
+    public synchronized boolean isAvailable(){
         return this.available;
     }
 
-    public void setAvailable(boolean available) {
+    public synchronized void setAvailable(boolean available) {
         this.available = available;
+    }
+
+    @Override
+    public boolean equals(Object object)
+    {
+
+        if (object != null && object instanceof PeerInfo)
+        {
+            PeerInfo info = ((PeerInfo) object);
+            return this.address.equals(getAddress()) && this.port == info.getPort();
+        }
+
+        return false;
     }
 
 

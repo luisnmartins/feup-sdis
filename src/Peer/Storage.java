@@ -28,20 +28,20 @@ public class Storage implements java.io.Serializable{
     /**
      * @return the filesSeeded
      */
-    public ConcurrentHashMap<String, TorrentInfo> getFilesSeeded() {
+    public  synchronized ConcurrentHashMap<String, TorrentInfo> getFilesSeeded() {
         return filesSeeded;
     }
     /**
      * @param filesSeeded the filesSeeded to set
      */
-    public void setFilesSeeded(ConcurrentHashMap<String, TorrentInfo> filesSeeded) {
+    public synchronized void setFilesSeeded(ConcurrentHashMap<String, TorrentInfo> filesSeeded) {
         this.filesSeeded = filesSeeded;
     }
 
     /**
      * @return the filesDownloaded
      */
-    public ConcurrentHashMap<String, TorrentInfo> getFilesDownloaded() {
+    public synchronized ConcurrentHashMap<String, TorrentInfo> getFilesDownloaded() {
         return filesDownloaded;
     }
 
@@ -55,7 +55,7 @@ public class Storage implements java.io.Serializable{
     /**
      * @return the filePeers
      */
-    public ConcurrentHashMap<String,  ArrayList<PeerInfo>> getFilePeers() {
+    public synchronized ConcurrentHashMap<String,  ArrayList<PeerInfo>> getFilePeers() {
         return filePeers;
     }
 
@@ -65,6 +65,30 @@ public class Storage implements java.io.Serializable{
     public void setFilePeers(ConcurrentHashMap<String,  ArrayList<PeerInfo>> filePeers) {
         this.filePeers = filePeers;
     }
+
+
+    public synchronized TorrentInfo getDownloadedFile(String fileId){
+        return this.filesDownloaded.get(fileId);
+    }
+
+    public synchronized ArrayList<PeerInfo> getPeerInfosByIpPort(String address, int port){
+
+        ArrayList<PeerInfo> peers = new ArrayList<>();
+
+        for (String key : filePeers.keySet()) {
+            ArrayList<PeerInfo> peerList = filePeers.get(key);
+            
+            for(int i = 0; i < peerList.size(); i++){
+                if(peerList.get(i).getAddress().equals(address) && peerList.get(i).getPort()==port){
+                    peers.add(peerList.get(i));
+                }
+            }
+        }
+
+        return peers;
+
+    }
+    
 
     /**
      * Write status variables to serializable

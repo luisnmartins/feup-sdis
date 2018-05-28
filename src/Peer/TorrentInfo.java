@@ -11,7 +11,10 @@ public class TorrentInfo implements java.io.Serializable{
     private long chunkLength;
     private long fileLength;
     private String filePath;
-    private volatile List<Boolean> sendedGetChunkMessages;
+    //private volatile List<Boolean> sendedGetChunkMessages;
+    //private volatile List<Boolean> receivedChunkMessages;
+    public volatile List<ChunkStatus> chunksStatus;
+    public boolean completed = false;
      
 
     public TorrentInfo(String trackerAddress, int trackerPort, long chunkLength, long fileLength, String filePath){
@@ -23,11 +26,24 @@ public class TorrentInfo implements java.io.Serializable{
         this.filePath = filePath;
 
         long totalChunks = (fileLength + chunkLength - 1)/chunkLength;
+        System.out.println("FILE LENGTH: "+ fileLength);
+        System.out.println("CHUNKLENGTH: "+ chunkLength);
+        System.out.println("TORRENT INFO AAASAA: " + totalChunks);
         
-        this.sendedGetChunkMessages = Collections.synchronizedList(new ArrayList<>((int)totalChunks)) ;   
+        /*this.sendedGetChunkMessages = Collections.synchronizedList(new ArrayList<>((int)totalChunks)) ;
+        this.receivedChunkMessages = Collections.synchronizedList(new ArrayList<>((int) totalChunks));   
         for(int i = 0; i < totalChunks; i++){
             this.sendedGetChunkMessages.add(false);
+            this.receivedChunkMessages.add(false);
+        }*/
+
+        this.chunksStatus = Collections.synchronizedList(new ArrayList <> ((int)totalChunks));
+
+        for(int i = 0; i < totalChunks; i++){
+            ChunkStatus chunkStatus = new ChunkStatus();
+            this.chunksStatus.add(chunkStatus);
         }
+
     }
 
     /**
@@ -44,10 +60,8 @@ public class TorrentInfo implements java.io.Serializable{
         this.chunkLength = chunkLength;
     }
 
-    /**
-     * @return the chunksDownloaded
-     */
-    public synchronized List<Boolean> getSendedGetChunkMessages() {
+    
+    /*public synchronized List<Boolean> getSendedGetChunkMessages() {
         return sendedGetChunkMessages;
     }
 
@@ -63,7 +77,7 @@ public class TorrentInfo implements java.io.Serializable{
 
     public synchronized int getNextFalseSendedGetChunks(){
         return sendedGetChunkMessages.indexOf(false);
-    }
+    }*/
 
     /**
      * @return the fileLength
@@ -119,4 +133,61 @@ public class TorrentInfo implements java.io.Serializable{
     public void setTrackerPort(int trackerPort) {
         this.trackerPort = trackerPort;
     }
+
+    public synchronized boolean isCompleted(){
+        return this.completed;
+    }
+
+    public synchronized void setCompleted(boolean completed){
+        this.completed = completed;
+    }
+
+    
+    /*public synchronized List<Boolean> getReceivedChunkMessages() {
+        return receivedChunkMessages;
+    }
+
+    public synchronized void setReceivedChunkMessages(List<Boolean> receivedChunkMessages) {
+        this.receivedChunkMessages = receivedChunkMessages;
+    }
+
+    public synchronized void updateChunkMessages(int index, boolean bool){
+        receivedChunkMessages.remove(index);                        
+        receivedChunkMessages.add(index, bool);
+       
+    }*/
+
+    public synchronized int getNextChunkToSend(){
+        for(int i = 0; i < this.chunksStatus.size(); i++){
+            if(this.chunksStatus.get(i).getSentGetChunk() == false){
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    public synchronized void updateSentGetChunk(int index, boolean bool ){
+        System.out.println("TORRENT INFO: " +index);
+        this.chunksStatus.get(index).updateSentGetChunk(bool);
+    }
+
+    public synchronized void updateReceivedChunk(int index, boolean bool){
+        this.chunksStatus.get(index).updateReceivedChunk(bool);        
+    }
+
+    public synchronized void clearChunksStatus(){
+        this.chunksStatus.clear();
+    }
+
+    public synchronized int toResend() {
+        for(int i=0; i<this.chunksStatus.size(); i++) {
+            if(this.chunksStatus.get(i).toResend())
+                return i;
+        }
+        return -1;
+    }
+
+
+    
 }

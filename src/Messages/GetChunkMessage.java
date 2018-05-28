@@ -34,7 +34,7 @@ public class GetChunkMessage extends Message {
 
     }
 
-    public int action(DataOutputStream writer) {
+    public synchronized int action(DataOutputStream writer) {
 
         TorrentInfo torrentInfo = Peer.getStorage().getFilesSeeded().get(fileId);
 
@@ -47,6 +47,7 @@ public class GetChunkMessage extends Message {
                 ChunkMessage chunkMessage = new ChunkMessage(this.fileId, this.chunkNro, data);
                 writer.write(chunkMessage.getFullMessage());
             } catch (IOException e) {
+                System.out.println("Cannot write getchunk");
                 e.printStackTrace();
             }
 

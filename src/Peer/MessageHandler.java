@@ -13,6 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -31,6 +34,8 @@ public class MessageHandler implements Runnable {
     private static final int MAX_SIZE = 31000;
 
     private SSLSocket connectedSocket;
+    ArrayList<PeerInfo> peerInfos;
+    
     private DataInputStream reader;
     private DataOutputStream writer;
     private String header;
@@ -131,9 +136,28 @@ public class MessageHandler implements Runnable {
         }
 
     }
-    
+
     public MessageHandler(SSLSocket socket) throws IOException{
         this.connectedSocket = socket;
+
+        this.peerInfos = null;
+
+        socket.setSoTimeout(15000);
+
+        InputStream in = this.connectedSocket.getInputStream();
+        OutputStream out = this.connectedSocket.getOutputStream();
+
+        reader = new DataInputStream(in);
+        writer = new DataOutputStream(out);
+
+    }
+    
+    public MessageHandler(SSLSocket socket, String address, int port) throws IOException{
+        this.connectedSocket = socket;
+
+        this.peerInfos = Peer.getPeerInfosByIpPort(address, port);
+
+        socket.setSoTimeout(15000);
 
         InputStream in = this.connectedSocket.getInputStream();
         OutputStream out = this.connectedSocket.getOutputStream();
@@ -143,22 +167,38 @@ public class MessageHandler implements Runnable {
 
     }
 
+    public synchronized void setPeersUnavailable(){
+
+        if(this.peerInfos == null)
+            return;
+        for (int i = 0; i<peerInfos.size(); i++) {
+            if(peerInfos.get(i) != null)
+            {
+                System.out.println("UNAVAILABLE");
+                peerInfos.get(i).setAvailable(false);
+            }
+        }
+    }
+
     public DataOutputStream getWriter() {
         return writer;
     }
 
-    public synchronized void  sendMessage(Message msg) {
+    public synchronized boolean sendMessage(Message msg) {
         if (writer != null && fsmState == State.WRITE){
             byte[] textMessage = msg.getFullMessage();
             try {             
                 writer.write(textMessage);             
-                fsmState = fsmState.next(WROTE); 
+                fsmState = fsmState.next(WROTE);
+                return true;
             } catch (IOException e) {
-                
+                setPeersUnavailable();
+                return false;
             }
 
         } else {
             System.err.println("Error: cant send message if connection hasnt been established or you  are not the one to send the message");
+            return false;
         }
 
     }
@@ -194,27 +234,83 @@ public class MessageHandler implements Runnable {
         
         byte[] buffer = new byte[MAX_SIZE];
         int readsize = 0;
-        readsize = reader.read(buffer);
+        try {
+            System.out.println("Reading");
+            readsize = reader.read(buffer);
+        } catch (SocketTimeoutException e) {
+            System.out.println("Socket timeout");
+            Node.decReceiverCounter();            
+            running=false;
+            return;
+        } catch(SocketException a) {
+            setPeersUnavailable();
+            System.out.println("Socket exception");
+            Node.decReceiverCounter();            
+            running=false;
+            return;
+        }catch(Exception j) {
+            setPeersUnavailable();
+            System.out.println("Socket exception");
+            Node.decReceiverCounter();            
+            running=false;
+            return;
+        };
+        
         if(readsize == 0)
             return;
         if(readsize == -1)
         {
+            /*setPeersUnavailable();
             Node.decReceiverCounter();            
-            running=false;
+            running=false;*/
+            this.updateState(READ);
             return;
         }
         byte[] response = Arrays.copyOfRange(buffer, 0, readsize);
         buffer = new byte[MAX_SIZE];
         if(readsize > 16000){
+            try {
+                System.out.println("Reading");
                 readsize = reader.read(buffer);
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                byte[] messagePart = Arrays.copyOfRange(buffer, 0, readsize);
-                outputStream.write(response);
-                outputStream.write(messagePart);
-                response = outputStream.toByteArray();
-                buffer = new byte[MAX_SIZE];
+            } catch (SocketTimeoutException e) {
+                System.out.println("Socket timeout");
+                Node.decReceiverCounter();            
+                running=false;
+                return;
+            } catch(SocketException a) {
+                setPeersUnavailable();
+                System.out.println("Socket exception");
+                Node.decReceiverCounter();            
+                running=false;
+                return;
+            } catch(Exception j) {
+                setPeersUnavailable();
+                System.out.println("Socket exception");
+                Node.decReceiverCounter();            
+                running=false;
+                return;
+            }
+                
+            if(readsize == -1) {
+                this.updateState(READ);
+                return;
+            }
+            if(readsize == 0){
+                return;
+            }
+            
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            byte[] messagePart = Arrays.copyOfRange(buffer, 0, readsize);
+            outputStream.write(response);
+            outputStream.write(messagePart);
+            response = outputStream.toByteArray();
+            buffer = new byte[MAX_SIZE];
             
         }
+
+       //byte[] response = new byte[MAX_SIZE];
+        //readsize = readInputStreamWithTimeout(response,6000);
+
         
         this.separateMessage(response.length, response);
         String messageType = this.header.substring(0,this.header.indexOf(" "));
@@ -235,18 +331,21 @@ public class MessageHandler implements Runnable {
             case "REGISTER": {
                 RegisterMessage register = new RegisterMessage(header,body);
                 register.action(writer);
+
                 running=false;
                 break;
             }
             case "ONLINE": {
                 OnlineMessage online = new OnlineMessage(header);
                 online.action(writer);
+                Node.decReceiverCounter();
                 running=false;                
                 break;
             }
             case "HASFILE": {                      
                 HasFileMessage hasfile = new HasFileMessage(header);
                 hasfile.action(writer);
+                Node.decReceiverCounter();
                 running=false;
                 break;
             }
@@ -258,6 +357,7 @@ public class MessageHandler implements Runnable {
             case "GETFILE": {                      
                 GetFileMessage getfile = new GetFileMessage(header);
                 getfile.action(writer);
+                Node.decReceiverCounter();
                 running=false;
                 break;
             }
@@ -279,7 +379,7 @@ public class MessageHandler implements Runnable {
             }
             case "CHUNK": {                      
                 ChunkMessage chunkMessage = new ChunkMessage(header, body);
-                int res = chunkMessage.action(writer);
+                int res = chunkMessage.action(writer, this.peerInfos);
                 if(res == 1){
                     fsmState=fsmState.next(QUIT);              
                 }
@@ -289,6 +389,18 @@ public class MessageHandler implements Runnable {
                 break;
         }
 
+    }
+
+    public  int readInputStreamWithTimeout(byte[] buffer,int timeoutMillis) throws IOException{
+        int bufferOffset = 0;
+        long maxTimeMillis = System.currentTimeMillis() + timeoutMillis;
+        while(System.currentTimeMillis() < maxTimeMillis && bufferOffset < buffer.length){
+            int readLength = buffer.length-bufferOffset;
+            int readResult = reader.read(buffer,bufferOffset,readLength);
+            if(readResult == -1) break;
+            bufferOffset += readResult;
+        }
+        return bufferOffset;   
     }
 
 }

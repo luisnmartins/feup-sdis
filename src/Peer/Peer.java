@@ -79,14 +79,27 @@ public class Peer extends Node{
 
 
         for (String key : storage.getFilesSeeded().keySet()) {
+
+            storage.getFilePeers().clear();
             Message message = new HasFileMessage(peerID, key);
-            
             try {
                 sendMessageToTracker(message);                
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }  
         }
+
+        for (String key : storage.getFilesDownloaded().keySet()) {
+            Message message = new GetFileMessage(peerID, key);
+        
+            try {
+                sendMessageToTracker(message);                
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }  
+        }
+
+
         
     }
 
@@ -115,7 +128,7 @@ public class Peer extends Node{
         Peer.peerID = peerID;
     }
 
-    public static Storage getStorage() {
+    public synchronized static Storage getStorage() {
         return storage;
     }
 
@@ -147,9 +160,9 @@ public class Peer extends Node{
             peer = new Peer(args[0],Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 
             if(args[3].equals("download")){
-                peer.download("/home/julieta/Github/feup-sdis/src/10MB.zip.xml", "/home/julieta/Downloads/10MB.zip");
+                peer.download("/Users/luisnmartins/Documents/Faculdade/3ano/2semestre/SDIS/feup-sdis/src/200MB.zip.xml", "/Users/luisnmartins/200MB" + serId +".zip");
             }else if(args[3].equals("seed")){
-                peer.seed("/home/julieta/Github/feup-sdis/src/10MB.zip", "/home/julieta/Github/feup-sdis/src");
+                peer.seed("/Users/luisnmartins/Documents/Faculdade/3ano/2semestre/SDIS/feup-sdis/src/200MB.zip", "/Users/luisnmartins/Documents/Faculdade/3ano/2semestre/SDIS/feup-sdis/src");
             }
 
         } else {
@@ -233,15 +246,27 @@ public class Peer extends Node{
 
         for(int i = 0; i < limit; i++){
 
-            storage.getFilesDownloaded().get(fileId).updateSendedGetChunkMessages(i, true);
+            //storage.getFilesDownloaded().get(fileId).updateSendedGetChunkMessages(i, true);
+            System.out.println("PEER: " + i);
             PeerInfo peerInfo= storage.getFilePeers().get(fileId).get(i);
+            storage.getFilesDownloaded().get(fileId).updateSentGetChunk(i, true);
             Message message = new GetChunkMessage(fileId,i);
             try {
-                sendMessageToPeer(peerInfo.getAddress(), peerInfo.getPort(), peerInfo.getPublicKey(), message);                
+                if(!sendMessageToPeer(peerInfo.getAddress(), peerInfo.getPort(), peerInfo.getPublicKey(), message)){
+                    storage.getFilesDownloaded().get(fileId).updateSentGetChunk(i, false);
+                    peerInfo.setAvailable(false);
+                }                
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
+        Runnable reconnect = new Reconnect();
+        Peer.getExec().scheduleAtFixedRate(reconnect, 10, 5, TimeUnit.SECONDS);
+
+        
+
+
     }
 
     public void seed(String filePath, String torrentPath) throws IOException{
@@ -260,7 +285,9 @@ public class Peer extends Node{
             return false;
         }
             
-        channelStarter.getHandler().sendMessage(message);
+        if(!channelStarter.getHandler().sendMessage(message)) {
+            return false;
+        }
 
         return true;
     }
@@ -274,7 +301,15 @@ public class Peer extends Node{
         channelStarter.getHandler().sendMessage(message);
         return true;
     }
- 
 
 
+    public static synchronized TorrentInfo getStorageFileDownloaded(String fileId){
+        TorrentInfo torrentInfo = storage.getDownloadedFile(fileId);
+
+        return torrentInfo;
+    }
+
+    public static synchronized ArrayList <PeerInfo> getPeerInfosByIpPort(String address, int port){
+        return storage.getPeerInfosByIpPort(address, port);
+    }
 }

@@ -52,7 +52,9 @@ public class PeerInfoMessage extends Message{
         }
 
         if(Peer.getStorage().getFilePeers().containsKey(this.fileId)){
-            Peer.getStorage().getFilePeers().get(this.fileId).add(peerinfo);
+            if(!Peer.getStorage().getFilePeers().get(this.fileId).contains(peerinfo)) {
+                Peer.getStorage().getFilePeers().get(this.fileId).add(peerinfo);
+            }
         } else {
             ArrayList<PeerInfo> peers = new ArrayList<>();
             peers.add(peerinfo);

@@ -70,7 +70,7 @@ public class SenderSocket extends SecureSocket{
             }
             
 
-            handler = new MessageHandler(socket);
+            handler = new MessageHandler(socket,this.host, this.port);
             handler.updateState(Transition.SENDER);
 
             Peer.getExec().execute(handler);
