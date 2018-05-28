@@ -48,7 +48,7 @@ public class ChunkMessage extends Message{
         for (int i = 0; i<peerInfos.size(); i++) {
             if(peerInfos.get(i) != null)
             {
-                System.out.println("UNAVAILABLE");
+                //System.out.println("UNAVAILABLE");
                 peerInfos.get(i).setAvailable(false);
             }
         }

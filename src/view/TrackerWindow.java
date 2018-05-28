@@ -1,4 +1,5 @@
 package view;
+import Peer.*;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;

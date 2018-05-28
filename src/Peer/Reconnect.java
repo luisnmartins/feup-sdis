@@ -18,7 +18,6 @@ public class Reconnect implements Runnable{
 
     @Override
     public synchronized void run(){
-        System.out.println("RECONNECT");
         ConcurrentHashMap<String,ArrayList<PeerInfo>> peers =  Peer.getStorage().getFilePeers();
         for(String key: peers.keySet()){
             boolean hasPeer=false;
@@ -30,10 +29,8 @@ public class Reconnect implements Runnable{
                 }
             }
             if(!hasPeer) {
-                System.out.println("RECONNECT");
                 Message message = new GetFileMessage(Peer.getPeerID(), key);
                 try {
-                    System.out.println("ASK TRACKER");
 					Peer.sendMessageToTracker(message);
 				} catch (UnknownHostException e) {
 					e.printStackTrace();

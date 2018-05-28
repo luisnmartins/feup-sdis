@@ -44,6 +44,8 @@ public class GetChunkMessage extends Message {
             try {
                 byte[] data = manager.readFileAsync(chunkNro * torrentInfo.getChunkLength(),
                         (int) torrentInfo.getChunkLength());
+                if(data == null)
+                	return -1;
                 ChunkMessage chunkMessage = new ChunkMessage(this.fileId, this.chunkNro, data);
                 writer.write(chunkMessage.getFullMessage());
             } catch (IOException e) {

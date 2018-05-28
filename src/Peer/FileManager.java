@@ -235,6 +235,11 @@ public class FileManager {
     }
 
     public byte[] readFileAsync(long offset, int dataSize) throws IOException {
+    	
+    	File f = new File(pathname);
+    	if(!f.exists() || f.isDirectory()) {
+    		return null;
+    	}
         AsynchronousFileChannel channel = AsynchronousFileChannel.open(Paths.get(pathname), StandardOpenOption.READ,
                 StandardOpenOption.READ);
 
@@ -246,8 +251,10 @@ public class FileManager {
             operation.get();
         } catch (ExecutionException e) {
             e.printStackTrace();
+            return null;
         } catch (InterruptedException ie) {
             ie.printStackTrace();
+            return null;
         }
     
         byte[] returnChunk = buffer.array();
@@ -323,7 +330,7 @@ public class FileManager {
             fileElement.setAttributeNode(fileNameAttr);
 
             Attr fileLengthAttr = doc.createAttribute("length");
-            System.out.println("FILE YOLO: "+size);
+            //System.out.println("FILE YOLO: "+size);
             fileLengthAttr.setValue(Long.toString(size));
             fileElement.setAttributeNode(fileLengthAttr);
 
@@ -405,7 +412,9 @@ public class FileManager {
 
                 }
             }
-            return new SimpleEntry<>(fileID,new TorrentInfo(ip, port, length, fileLength, pathname));
+            TorrentInfo torrentInfo =  new TorrentInfo(ip, port, length, fileLength, pathname);
+            torrentInfo.setName(name);
+            return new SimpleEntry<>(fileID,torrentInfo);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -48,7 +48,7 @@ public class PeerInfoMessage extends Message{
         PeerInfo peerinfo = new PeerInfo(this.address, this.port, 0, this.key);
         
         if(Peer.getStorage().getFilePeers()==null){
-            System.out.println("RIP");
+            //System.out.println("RIP");
         }
 
         if(Peer.getStorage().getFilePeers().containsKey(this.fileId)){

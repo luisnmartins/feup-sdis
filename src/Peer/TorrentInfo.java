@@ -11,6 +11,7 @@ public class TorrentInfo implements java.io.Serializable{
     private long chunkLength;
     private long fileLength;
     private String filePath;
+    private String name;
     //private volatile List<Boolean> sendedGetChunkMessages;
     //private volatile List<Boolean> receivedChunkMessages;
     public volatile List<ChunkStatus> chunksStatus;
@@ -26,9 +27,9 @@ public class TorrentInfo implements java.io.Serializable{
         this.filePath = filePath;
 
         long totalChunks = (fileLength + chunkLength - 1)/chunkLength;
-        System.out.println("FILE LENGTH: "+ fileLength);
+        /*System.out.println("FILE LENGTH: "+ fileLength);
         System.out.println("CHUNKLENGTH: "+ chunkLength);
-        System.out.println("TORRENT INFO AAASAA: " + totalChunks);
+        System.out.println("TORRENT INFO AAASAA: " + totalChunks);*/
         
         /*this.sendedGetChunkMessages = Collections.synchronizedList(new ArrayList<>((int)totalChunks)) ;
         this.receivedChunkMessages = Collections.synchronizedList(new ArrayList<>((int) totalChunks));   
@@ -44,6 +45,14 @@ public class TorrentInfo implements java.io.Serializable{
             this.chunksStatus.add(chunkStatus);
         }
 
+    }
+    
+    public String getName(){
+    	return this.name;
+    }
+    
+    public void setName(String name) {
+    	this.name = name;
     }
 
     /**
@@ -141,7 +150,8 @@ public class TorrentInfo implements java.io.Serializable{
     public synchronized void setCompleted(boolean completed){
         this.completed = completed;
     }
-
+    
+    
     
     /*public synchronized List<Boolean> getReceivedChunkMessages() {
         return receivedChunkMessages;
@@ -168,7 +178,7 @@ public class TorrentInfo implements java.io.Serializable{
     }
 
     public synchronized void updateSentGetChunk(int index, boolean bool ){
-        System.out.println("TORRENT INFO: " +index);
+        //System.out.println("TORRENT INFO: " +index);
         this.chunksStatus.get(index).updateSentGetChunk(bool);
     }
 

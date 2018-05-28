@@ -5,6 +5,8 @@ import java.util.AbstractMap.SimpleEntry;
 import Sockets.*;
 import java.util.*;
 import java.net.UnknownHostException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.io.*;
 import java.net.InetAddress;
 import java.util.concurrent.*;
@@ -33,9 +35,10 @@ public class Peer extends Node{
 
     public Peer(String trackerIP ,int port, int serId) throws IOException {
         peerID = UUID.randomUUID().toString();
+
         Peer.trackerIP = trackerIP;
-        trackerPort = port;
-        this.serId = serId;
+        Peer.trackerPort = port;
+        Peer.serId = serId;
 
         exec = (ScheduledThreadPoolExecutor) Executors.newScheduledThreadPool(100000);
 
@@ -51,14 +54,9 @@ public class Peer extends Node{
         controlReceiver = new ReceiverSocket(0);
         controlReceiver.connect(peerID);
 
-        if(!this.sendRegister()){
+        /*if(!this.register()){
             return;
-        }
-
-        updateTracker();
-
-        Runnable onlineMessagesThread = new OnlineMessagesThread();
-        Peer.getExec().scheduleAtFixedRate(onlineMessagesThread, 30, 60, TimeUnit.SECONDS);
+        }*/
 
     }
 
@@ -80,6 +78,10 @@ public class Peer extends Node{
 
         for (String key : storage.getFilesSeeded().keySet()) {
 
+        	File f = new File(storage.getFilesSeeded().get(key).getFilePath());
+        	if(!f.exists() || f.isDirectory()) {
+        		continue;
+        	}
             storage.getFilePeers().clear();
             Message message = new HasFileMessage(peerID, key);
             try {
@@ -90,13 +92,21 @@ public class Peer extends Node{
         }
 
         for (String key : storage.getFilesDownloaded().keySet()) {
-            Message message = new GetFileMessage(peerID, key);
-        
-            try {
-                sendMessageToTracker(message);                
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            }  
+        	
+        	if(storage.getFilesDownloaded().get(key).isCompleted()) {
+        		storage.getFilesDownloaded().remove(key);
+        	} else {
+        		
+        		Message message = new GetFileMessage(peerID, key);
+                try {
+                    sendMessageToTracker(message);                
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }  
+                
+        	}
+        	
+            
         }
 
 
@@ -160,9 +170,9 @@ public class Peer extends Node{
             peer = new Peer(args[0],Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 
             if(args[3].equals("download")){
-                peer.download("/Users/luisnmartins/Documents/Faculdade/3ano/2semestre/SDIS/feup-sdis/src/200MB.zip.xml", "/Users/luisnmartins/200MB" + serId +".zip");
+                peer.download("/home/julieta/Github/feup-sdis/src/bridge.jpeg.xml", "/home/julieta/Github/feup-sdis/src/bridge" + serId +".jpeg");
             }else if(args[3].equals("seed")){
-                peer.seed("/Users/luisnmartins/Documents/Faculdade/3ano/2semestre/SDIS/feup-sdis/src/200MB.zip", "/Users/luisnmartins/Documents/Faculdade/3ano/2semestre/SDIS/feup-sdis/src");
+                peer.seed("/home/julieta/Github/feup-sdis/src/bridge.jpeg", "/home/julieta/Github/feup-sdis/src");
             }
 
         } else {
@@ -200,7 +210,7 @@ public class Peer extends Node{
         return manager.readEntireFileData();
     }
 
-    public boolean sendRegister() throws IOException{
+    public boolean register() throws IOException{
 
         byte[] key = readPublicKey();
  
@@ -213,14 +223,20 @@ public class Peer extends Node{
         }
         Message message = new RegisterMessage(this.peerID, address, port, key);
         channelStarter.getHandler().sendMessage(message);
+        updateTracker();
+        Runnable onlineMessagesThread = new OnlineMessagesThread();
+        Peer.getExec().scheduleAtFixedRate(onlineMessagesThread, 30, 60, TimeUnit.SECONDS);
         return true;
     }
 
     public void download(String torrentPath, String filePath) throws IOException{
         
-        FileManager manager = new FileManager(torrentPath);
+        FileManager manager = new FileManager(torrentPath);      
         SimpleEntry<String,TorrentInfo> torrentInfo = manager.parseDownloadFile();
-        torrentInfo.getValue().setFilePath(filePath);
+        
+        String namePath = filePath + "/" + torrentInfo.getValue().getName();
+   
+        torrentInfo.getValue().setFilePath(namePath);
         storage.getFilesDownloaded().put(torrentInfo.getKey(), torrentInfo.getValue());
         Message message = new GetFileMessage(peerID, torrentInfo.getKey());
         sendMessageToTracker(message);
@@ -247,7 +263,7 @@ public class Peer extends Node{
         for(int i = 0; i < limit; i++){
 
             //storage.getFilesDownloaded().get(fileId).updateSendedGetChunkMessages(i, true);
-            System.out.println("PEER: " + i);
+            //System.out.println("PEER: " + i);
             PeerInfo peerInfo= storage.getFilePeers().get(fileId).get(i);
             storage.getFilesDownloaded().get(fileId).updateSentGetChunk(i, true);
             Message message = new GetChunkMessage(fileId,i);

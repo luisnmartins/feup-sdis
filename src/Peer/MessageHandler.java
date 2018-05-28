@@ -238,6 +238,7 @@ public class MessageHandler implements Runnable {
             System.out.println("Reading");
             readsize = reader.read(buffer);
         } catch (SocketTimeoutException e) {
+        	setPeersUnavailable();
             System.out.println("Socket timeout");
             Node.decReceiverCounter();            
             running=false;
@@ -254,7 +255,15 @@ public class MessageHandler implements Runnable {
             Node.decReceiverCounter();            
             running=false;
             return;
-        };
+        }catch(Throwable th){
+        	setPeersUnavailable();
+            System.out.println("Socket exception");
+            Node.decReceiverCounter();            
+            running=false;
+            return;
+        }
+        
+        System.out.println("ReadSize: " + readsize);
         
         if(readsize == 0)
             return;
@@ -270,9 +279,10 @@ public class MessageHandler implements Runnable {
         buffer = new byte[MAX_SIZE];
         if(readsize > 16000){
             try {
-                System.out.println("Reading");
+        
                 readsize = reader.read(buffer);
             } catch (SocketTimeoutException e) {
+            	setPeersUnavailable();
                 System.out.println("Socket timeout");
                 Node.decReceiverCounter();            
                 running=false;
@@ -289,7 +299,14 @@ public class MessageHandler implements Runnable {
                 Node.decReceiverCounter();            
                 running=false;
                 return;
+            }catch(Throwable th){
+            	setPeersUnavailable();
+                System.out.println("Socket exception");
+                Node.decReceiverCounter();            
+                running=false;
+                return;
             }
+            
                 
             if(readsize == -1) {
                 this.updateState(READ);
@@ -316,10 +333,6 @@ public class MessageHandler implements Runnable {
         String messageType = this.header.substring(0,this.header.indexOf(" "));
         
         switch (messageType) {
-            case "SUCCESS": {
-                //TODO: Success Action
-                break;
-            }
             case "ERROR": {
                 fsmState=fsmState.next(QUIT); 
                 break;
@@ -374,7 +387,10 @@ public class MessageHandler implements Runnable {
             }
             case "GETCHUNK": {                      
                 GetChunkMessage getChunkMessage = new GetChunkMessage(header);
-                getChunkMessage.action(writer);
+                if(getChunkMessage.action(writer) == -1) {
+                	  Node.decReceiverCounter();
+                      running=false;
+                }
                 break;
             }
             case "CHUNK": {                      
