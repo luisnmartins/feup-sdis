@@ -100,4 +100,4 @@ java -jar Peer.jar
 Note: In order to make the communications safer the system uses SSLSockets to communicate with symmetric keys encryption. So each time a Peer wants to communicate with the Tracker it should be able to use the tracker's public key. This key should be found on App/Peer folder. However, if the system is compromised this key should be regenerated as well as the corresponding private key. In order to make this easier there's a  script in DistributedSystem folder to regenerate both these keys called generatekeys.sh
 
 
-
+DEMO here: https://drive.google.com/file/d/1_onyAgl4iin1uBGZ3ngwC6lLpWQOBUB1/view
