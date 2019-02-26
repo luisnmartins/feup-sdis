@@ -79,6 +79,8 @@ This protocol allows the user to reclaim space in the system deleting some repli
     Eg.:  RMI.Application localhost/1 ENHDELETE /usr/users2/2015/Desktop/file.txt
 
 
+Made in colaboration with [Carlos Freitas](https://github.com/CarlosFr97)
+
 # Project 2
 
 Following Project 1 the aim of this project was to create a similar system but this time it is more like a shared file system. Based on torrent idea the system relies on a tracker which keep track of each computer on the network as well as the files each one is sharing with the network. So each time a new user (computer) enters the network he should inform the tracker of his presence and the choose which files he will seed. Each time a user starts seeding a file the system will automatically create a XML file so that the user can share it (pretty much how torrent system works)
@@ -101,3 +103,5 @@ Note: In order to make the communications safer the system uses SSLSockets to co
 
 
 DEMO [here](https://drive.google.com/file/d/1_onyAgl4iin1uBGZ3ngwC6lLpWQOBUB1/view)
+
+Made in colaboration with [Carlos Freitas](https://github.com/CarlosFr97), [Julieta Frade](https://github.com/julietafrade97) and [Sofia Silva](https://github.com/literallysofia)
